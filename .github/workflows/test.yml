@@ -1,0 +1,136 @@
+name: Test Suite & Security Audit
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test-rust:
+    name: Rust Backend Unit & Security Tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
+      - name: Run Cargo Test
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
+  test-frontend:
+    name: Frontend TypeScript, i18n & Vitest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify independent product sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          if rg -n -i '\bopen[ -]?seo\b|every-app|openseo\.so' src src-tauri mcp-server public README.md package.json; then
+            echo 'Forbidden source branding/reference found in product files.' >&2
+            exit 1
+          fi
+          if git ls-files | rg -n -i '(^|/)(PRD|GAP|PARITY_MATRIX|MATRIX|AGENTS|CLAUDE|GEMINI|COPILOT|AI_NOTES|AI_CONTEXT|AI_PLAN)([^/]*$|/)' ; then
+            echo 'Planning or AI instruction files must not be tracked.' >&2
+            exit 1
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Vitest unit tests
+        run: npm test
+      - name: Typecheck & Production Bundle
+        run: npm run build
+
+  desktop-platform-smoke:
+    name: Desktop platform smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Build frontend
+        run: npm run build
+      - name: Run frontend test suite
+        run: npm test -- --run
+      - name: Run Rust backend tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+      - name: Compile Tauri desktop application without bundling
+        run: npm run tauri -- build --debug --no-bundle
+
+  dependency-security:
+    name: Dependency Vulnerability Scan & SBOM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Node dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Audit all Node dependencies
+        run: npm audit --audit-level=high
+
+      - name: Install MCP server dependencies without lifecycle scripts
+        run: npm ci --prefix mcp-server --ignore-scripts
+
+      - name: Audit MCP server dependencies
+        run: npm audit --prefix mcp-server --audit-level=high
+
+      - name: Build and test MCP server
+        run: npm test --prefix mcp-server
+
+      - name: Generate Node SBOM
+        run: npx --yes @cyclonedx/cyclonedx-npm@1.19.0 --output-file sbom-node.json --output-format json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Rust dependency security tools
+        run: |
+          cargo install cargo-audit --locked
+          cargo install cargo-cyclonedx --version 0.5.9 --locked
+
+      - name: Audit Rust dependencies
+        run: cargo audit --file src-tauri/Cargo.lock
+
+      - name: Generate Rust CycloneDX SBOM for all target platforms
+        run: cargo cyclonedx --manifest-path src-tauri/Cargo.toml --format json --target all --override-filename sbom-rust
+
+      - name: Upload dependency reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-sbom-${{ github.run_id }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            sbom-node.json
+            src-tauri/sbom-rust.json

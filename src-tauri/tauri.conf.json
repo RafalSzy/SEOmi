@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SEOmi",
+  "version": "0.0.1",
+  "identifier": "com.seomi.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "SEOmi — Lightning SEO & Open Graph Auditor",
+        "width": 1320,
+        "height": 880,
+        "minWidth": 980,
+        "minHeight": 680,
+        "center": true,
+        "decorations": true,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' https: data: asset:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https: ipc:;"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVBRDQzMkJGMUQxNDc4ODIKUlVSY3h5Yk5zM2VwTkNxdmR0OUh5K3F5Z0hPZkRxdFprNW5ocVExWlZtUld6MFR1aXF6TXJvK0EK",
+      "endpoints": [
+        "https://github.com/tomaszboloz/SEOmi/releases/latest/download/latest.json"
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg", "msi", "nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "DeveloperTool",
+    "shortDescription": "Lightning-fast desktop SEO, Open Graph and HTTP security auditor",
+    "longDescription": "Professional desktop tool for website SEO audits, social media card simulation, HTTP security headers analysis, and AI metadata optimization."
+  }
+}
