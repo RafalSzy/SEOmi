@@ -871,6 +871,10 @@ struct FetchedResponse {
 enum FetchedPageBody {
     Http(reqwest::Response),
     Rendered(crate::commands::rendered_crawler::RenderedPageSnapshot),
+    // Body already read inside the prefetch task. Holding an unread
+    // `reqwest::Response` in the prefetch map lets the client's whole-request
+    // timeout expire before the sequential loop reaches it.
+    Prefetched(Box<FetchedPageData>),
 }
 
 struct CrawlFetchFailure {
@@ -903,6 +907,7 @@ async fn read_fetched_page_data(
     max_response_bytes: usize,
 ) -> FetchedPageData {
     match source {
+        FetchedPageBody::Prefetched(data) => *data,
         FetchedPageBody::Http(mut response) => {
             let status = response.status().as_u16();
             let content_type = response
@@ -4877,6 +4882,10 @@ async fn prefetch_http_pages(
         let scope_path = scope_path.map(str::to_owned);
         let allowed_hosts = allowed_hosts.to_vec();
         let config = config.clone();
+        let max_response_bytes = config
+            .max_response_bytes
+            .unwrap_or(5_000_000)
+            .clamp(1_024, 50_000_000);
         tasks.spawn(async move {
             let result = request_with_safe_redirects(
                 &client,
@@ -4893,6 +4902,20 @@ async fn prefetch_http_pages(
                 kind: request_error_kind(&error),
                 message: error.to_string(),
             });
+            let result = match result {
+                Ok(mut fetched) => {
+                    if let FetchedPageBody::Http(response) = fetched.response {
+                        let data = read_fetched_page_data(
+                            FetchedPageBody::Http(response),
+                            max_response_bytes,
+                        )
+                        .await;
+                        fetched.response = FetchedPageBody::Prefetched(Box::new(data));
+                    }
+                    Ok(fetched)
+                }
+                Err(error) => Err(error),
+            };
             (url, result)
         });
     }
