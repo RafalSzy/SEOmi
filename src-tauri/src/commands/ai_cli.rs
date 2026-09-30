@@ -262,11 +262,19 @@ fn build_ai_cli_arguments(
     let mut arguments = Vec::new();
     match provider {
         "openai" => {
+            // Skip the user's config.toml, execpolicy rules and memories, and
+            // do not persist the research session, without touching CODEX_HOME
+            // (which also holds auth.json).
             arguments.extend([
                 "exec".to_string(),
                 "--skip-git-repo-check".to_string(),
                 "--sandbox".to_string(),
                 "read-only".to_string(),
+                "--ephemeral".to_string(),
+                "--ignore-user-config".to_string(),
+                "--ignore-rules".to_string(),
+                "-c".to_string(),
+                "features.memories=false".to_string(),
             ]);
             if let Some(model) = model.filter(|value| !value.trim().is_empty()) {
                 arguments.extend(["--model".to_string(), model]);
@@ -274,10 +282,27 @@ fn build_ai_cli_arguments(
             arguments.push(prompt);
         }
         "claude" => {
+            // --safe-mode disables CLAUDE.md, memory, skills, hooks and MCP
+            // servers while keeping the normal login; changing
+            // CLAUDE_CONFIG_DIR instead would lose the stored credentials.
+            // User settings (e.g. a preferred reply language) still apply in
+            // safe mode, so load only project/local settings, which do not
+            // exist in the empty working directory. A non-empty value is used
+            // because an empty argument can be dropped by cmd.exe on Windows.
+            // Print mode cannot ask for permissions, so read-only web tools
+            // are pre-approved; otherwise brand research runs without any
+            // web access. --allowedTools is variadic and must be followed by
+            // another flag, never directly by the prompt.
             arguments.extend([
                 "-p".to_string(),
                 "--permission-mode".to_string(),
                 "plan".to_string(),
+                "--safe-mode".to_string(),
+                "--setting-sources".to_string(),
+                "project,local".to_string(),
+                "--allowedTools".to_string(),
+                "WebSearch,WebFetch".to_string(),
+                "--no-session-persistence".to_string(),
                 prompt,
             ]);
             if let Some(model) = model.filter(|value| !value.trim().is_empty()) {
@@ -302,6 +327,15 @@ fn build_ai_cli_arguments(
         _ => return Err("Unsupported AI provider.".to_string()),
     }
     Ok(arguments)
+}
+
+/// Runs the CLI from an empty working directory so project files are not
+/// discovered. Provider home and config directories (CLAUDE_CONFIG_DIR,
+/// CODEX_HOME, GEMINI_CLI_HOME) are deliberately left alone: they hold the
+/// stored login, so pointing them at an empty directory logs the CLI out.
+/// Global instructions and memory are disabled through CLI flags instead.
+fn isolate_process(process: &mut Command, working_dir: &Path) {
+    process.current_dir(working_dir);
 }
 
 async fn version_check(provider: &str, command: &str) -> (bool, String) {
@@ -428,22 +462,16 @@ pub async fn run_ai_cli(
     fs::create_dir_all(&isolated_dir)
         .map_err(|error| format!("Unable to prepare an isolated AI working directory: {error}"))?;
     let mut process = process_for(&resolved, &arguments);
-    process.current_dir(&isolated_dir);
-    // Keep provider authentication in the OS or CLI subscription while
-    // preventing project files, global instructions and memory from being
-    // discovered by the research command.
-    process.env("CODEX_HOME", &isolated_dir);
-    process.env("CLAUDE_CONFIG_DIR", isolated_dir.join("claude-config"));
-    process.env("GEMINI_CLI_HOME", &isolated_dir);
+    isolate_process(&mut process, &isolated_dir);
     if let Some(path) = augmented_path() {
         process.env("PATH", path);
     }
 
-    let output = timeout(CLI_TIMEOUT, process.output())
-        .await
+    let result = timeout(CLI_TIMEOUT, process.output()).await;
+    let _ = fs::remove_dir_all(&isolated_dir);
+    let output = result
         .map_err(|_| "Local CLI timed out after 120 seconds.".to_string())?
         .map_err(|_| format!("{} is not installed or not available on PATH.", command))?;
-    let _ = fs::remove_dir_all(&isolated_dir);
     if !output.status.success() {
         let stderr = display_output(&output);
         return Err(if stderr.is_empty() {
@@ -461,7 +489,56 @@ pub async fn run_ai_cli(
 
 #[cfg(test)]
 mod tests {
-    use super::build_ai_cli_arguments;
+    use super::{build_ai_cli_arguments, isolate_process};
+    use std::ffi::OsStr;
+    use std::path::Path;
+    use tokio::process::Command;
+
+    #[test]
+    fn isolation_keeps_provider_login_directories() {
+        let mut process = Command::new("claude");
+        isolate_process(&mut process, Path::new("/tmp/seomi-ai-test"));
+        let std_process = process.as_std();
+
+        assert_eq!(
+            std_process.get_current_dir(),
+            Some(Path::new("/tmp/seomi-ai-test"))
+        );
+        for key in ["CLAUDE_CONFIG_DIR", "CODEX_HOME", "GEMINI_CLI_HOME"] {
+            assert!(
+                !std_process
+                    .get_envs()
+                    .any(|(name, _)| name == OsStr::new(key)),
+                "{key} must not be overridden: it holds the stored CLI login"
+            );
+        }
+    }
+
+    #[test]
+    fn keeps_codex_isolation_flags_before_prompt() {
+        let arguments =
+            build_ai_cli_arguments("openai", "prompt".to_string(), Some("gpt-5".to_string()))
+                .expect("Codex arguments should be supported");
+
+        assert_eq!(
+            arguments,
+            [
+                "exec",
+                "--skip-git-repo-check",
+                "--sandbox",
+                "read-only",
+                "--ephemeral",
+                "--ignore-user-config",
+                "--ignore-rules",
+                "-c",
+                "features.memories=false",
+                "--model",
+                "gpt-5",
+                "prompt",
+            ]
+            .map(String::from)
+        );
+    }
 
     #[test]
     fn keeps_gemini_prompt_value_next_to_prompt_flag() {
@@ -499,6 +576,12 @@ mod tests {
                 "-p".to_string(),
                 "--permission-mode".to_string(),
                 "plan".to_string(),
+                "--safe-mode".to_string(),
+                "--setting-sources".to_string(),
+                "project,local".to_string(),
+                "--allowedTools".to_string(),
+                "WebSearch,WebFetch".to_string(),
+                "--no-session-persistence".to_string(),
                 "prompt".to_string(),
             ]
         );
