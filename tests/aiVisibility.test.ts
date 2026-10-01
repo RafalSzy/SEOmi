@@ -66,10 +66,34 @@ describe('project-scoped AI answer research', () => {
     expect(useToolsStore.getState().aiPromptError).toContain(i18n.t('runtimeErrors.tools.projectRequired'));
 
     localStorage.setItem('seomi_active_project_v1', 'ai-project-one');
-    useAuthStore.setState({ connectionStatus: { openai: 'unconfigured', claude: 'unconfigured', gemini: 'unconfigured' } });
+    const failingTest = vi.fn(async (provider: 'openai' | 'claude' | 'gemini') => {
+      useAuthStore.setState((state) => ({ connectionStatus: { ...state.connectionStatus, [provider]: 'error' } }));
+      return { success: false, message: 'missing' };
+    });
+    useAuthStore.setState({ connectionStatus: { openai: 'unconfigured', claude: 'unconfigured', gemini: 'unconfigured' }, testProviderConnection: failingTest });
     await useToolsStore.getState().runAiPromptComparison('test prompt');
+    expect(failingTest).toHaveBeenCalledTimes(3);
     expect(useToolsStore.getState().aiPromptError).toContain(i18n.t('runtimeErrors.tools.aiConnect'));
     expect(useToolsStore.getState().aiPromptComparison).toBeNull();
+  });
+
+  it('checks untested local CLIs automatically after an app restart instead of asking the user to test again', async () => {
+    const passingTest = vi.fn(async (provider: 'openai' | 'claude' | 'gemini') => {
+      useAuthStore.setState((state) => ({ connectionStatus: { ...state.connectionStatus, [provider]: 'connected' } }));
+      return { success: true, message: 'ok' };
+    });
+    useAuthStore.setState({
+      connectionMethod: { openai: 'api_key', claude: 'local_cli', gemini: 'api_key' },
+      connectionStatus: { openai: 'unconfigured', claude: 'unconfigured', gemini: 'unconfigured' },
+      testProviderConnection: passingTest,
+    });
+
+    await useToolsStore.getState().analyzeAiBrandVisibility('SEOmi', 'seomi.app');
+
+    expect(passingTest).toHaveBeenCalledTimes(1);
+    expect(passingTest).toHaveBeenCalledWith('claude');
+    expect(useToolsStore.getState().aiBrandError).toBeNull();
+    expect(useToolsStore.getState().aiBrandReport?.models.map((model) => model.provider)).toEqual(['claude']);
   });
 
   it('appends prompt runs, restores the project history and lets the user select an older run', async () => {

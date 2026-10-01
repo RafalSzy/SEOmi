@@ -252,9 +252,17 @@ const aiPromptComparisonKey = (projectId: string) => `seomi_project_${projectId}
 const aiResearchInputsKey = (projectId: string) => `seomi_project_${projectId}_ai_research_inputs_v1`;
 const aiBrandSelectionKey = (projectId: string) => `seomi_project_${projectId}_ai_brand_selection_v1`;
 const aiPromptSelectionKey = (projectId: string) => `seomi_project_${projectId}_ai_prompt_selection_v1`;
-const localSubscriptionProviders = (): AiProvider[] => {
+// Connection status is not persisted and resets on every app start and
+// project switch, so check any untested local CLI before filtering instead of
+// requiring the user to press "Test connection" again.
+const localSubscriptionProviders = async (): Promise<AiProvider[]> => {
+  const providers = ['openai', 'claude', 'gemini'] as AiProvider[];
   const auth = useAuthStore.getState();
-  return (['openai', 'claude', 'gemini'] as AiProvider[]).filter((provider) => auth.connectionMethod[provider] === 'local_cli' && auth.isProviderConnected(provider));
+  await Promise.all(providers
+    .filter((provider) => auth.connectionMethod[provider] === 'local_cli' && auth.connectionStatus[provider] === 'unconfigured')
+    .map((provider) => auth.testProviderConnection(provider)));
+  const current = useAuthStore.getState();
+  return providers.filter((provider) => current.connectionMethod[provider] === 'local_cli' && current.isProviderConnected(provider));
 };
 const toolRequestTokens = new Map<string, string>();
 const beginToolRequest = (kind: string): string => {
@@ -1871,7 +1879,7 @@ export const useToolsStore = create<ToolsState>((set, get) => ({
     const requestToken = beginToolRequest('ai-brand');
     set({ isAiBrandLoading: true, aiBrandError: null });
     try {
-      const providers = localSubscriptionProviders();
+      const providers = await localSubscriptionProviders();
       if (!providers.length) throw new Error(i18n.t('runtimeErrors.tools.aiConnect'));
       const query = `Answer this impartial brand-research question: What is ${b}${d ? ` (${d})` : ''}? If uncertain, say so. When naming a source URL, include it exactly; do not invent URLs.`;
       const observations = await Promise.all(providers.map(async (provider) => {
@@ -1935,7 +1943,7 @@ export const useToolsStore = create<ToolsState>((set, get) => ({
     const requestToken = beginToolRequest('ai-prompt');
     set({ isAiPromptLoading: true, aiPromptError: null });
     try {
-      const providers = localSubscriptionProviders();
+      const providers = await localSubscriptionProviders();
       if (!providers.length) throw new Error(i18n.t('runtimeErrors.tools.aiConnect'));
       const query = `${p}\n\nWhen you provide source URLs, reproduce them exactly. Do not invent citations or imply that URLs have been independently verified.`;
       const results = await Promise.all(providers.map(async (provider) => {
