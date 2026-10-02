@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { useAuditStore } from '@/stores/auditStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
