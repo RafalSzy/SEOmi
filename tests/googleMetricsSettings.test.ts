@@ -118,6 +118,17 @@ describe('general settings propagate into the active audit controls', () => {
     useSettingsStore.setState({ config: originalConfig });
   });
 
+  it('applies the selected theme to the document and persists it', async () => {
+    settingsMocks.invokeTauriCommandMock.mockReset().mockResolvedValue(undefined);
+    await useSettingsStore.getState().updateConfig({ theme: 'light' });
+    expect(document.documentElement.classList.contains('light')).toBe(true);
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(localStorage.getItem('seomi_theme')).toBe('light');
+    await useSettingsStore.getState().updateConfig({ theme: 'dark' });
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.classList.contains('light')).toBe(false);
+  });
+
   it('immediately applies a changed default user agent and persists it', async () => {
     settingsMocks.invokeTauriCommandMock.mockReset().mockResolvedValue(undefined);
     await useSettingsStore.getState().updateConfig({ default_user_agent: 'googlebot_mobile' });
