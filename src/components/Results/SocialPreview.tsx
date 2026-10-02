@@ -297,7 +297,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ audit }) => {
           <p className="mb-3 text-[11px] leading-5 text-slate-500">{t('legacyUi.social.visualApprox')}</p>
 
           <div
-            className={`bg-[#202124] text-[#bdc1c6] p-4 rounded-xl border border-slate-800 font-sans ${
+            className={`force-dark bg-[#202124] text-[#bdc1c6] p-4 rounded-xl border border-slate-800 font-sans ${
               serpMode === 'mobile' ? 'max-w-[390px] mx-auto shadow-2xl' : 'max-w-[650px]'
             }`}
           >
@@ -333,7 +333,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ audit }) => {
             <section className="rounded-xl border border-slate-800 bg-slate-950/40 p-4" aria-label={t('legacyUi.social.localSitelinks')}>
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-100"><Link2 className="h-4 w-4 text-emerald-300" />{t('social.sitelinkCandidates')}</div>
               <p className="mb-3 text-[11px] leading-5 text-slate-500">{t('social.sitelinkEvidence')}</p>
-              {sitelinkCandidates.length ? <div className="grid gap-2 sm:grid-cols-2">{sitelinkCandidates.map((candidate) => <div key={candidate.url} className="min-w-0 rounded-lg border border-slate-800 bg-slate-900/70 p-2.5"><p className="truncate text-xs font-medium text-[#8ab4f8]">{candidate.label}</p><p className="truncate text-[10px] text-slate-500">{candidate.displayUrl}</p></div>)}</div> : <p className="text-xs text-slate-500">{t('social.sitelinkEmpty')}</p>}
+              {sitelinkCandidates.length ? <div className="grid gap-2 sm:grid-cols-2">{sitelinkCandidates.map((candidate) => <div key={candidate.url} className="min-w-0 rounded-lg border border-slate-800 bg-slate-900/70 p-2.5"><p className="truncate text-xs font-medium text-sky-300">{candidate.label}</p><p className="truncate text-[10px] text-slate-500">{candidate.displayUrl}</p></div>)}</div> : <p className="text-xs text-slate-500">{t('social.sitelinkEmpty')}</p>}
             </section>
             <section className="rounded-xl border border-slate-800 bg-slate-950/40 p-4" aria-label={t('legacyUi.social.localRichResult')}>
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-100"><ListTree className="h-4 w-4 text-sky-300" />{t('social.richResultCandidate')}</div>
@@ -352,7 +352,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ audit }) => {
             <h3 className="text-sm font-bold text-white">{t('social.facebookPreview')}</h3>
           </div>
 
-          <div className="max-w-[500px] mx-auto bg-[#242526] border border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
+          <div className="force-dark max-w-[500px] mx-auto bg-[#242526] border border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
             {liveImage ? (
               <div className="relative aspect-[1.91/1] w-full bg-slate-800 overflow-hidden">
                 <img
@@ -393,7 +393,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ audit }) => {
             <span className="font-bold text-white text-sm">{t('legacyUi.social.twitter')}</span>
           </div>
 
-          <div className="max-w-[500px] mx-auto bg-black border border-slate-800 rounded-2xl overflow-hidden">
+          <div className="force-dark max-w-[500px] mx-auto bg-black border border-slate-800 rounded-2xl overflow-hidden">
             {liveImage && (
               <div className="aspect-[1.91/1] w-full bg-slate-900 overflow-hidden">
                 <img src={liveImage} alt={t('legacyUi.social.twitterAlt')} className="w-full h-full object-cover" />
@@ -418,7 +418,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ audit }) => {
                 <span className="font-bold text-white text-sm">{t('legacyUi.social.discord')}</span>
               </div>
 
-              <div className="bg-[#2f3136] rounded-md p-3 border-l-4 border-emerald-500 max-w-md">
+              <div className="force-dark bg-[#2f3136] rounded-md p-3 border-l-4 border-emerald-500 max-w-md">
                 <span className="text-[11px] text-slate-400 font-medium block mb-1">
                   {siteName}
                 </span>
@@ -442,7 +442,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ audit }) => {
                 <span className="font-bold text-white text-sm">{t('legacyUi.social.linkedin')}</span>
               </div>
 
-              <div className="bg-[#1b1f23] border border-slate-700/50 rounded-xl overflow-hidden max-w-md">
+              <div className="force-dark bg-[#1b1f23] border border-slate-700/50 rounded-xl overflow-hidden max-w-md">
                 {liveImage && (
                   <div className="aspect-[1.91/1] w-full bg-slate-900 overflow-hidden">
                     <img src={liveImage} alt={t('legacyUi.social.linkedinAlt')} className="w-full h-full object-cover" />
@@ -491,7 +491,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ audit }) => {
                 <span className="font-bold text-white text-sm">{t('legacyUi.social.whatsapp')}</span>
               </div>
 
-              <div className="bg-[#1f2c34] border border-[#2a3942] rounded-xl p-3 max-w-md shadow-md">
+              <div className="force-dark bg-[#1f2c34] border border-[#2a3942] rounded-xl p-3 max-w-md shadow-md">
                 <div className="flex space-x-3">
                   {liveImage && (
                     <div className="w-16 h-16 rounded-lg bg-slate-900 overflow-hidden shrink-0">

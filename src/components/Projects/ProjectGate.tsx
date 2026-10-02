@@ -46,7 +46,7 @@ export const ProjectGate = () => {
   };
 
   return (
-    <main className="min-h-screen overflow-y-auto bg-[#0b0f19] px-5 py-10 text-slate-100 sm:px-10">
+    <main className="min-h-screen overflow-y-auto bg-[var(--color-bg-primary)] px-5 py-10 text-slate-100 sm:px-10">
       <section className="mx-auto grid w-full max-w-5xl gap-8 lg:grid-cols-[1.1fr_.9fr]">
         <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-7 shadow-2xl shadow-black/20 sm:p-9">
           <div className="mb-8 flex items-center gap-3">

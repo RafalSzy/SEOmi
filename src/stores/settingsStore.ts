@@ -219,14 +219,32 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   },
 }));
 
+// Apply the stored theme before the native config arrives, and follow the
+// operating system while the "system" option is selected.
+if (typeof document !== 'undefined') {
+  applyThemeToDOM(useSettingsStore.getState().theme);
+  if (typeof window.matchMedia === 'function') {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
+      if (useSettingsStore.getState().theme === 'system') applyThemeToDOM('system');
+    });
+  }
+}
+
 function applyThemeToDOM(theme: 'dark' | 'light' | 'system') {
   const root = document.documentElement;
-  if (theme === 'system') {
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    root.classList.toggle('dark', systemDark);
-    root.classList.toggle('light', !systemDark);
-  } else {
-    root.classList.toggle('dark', theme === 'dark');
-    root.classList.toggle('light', theme === 'light');
+  const wasLight = root.classList.contains('light');
+  const systemDark = typeof window.matchMedia !== 'function' || window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const light = theme === 'light' || (theme === 'system' && !systemDark);
+  root.classList.toggle('dark', !light);
+  root.classList.toggle('light', light);
+  if (wasLight !== light) {
+    // WebKit keeps the previous result of color-mix() utilities (every
+    // semi-transparent colour) when only the palette variables change, so the
+    // sidebar and header stayed dark until a restart. Rebuilding the render
+    // tree makes it resolve them again.
+    const display = root.style.display;
+    root.style.display = 'none';
+    void root.offsetHeight;
+    root.style.display = display;
   }
 }
