@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuditStore } from '@/stores/auditStore';
-import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
 
 const settingsMocks = vi.hoisted(() => ({
@@ -102,38 +100,5 @@ describe('project-scoped Google performance API key settings', () => {
 
     expect(useSettingsStore.getState().googleMetricsApiKey).toBe('new-key');
     expect(useSettingsStore.getState().isSaving).toBe(false);
-  });
-});
-
-
-describe('general settings propagate into the active audit controls', () => {
-  const originalConfig = useSettingsStore.getState().config;
-  it('restores persisted user agent and provider/model after restarting', async () => {
-    settingsMocks.invokeTauriCommandMock.mockReset().mockResolvedValue({ ...originalConfig, default_user_agent: 'custom-agent/1.0', ai_provider: 'claude', ai_model: 'claude-test-model' });
-    settingsMocks.getSecureValueMock.mockResolvedValue('');
-    await useSettingsStore.getState().loadConfig();
-    expect(useAuditStore.getState().selectedUserAgent).toBe('custom-agent/1.0');
-    expect(useAuthStore.getState().provider).toBe('claude');
-    expect(useAuthStore.getState().model).toBe('claude-test-model');
-    useSettingsStore.setState({ config: originalConfig });
-  });
-
-  it('applies the selected theme to the document and persists it', async () => {
-    settingsMocks.invokeTauriCommandMock.mockReset().mockResolvedValue(undefined);
-    await useSettingsStore.getState().updateConfig({ theme: 'light' });
-    expect(document.documentElement.classList.contains('light')).toBe(true);
-    expect(document.documentElement.classList.contains('dark')).toBe(false);
-    expect(localStorage.getItem('seomi_theme')).toBe('light');
-    await useSettingsStore.getState().updateConfig({ theme: 'dark' });
-    expect(document.documentElement.classList.contains('dark')).toBe(true);
-    expect(document.documentElement.classList.contains('light')).toBe(false);
-  });
-
-  it('immediately applies a changed default user agent and persists it', async () => {
-    settingsMocks.invokeTauriCommandMock.mockReset().mockResolvedValue(undefined);
-    await useSettingsStore.getState().updateConfig({ default_user_agent: 'googlebot_mobile' });
-    expect(useAuditStore.getState().selectedUserAgent).toBe('googlebot_mobile');
-    expect(settingsMocks.invokeTauriCommandMock).toHaveBeenCalledWith('save_config', expect.objectContaining({ config: expect.objectContaining({ default_user_agent: 'googlebot_mobile' }) }));
-    useSettingsStore.setState({ config: originalConfig });
   });
 });

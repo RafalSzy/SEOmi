@@ -75,7 +75,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const { useAuditStore } = await import('./auditStore');
       useAuditStore.getState().setSelectedUserAgent(conf.default_user_agent);
       const { useAuthStore } = await import('./authStore');
-      if (conf.ai_provider === 'openai' || conf.ai_provider === 'claude' || conf.ai_provider === 'gemini') {
+      // The general settings record is only a fallback for a profile that has
+      // never chosen a provider. Nothing updates `ai_provider` after that, so
+      // applying it on every start would replace the saved connection (for
+      // example Claude over the local CLI) with the stale default.
+      const hasSavedAiSelection = Boolean(readStorage('seomi_ai_provider'));
+      if (!hasSavedAiSelection && (conf.ai_provider === 'openai' || conf.ai_provider === 'claude' || conf.ai_provider === 'gemini')) {
         useAuthStore.getState().setProvider(conf.ai_provider);
         if (conf.ai_model) useAuthStore.getState().setModel(conf.ai_model);
       }

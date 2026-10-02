@@ -14,6 +14,12 @@ const SECRET_NAMES: Record<AiProvider, string> = {
 };
 const providerMap = <T,>(value: T): Record<AiProvider, T> => ({ openai: value, claude: value, gemini: value });
 const defaultModel = (provider: AiProvider): string => ({ openai: 'gpt-4o', claude: 'claude-3-7-sonnet-20250219', gemini: 'gemini-2.0-flash' })[provider];
+// Detection runs the same version and sign-in check as the explicit test for
+// Codex and Claude, so a detected CLI is a working connection. Gemini has no
+// sign-in check; only its explicit test (one real request) proves it.
+const detectionProvesConnection = (provider: AiProvider): boolean => provider !== 'gemini';
+const statusFromDetectedCli = (provider: AiProvider, method: AiConnectionMethod, cli: AiCliStatus | null): AiConnectionState =>
+  method === 'local_cli' && detectionProvesConnection(provider) && cli?.available ? 'connected' : 'unconfigured';
 const isAiProvider = (value: string | null): value is AiProvider => value === 'openai' || value === 'claude' || value === 'gemini';
 const isConnectionMethod = (value: string | null): value is AiConnectionMethod => value === 'api_key' || value === 'local_cli';
 const projectPreferenceKey = (projectId: string, suffix: string): string => `seomi_project_${encodeURIComponent(projectId)}_ai_${suffix}`;
@@ -87,11 +93,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     writeStorage(`seomi_ai_connection_${provider}`, method);
     const projectId = get().activeProjectId;
     if (projectId) writeStorage(projectPreferenceKey(projectId, `connection_${provider}`), method);
-    set((state) => ({
-      connectionMethod: { ...state.connectionMethod, [provider]: method },
-      connectionStatus: { ...state.connectionStatus, [provider]: 'unconfigured' },
-      statusMessages: { ...state.statusMessages, [provider]: '' },
-    }));
+    set((state) => {
+      const status = statusFromDetectedCli(provider, method, state.cliStatus[provider]);
+      return {
+        connectionMethod: { ...state.connectionMethod, [provider]: method },
+        connectionStatus: { ...state.connectionStatus, [provider]: status },
+        statusMessages: { ...state.statusMessages, [provider]: status === 'connected' ? state.cliStatus[provider]?.detail || '' : '' },
+      };
+    });
   },
   hydrateProject: (projectId) => {
     const migrateLegacyPreferences = readStorage(AI_PROJECT_MIGRATION_KEY) !== '1';
@@ -122,13 +131,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     writeStorage(projectPreferenceKey(projectId, 'model'), model);
     PROVIDERS.forEach((item) => writeStorage(projectPreferenceKey(projectId, `connection_${item}`), connectionMethod[item]));
     writeStorage(AI_PROJECT_MIGRATION_KEY, '1');
+    // A signed-in local CLI stays connected across restarts and project
+    // switches; an API credential still needs its explicit test.
+    const cliStatus = get().cliStatus;
+    const connectionStatus = PROVIDERS.reduce((all, item) => {
+      all[item] = statusFromDetectedCli(item, connectionMethod[item], cliStatus[item]);
+      return all;
+    }, providerMap<AiConnectionState>('unconfigured'));
     set({
       activeProjectId: projectId,
       provider,
       model,
       connectionMethod,
-      connectionStatus: providerMap<AiConnectionState>('unconfigured'),
-      statusMessages: providerMap(''),
+      connectionStatus,
+      statusMessages: PROVIDERS.reduce((all, item) => {
+        all[item] = connectionStatus[item] === 'connected' ? cliStatus[item]?.detail || '' : '';
+        return all;
+      }, providerMap('')),
     });
   },
   setApiKey: async (provider, key) => {
@@ -174,7 +193,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const statuses = await invokeTauriCommand<AiCliStatus[]>('detect_ai_clis');
       if (!isLatestAuthRequest('cli-detect', requestToken)) return;
-      set({ cliStatus: PROVIDERS.reduce((all, provider) => ({ ...all, [provider]: statuses.find((status) => status.provider === provider) || null }), providerMap<AiCliStatus | null>(null)) });
+      const cliStatus = PROVIDERS.reduce((all, provider) => ({ ...all, [provider]: statuses.find((status) => status.provider === provider) || null }), providerMap<AiCliStatus | null>(null));
+      set((state) => {
+        // Only fill in connections nobody has tested yet; an explicit test
+        // result (connected, error or still running) is never replaced.
+        const connectionStatus = { ...state.connectionStatus };
+        const statusMessages = { ...state.statusMessages };
+        for (const provider of PROVIDERS) {
+          if (connectionStatus[provider] !== 'unconfigured') continue;
+          connectionStatus[provider] = statusFromDetectedCli(provider, state.connectionMethod[provider], cliStatus[provider]);
+          if (connectionStatus[provider] === 'connected') statusMessages[provider] = cliStatus[provider]?.detail || '';
+        }
+        return { cliStatus, connectionStatus, statusMessages };
+      });
     } catch (error) {
       if (!isLatestAuthRequest('cli-detect', requestToken)) return;
       const message = error instanceof Error ? error.message : String(error);
