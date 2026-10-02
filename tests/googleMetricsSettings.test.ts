@@ -118,6 +118,23 @@ describe('general settings propagate into the active audit controls', () => {
     useSettingsStore.setState({ config: originalConfig });
   });
 
+  it('keeps the saved AI connection instead of the stale general-settings provider', async () => {
+    // The user picked Claude over the local CLI; the general settings record
+    // still carries the default provider because nothing ever updates it.
+    useAuthStore.getState().setProvider('claude');
+    useAuthStore.getState().setConnectionMethod('claude', 'local_cli');
+    settingsMocks.invokeTauriCommandMock.mockReset().mockResolvedValue({ ...originalConfig, ai_provider: 'openai', ai_model: 'gpt-4o' });
+    settingsMocks.getSecureValueMock.mockResolvedValue('');
+
+    await useSettingsStore.getState().loadConfig();
+
+    expect(useAuthStore.getState().provider).toBe('claude');
+    expect(useAuthStore.getState().connectionMethod.claude).toBe('local_cli');
+    expect(localStorage.getItem('seomi_ai_provider')).toBe('claude');
+    localStorage.removeItem('seomi_ai_provider');
+    useSettingsStore.setState({ config: originalConfig });
+  });
+
   it('immediately applies a changed default user agent and persists it', async () => {
     settingsMocks.invokeTauriCommandMock.mockReset().mockResolvedValue(undefined);
     await useSettingsStore.getState().updateConfig({ default_user_agent: 'googlebot_mobile' });

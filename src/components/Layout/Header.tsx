@@ -25,8 +25,9 @@ export const Header: React.FC = () => {
   const openModal = useUIStore((s) => s.openModal);
   const openCommandPalette = useUIStore((s) => s.openCommandPalette);
   const provider = useAuthStore((s) => s.provider);
-  const isProviderConnected = useAuthStore((s) => s.isProviderConnected);
-  const isConnected = isProviderConnected();
+  // Subscribe to the status itself: selecting the `isProviderConnected`
+  // function never re-renders when a connection is established later.
+  const isConnected = useAuthStore((s) => s.connectionStatus[s.provider] === 'connected');
   const [languageOpen, setLanguageOpen] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
 
