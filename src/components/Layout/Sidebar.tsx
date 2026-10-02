@@ -93,7 +93,6 @@ export const Sidebar: React.FC = () => {
   );
   const lastNavigatedTab = React.useRef(activeTab);
   const provider = useAuthStore((s) => s.provider);
-  const isProviderConnected = useAuthStore((s) => s.isProviderConnected);
 
   const savedKeywordsCount = useWorkspaceIndicatorsStore((s) => s.savedKeywordsCount);
   const trackedRanksCount = useWorkspaceIndicatorsStore((s) => s.trackedRanksCount);
@@ -115,7 +114,9 @@ export const Sidebar: React.FC = () => {
     persistNavigationSearch(activeProjectId, nextValue);
   };
 
-  const isConnected = isProviderConnected();
+  // Subscribe to the status itself: selecting the `isProviderConnected`
+  // function never re-renders when a connection is established later.
+  const isConnected = useAuthStore((s) => s.connectionStatus[s.provider] === 'connected');
   const providerName =
     provider === "claude"
       ? "Claude"
