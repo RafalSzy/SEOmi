@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useAsyncOperationScope } from '@/hooks/useAsyncOperationScope';
 import { z } from 'zod';
 import { readJsonRecord } from '@/services/storageContracts';
 import { writeJsonStorage } from '@/services/storage';
@@ -43,34 +44,50 @@ export const useEmbeddingClustering = (projectId: string | null, keywords: strin
   const [state, setState] = useState(() => loadEmbeddingSession(projectId));
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const runId = useRef(0);
+  const ownerKey = JSON.stringify([projectId, keywords, state.settings]);
+  const ownerToken = useMemo(() => Symbol(ownerKey), [ownerKey]);
+  const owner = useRef<symbol | null>(null);
+  const begin = useAsyncOperationScope(ownerKey);
+  useLayoutEffect(() => {
+    owner.current = ownerToken;
+    setIsRunning(false);
+    setError(null);
+    return () => { owner.current = null; };
+  }, [ownerToken]);
+  const ownsView = () => owner.current === ownerToken;
 
   useEffect(() => {
-    runId.current += 1;
     setState(loadEmbeddingSession(projectId));
     setIsRunning(false);
     setError(null);
   }, [projectId]);
 
   const persist = (next: typeof state) => {
+    if (!ownsView()) return;
     setState(next);
     if (projectId) writeJsonStorage(sessionKey(projectId), { ...next.settings, result: next.result });
   };
 
-  const updateSettings = (patch: Partial<EmbeddingSettings>) =>
+  const updateSettings = (patch: Partial<EmbeddingSettings>) => {
+    if (!ownsView()) return;
+    begin('clustering');
+    setIsRunning(false);
+    setError(null);
     persist({ settings: { ...state.settings, ...patch }, result: state.result });
+  };
 
   const run = async () => {
-    const id = ++runId.current;
+    if (!ownsView()) return;
+    const isCurrent = begin('clustering');
     setIsRunning(true);
     setError(null);
     try {
       const result = await clusterKeywordsByEmbedding(keywords, { ...state.settings });
-      if (id === runId.current) persist({ settings: state.settings, result });
+      if (isCurrent()) persist({ settings: state.settings, result });
     } catch (caught) {
-      if (id === runId.current) setError(caught instanceof Error ? caught.message : String(caught));
+      if (isCurrent()) setError(caught instanceof Error ? caught.message : String(caught));
     } finally {
-      if (id === runId.current) setIsRunning(false);
+      if (isCurrent()) setIsRunning(false);
     }
   };
 
