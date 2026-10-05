@@ -2080,3 +2080,16 @@ Added eight direct native contracts for all five scheduled worker commands, incl
 Fresh SHA256/AST/LLVM-validated nativeproduction:16054/19313lines=83.13%,1667/2115functions=78.82%,3415/4482branches=76.19%. Scheduled command facade itself87/91lines,7/9functions,23/26branches. Uncompiled Windows code is not measured. Evidence:/tmp/seomi-schedule-{sources.json,branches.lcov,llvm.json,production.lcov}; tests:/tmp/seomi-schedule-all-targets.log. No source/test mutations during either full coverage run.
 
 Remote refresh: no open issues/PRs; protectedmaster retains five strict contexts, admin enforcement, noforcepush/nodeletion. Coverage98%,completepublicassertions,extensionsand72/72remainOPEN;notagpublished.
+
+Fresh completed frontend measurement for scheduled/lexical batch:5337tests/673filesPASS; enforcing98%FAIL statements16066/16399=97.96%,lines12951/13177=98.28%,functions4707/4854=96.97%,branches13867/14691=94.39%. Log:/tmp/seomi-schedule-lexical-coverage98.log. Failed threshold is not fresh successful execution-inventory proof.
+
+
+### 2026-10-05 — delegated service/UI assertions and scheduled I/O boundaries
+
+Two workers added direct crawl-links table/external-check contracts and service contracts for audit metadata/structured/AMP problems, five backlink public functions and domain-age presentation. Root added structured-data empty/syntax/severity/raw evidence/truncation, settings/crawl navigation, rank-tracking draft/submit/cancel, PageSpeed/CrUX cache invalidation/busy/errors and query-normalization callbacks. Workerfocused18testsPASS;rootcomponent11testsPASS;combinedservice/link/config18testsPASS. TypeScript/changedESLint/diffPASS;MAXLOC1502313files/zero violations. All test files retain ordinary readable layout.
+
+Scheduled command errors cover non-directory storage, absent success result, invalid stored identifiers, corrupt results and disappeared metadata. A non-UTF8 filename fixture cannot be created on macOS (OS error92); that case is explicitly Linux-only and is not claimed tested on macOS. Nativefullnightlyalltargets825testsPASS (814library+11examples),stablefocused11PASS,strictClippyPASS. Freshsourcepinnedproduction16056/19313lines=83.14%,1667/2115functions=78.82%,3417/4482branches=76.24%. Artifacts:/tmp/seomi-schedule-final-{sources.json,branches.lcov,llvm.json,production.lcov}. UncompiledplatformcoverageOPEN.
+
+Fullfrontend98%measurementrunning:/tmp/seomi-delegated-coverage98.log. Original69/72andremaininggatesunchanged;notag/releasecompletionclaimed.
+
+Completed delegatedbatchfrontend:5366tests/683filesPASS;statements16092/16399=98.12%,lines12973/13177=98.45%meet98. Functions4727/4854=97.38%andbranches13924/14691=94.77%remainbelow98. Attheseunchangeddenominators31functionsand474branchhitsaremissing. Source/testeditsheldthroughmeasurement;failedgatecannotclaimsuccessfulfreshinventoryproof. No finaltag.
