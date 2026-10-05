@@ -1,4 +1,4 @@
-use tauri::WebviewWindow;
+use tauri::{Runtime, WebviewWindow};
 
 use super::rendered_crawler::RenderedArtifactKind;
 
@@ -14,8 +14,8 @@ pub(crate) use macos::capture_macos;
 #[cfg(target_os = "windows")]
 pub(crate) use windows::capture_windows;
 
-pub(crate) async fn capture_window_artifact(
-    window: &WebviewWindow,
+pub(crate) async fn capture_window_artifact<R: Runtime>(
+    window: &WebviewWindow<R>,
     kind: RenderedArtifactKind,
 ) -> Result<Vec<u8>, String> {
     #[cfg(target_os = "macos")]

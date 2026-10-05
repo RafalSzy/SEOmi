@@ -4,7 +4,7 @@ use std::sync::{
 };
 use tauri::{
     webview::{NewWindowResponse, PageLoadEvent, WebviewWindowBuilder},
-    AppHandle,
+    AppHandle, Runtime,
 };
 use tokio::sync::mpsc;
 
@@ -16,9 +16,9 @@ use crate::{
     services::browser_proxy::BrowserRequestProxy, utils::url_validator::validate_and_normalize_url,
 };
 
-impl RenderedCrawlerSession {
+impl<R: Runtime> RenderedCrawlerSession<R> {
     pub async fn open(
-        app: &AppHandle,
+        app: &AppHandle<R>,
         start_url: &str,
         base_host: &str,
         allow_subdomains: bool,

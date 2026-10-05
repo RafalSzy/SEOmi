@@ -77,6 +77,8 @@ mod command_tests;
 #[cfg(test)]
 mod joint_rows_tests;
 #[cfg(test)]
+mod rows_entry_tests;
+#[cfg(test)]
 mod rows_test_fixture;
 #[cfg(test)]
 mod rows_transport_tests;

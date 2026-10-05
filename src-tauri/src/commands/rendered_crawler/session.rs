@@ -1,10 +1,11 @@
+use tauri::Runtime;
 use tokio::sync::mpsc;
 
 use super::models::CaptureEvent;
 use crate::services::browser_proxy::BrowserRequestProxy;
 
-pub struct RenderedCrawlerSession {
-    pub(crate) window: tauri::WebviewWindow,
+pub struct RenderedCrawlerSession<R: Runtime = tauri::Wry> {
+    pub(crate) window: tauri::WebviewWindow<R>,
     pub(crate) proxy: Option<BrowserRequestProxy>,
     pub(crate) receiver: mpsc::Receiver<CaptureEvent>,
     pub(crate) nonce: String,

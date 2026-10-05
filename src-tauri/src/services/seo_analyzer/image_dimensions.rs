@@ -141,3 +141,7 @@ pub fn intrinsic_data_uri_dimensions(src: &str) -> Option<(usize, usize)> {
     }
     None
 }
+
+#[cfg(test)]
+#[path = "image_dimensions_tests.rs"]
+mod tests;

@@ -3,6 +3,7 @@ mod inputs;
 pub use inputs::ExtractPageSignalsInput;
 
 use scraper::Html;
+use tauri::Runtime;
 use url::Url;
 
 use super::super::{
@@ -30,7 +31,9 @@ pub struct AssembledPageSignals {
     pub images: Vec<CrawledImage>,
 }
 
-pub fn extract_page_signals(input: ExtractPageSignalsInput<'_>) -> AssembledPageSignals {
+pub fn extract_page_signals<R: Runtime>(
+    input: ExtractPageSignalsInput<'_, R>,
+) -> AssembledPageSignals {
     let ExtractPageSignalsInput {
         document,
         text,

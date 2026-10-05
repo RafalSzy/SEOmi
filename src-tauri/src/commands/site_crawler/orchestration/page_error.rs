@@ -4,10 +4,11 @@ use super::super::{
 };
 use super::setup::CrawlSetup;
 use super::state::CrawlLoopState;
+use tauri::Runtime;
 
-pub fn handle_page_error(
+pub fn handle_page_error<R: Runtime>(
     setup: &CrawlSetup,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
     current_url: &str,
     depth: usize,
     page_duration: u64,

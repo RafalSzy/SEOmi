@@ -1,5 +1,5 @@
 use std::time::{Duration, Instant};
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 use super::super::{
     control::{wait_for_crawl_cancellation, CrawlControl},
@@ -12,11 +12,11 @@ use super::setup::CrawlSetup;
 use super::state::CrawlLoopState;
 use crate::commands::rendered_crawler::{RenderOptions, RenderedCrawlerSession};
 
-pub async fn fetch_page_step(
-    app: &AppHandle,
+pub async fn fetch_page_step<R: Runtime>(
+    app: &AppHandle<R>,
     control: &CrawlControl,
     setup: &CrawlSetup,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
     robots_crawl_delay: Option<Duration>,
     current_url: &str,
 ) -> (Result<FetchedResponse, CrawlFetchFailure>, u64) {

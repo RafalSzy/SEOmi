@@ -9,7 +9,8 @@ fn loop_state_preserves_frontier_and_provenance_without_inventing_completed_work
         .collect();
     let mut sources = std::collections::HashMap::new();
     sources.insert("https://example.test/".into(), vec![source("start")]);
-    let state = CrawlLoopState::new(visited, queue, Vec::new(), sources, true, true);
+    let state: CrawlLoopState =
+        CrawlLoopState::new(visited, queue, Vec::new(), sources, true, true);
     assert!(state.visited.contains("https://example.test/"));
     assert_eq!(
         state.queue.front().unwrap(),

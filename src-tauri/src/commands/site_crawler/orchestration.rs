@@ -1,4 +1,4 @@
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 use super::{
     control::CrawlControl,
@@ -51,8 +51,8 @@ use state::CrawlLoopState;
 use summary::build_crawl_result;
 
 #[allow(clippy::too_many_arguments)]
-pub async fn crawl_site_with_control(
-    app: AppHandle,
+pub async fn crawl_site_with_control<R: Runtime>(
+    app: AppHandle<R>,
     control: &CrawlControl,
     start_url: String,
     max_pages: Option<usize>,
