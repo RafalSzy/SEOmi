@@ -2064,3 +2064,10 @@ Fresh completed full measurement: Test Files  667 passed (667); Tests  5281 pass
 Direct assertions cover exact/overbyte boundaries, Unicode, malformed/null/array bodies, absent bodies, stalled streams, late adapters and their aborted signals, synchronous fetch exceptions, HTTP error text privacy, settings bounds/defaults, batching and CLI/UI integration. 51targetedtests/5filesPASS,TypeScript/changed-fileESLint/diffPASS,MAXLOC1502295files/zero violations. Full enforcing98%measurement/build pending. These are explicit transport adapters/streams, not liveOllama evidence; full chat/connection/LAN desktop configuration remainOPEN. Originalaudit69/72/native98%/completeassertions/extensions/finaltag remainOPEN.
 
 Fresh full frontend: Test Files  669 passed (669); Tests  5307 passed (5307); enforcing98%FAIL statements16052/16397=97.89%,lines12944/13176=98.23%,functions4706/4853=96.97%,branches13835/14687=94.19%. BuildPASS;failedthresholddoesnotestablishsuccessfulfreshinventoryproof. Log:/tmp/seomi-ollama-coverage98.log. Original69/72/globalnative98%/completeassertions/extensions/finaltag remainOPEN.
+
+
+### 2026-10-05 — crawl readiness response and affected-page contracts
+
+- [x] GAP-268: Readiness counted HTTP0 as healthy and counted one page twice when both description and canonical were missing. Two RED cases confirmed the failures. FIXED: absent responses contribute to HTTP errors; metadata warning pages are counted once, separately from title errors. Sixteen readiness contracts and four CSV import contracts cover response bounds, indexability, robots, truncation, language/schema/rendered evidence, empty/headerless/quoted/multiline rows and URL deduplication. Focused25tests/4filesPASS; TypeScript/changed-fileESLint/MAXLOC1502297filesPASS.
+
+Fresh full frontend:5327tests/671filesPASS; enforcing98%FAIL: statements16059/16399=97.92%,lines12947/13177=98.25%,functions4707/4854=96.97%,branches13853/14691=94.29%. Log:/tmp/seomi-readiness-coverage98.log. Source/test changes held during measurement. Original69/72, native98%, complete public assertions, expanded features and tag remainOPEN.
