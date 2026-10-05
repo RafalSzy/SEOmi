@@ -119,5 +119,8 @@ mod transport_tests;
 mod validation_tests;
 
 #[cfg(test)]
+#[path = "pagespeed/command_tests.rs"]
+mod command_tests;
+#[cfg(test)]
 #[path = "pagespeed/metric_tests.rs"]
 mod metric_tests;

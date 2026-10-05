@@ -1,5 +1,6 @@
 import type { CrawledLink } from '@/types';
 import i18n from '@/i18n';
+import { csv } from './export/csv';
 
 export type CrawlLinkKindFilter = 'all' | 'internal' | 'external';
 export type CrawlLinkStatusFilter = 'all' | 'unchecked' | 'ok' | 'redirect' | 'error' | 'blocked';
@@ -49,12 +50,6 @@ export const filterAndSortCrawlLinks = (records: CrawlLinkRecord[], filters: Cra
     });
 };
 
-const csvCell = (value: unknown): string => {
-  const text = String(value ?? '');
-  const safe = /^[\t\r\n ]*[=+\-@]/.test(text) ? `'${text}` : text;
-  return `"${safe.replaceAll('"', '""')}"`;
-};
-
 export const crawlLinksCsv = (records: CrawlLinkRecord[]): string => {
   const headers = i18n.t('exportUi.headers.crawlLinksFiltered', { returnObjects: true });
   const rows: unknown[][] = [Array.isArray(headers) ? headers.map(String) : []];
@@ -71,5 +66,5 @@ export const crawlLinksCsv = (records: CrawlLinkRecord[]): string => {
     link.rel ?? '',
     link.source_excerpt ?? '',
   ]));
-  return rows.map((row) => row.map(csvCell).join(',')).join('\r\n');
+  return csv(rows);
 };

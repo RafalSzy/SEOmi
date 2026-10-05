@@ -69,6 +69,8 @@ mod content_1;
 mod content_2;
 #[path = "tests/content_3.rs"]
 mod content_3;
+#[path = "tests/control_svg.rs"]
+mod control_svg;
 #[path = "tests/duplicates.rs"]
 mod duplicates;
 #[path = "tests/hreflang_1.rs"]
@@ -87,6 +89,8 @@ mod navigation_1;
 mod navigation_2;
 #[path = "tests/relations.rs"]
 mod relations;
+#[path = "tests/resource_contracts.rs"]
+mod resource_contracts;
 #[path = "tests/resources_1.rs"]
 mod resources_1;
 #[path = "tests/resources_2.rs"]
