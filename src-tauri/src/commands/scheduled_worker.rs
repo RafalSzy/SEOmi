@@ -74,6 +74,7 @@ pub fn load_scheduled_execution<R: tauri::Runtime>(
     else {
         return Ok(None);
     };
+    validate_handoff_identity(&project_id, &schedule_id, &handoff)?;
     let result_file = result_path(&app, &project_id, &schedule_id)?;
     if handoff.succeeded {
         handoff.result = read_json::<Value>(&result_file, MAX_RESULT_BYTES)?;
@@ -109,6 +110,8 @@ pub fn list_scheduled_executions<R: tauri::Runtime>(
         if let Some(mut handoff) =
             read_json::<ScheduledExecutionHandoff>(&path, MAX_EXECUTION_BYTES)?
         {
+            let file_schedule_id = &name["scheduled_execution_".len()..name.len() - ".json".len()];
+            validate_handoff_identity(&project_id, file_schedule_id, &handoff)?;
             let result_file = result_path(&app, &project_id, &handoff.schedule_id)?;
             if handoff.succeeded {
                 handoff.result = read_json::<Value>(&result_file, MAX_RESULT_BYTES)?;

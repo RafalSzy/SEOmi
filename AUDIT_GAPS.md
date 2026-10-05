@@ -2110,3 +2110,15 @@ MCP: 92 real Node tests passed and 24 sources were remapped with source/runtime 
 Original audit remains 69/72. Native 98%, frontend branches 98%, complete public assertions, expanded features and final tagged release remain OPEN.
 
 Final guard-review native remeasurement passed all 833 tests and retained production counts: 16171/19373 lines, 1673/2126 functions, 3433/4482 branches. Hash/AST/LLVM validation passed. Artifacts: /tmp/seomi-three-agents-final-{sources.json,branches.lcov,llvm.json,production.lcov}. TypeScript, changed-file ESLint, strict Clippy, rustfmt, diff and MAX LOC gates passed. The 98% coverage gates and 72/72 objective remain incomplete.
+
+### Persistent delegation batch (2026-10-05)
+
+User requested persistent delegation with at most three subagents. The same UI, MCP and native agents are reused; source/test edits were frozen for final measurements. Direct UI assertions cover queue actions/counts/run states, performance timing boundaries, security evidence, accessibility selectors/source locations, provider unavailable/zero values and result-table branches. ValidationPageRow branches 14/14 and RankTrackingTableRow branches 24/24 passed focused coverage.
+
+Native regression tests first reproduced mismatched schedule/project identifiers. Scheduled execution now rejects manifests whose schedule identifier disagrees with the requested path before dispatch and after reload. Public handoff readers validate project and schedule identifiers against their storage path. Tests assert controlled errors, no premature executor dispatch, no re-registration and no result/handoff writes after manifest replacement. Scheduled worker 45 tests and strict Clippy/rustfmt passed.
+
+Fresh frontend: 5465 tests / 711 files passed. Statements 16166/16399 (98.57% reported), functions 4765/4854 (98.16% reported), lines 13033/13177 (98.90%) meet 98%. Branches 14051/14691 (95.64%) remain below 98%; 347 additional branch hits are needed at this denominator. Failed threshold invalidates successful fresh inventory evidence. Log: /tmp/seomi-persistent-three-frontend98.log.
+
+Fresh native: 838 tests passed (827 library and 11 examples). Hash/AST/LLVM validated production: lines 16192/19394, functions 1674/2127, branches 3441/4490. Artifacts: /tmp/seomi-persistent-three-{sources.json,branches.lcov,llvm.json,production.lcov}. Windows-only uncompiled code is not verified by this macOS measurement.
+
+Fresh MCP: 104 tests passed, 24 real Node source maps/runtime hashes validated. Statements 738/791 (93.30%), functions 122/129 (94.57%), branches 572/654 (87.46%); still below 98%. Log: /tmp/seomi-persistent-three-mcp-coverage.log. TypeScript and changed-file ESLint passed; MAX LOC 150: 2350 files, zero violations; diff check passed. Original audit remains 69/72; complete assertions, 98% gates, expanded scope and final tagged release remain OPEN.

@@ -42,6 +42,19 @@ pub(super) fn result_path<R: tauri::Runtime>(
         .join(format!("scheduled_result_{schedule_id}.json")))
 }
 
+pub(super) fn validate_handoff_identity(
+    project_id: &str,
+    schedule_id: &str,
+    handoff: &ScheduledExecutionHandoff,
+) -> Result<(), String> {
+    validate_project_and_schedule(project_id, schedule_id)?;
+    validate_project_and_schedule(&handoff.project_id, &handoff.schedule_id)?;
+    if handoff.project_id != project_id || handoff.schedule_id != schedule_id {
+        return Err("Scheduled execution handoff does not match its storage path.".into());
+    }
+    Ok(())
+}
+
 pub(super) fn write_json_atomic(
     path: &std::path::Path,
     value: &Value,

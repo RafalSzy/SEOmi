@@ -87,4 +87,13 @@ describe('ValidationPageRow direct contracts', () => {
     expect(screen.getByText('Unclosed div')).toBeTruthy();
     expect(screen.getAllByText(/<div>/)).toHaveLength(2);
   });
+
+  it('omits the limited-result marker for complete findings', () => {
+    show({ html_validation_findings: [], html_validation_truncated: false }, [
+      { code: 'valid', severity: 'Warning', message: 'Complete result' },
+    ]);
+    expect(screen.getByText(/crawlDeepUi\.findingCountShort/)).toBeTruthy();
+    expect(screen.queryByText('crawlDeepUi.limitedResult')).toBeNull();
+    expect(screen.queryByText('crawlDeepUi.validationTruncatedNote')).toBeNull();
+  });
 });

@@ -4,6 +4,7 @@ use serde_json::Value;
 use tauri::test::mock_builder;
 
 mod dispatcher;
+mod identity;
 mod runner_guards;
 mod runner_outcomes;
 

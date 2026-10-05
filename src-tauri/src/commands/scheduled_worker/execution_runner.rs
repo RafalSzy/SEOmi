@@ -26,6 +26,9 @@ where
         return Err("Scheduled task manifest was not found.".into());
     };
     validate_manifest(&project_id, &task)?;
+    if task.schedule_id != schedule_id {
+        return Err("Scheduled task manifest does not match requested schedule.".into());
+    }
     if !task.enabled {
         let _ = unregister(project_id, schedule_id);
         return Ok(());
@@ -69,6 +72,9 @@ where
         return Err("Scheduled task manifest was removed while it was running.".into());
     };
     validate_manifest(&project_id, &latest_task)?;
+    if latest_task.schedule_id != schedule_id {
+        return Err("Scheduled task manifest does not match requested schedule.".into());
+    }
     let next_run_at = finalize_task(&mut latest_task, execution.clone(), succeeded)?;
     write_json_atomic(
         &path,

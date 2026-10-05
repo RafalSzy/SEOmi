@@ -1,5 +1,6 @@
 use super::super::super::lock::acquire_scheduled_lock;
-use super::super::super::storage::task_path;
+use super::super::super::models::MAX_EXECUTION_BYTES;
+use super::super::super::storage::{task_path, write_json_atomic};
 use super::super::runner::run_scheduled_task_with;
 use super::{fixture, store, task};
 use serde_json::Value;
@@ -103,4 +104,37 @@ async fn removed_manifest_after_execution_is_reported_and_unregistered() {
         result.unwrap_err(),
         "Scheduled task manifest was removed while it was running."
     );
+}
+
+#[tokio::test]
+async fn manifest_schedule_id_must_match_the_requested_path_before_execution() {
+    let app = fixture();
+    let path = task_path(&app.handle(), "project-1", "schedule-1").unwrap();
+    let mut mismatched = task("page-audit");
+    mismatched.schedule_id = "schedule-2".into();
+    write_json_atomic(
+        &path,
+        &serde_json::to_value(mismatched).unwrap(),
+        MAX_EXECUTION_BYTES,
+    )
+    .unwrap();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let seen = calls.clone();
+    let result = run_scheduled_task_with(
+        app.handle(),
+        "project-1".into(),
+        "schedule-1".into(),
+        move |_| {
+            seen.fetch_add(1, Ordering::SeqCst);
+            async { Ok(Value::Null) }
+        },
+        |_, _, _, _| Ok(()),
+        |_, _| Ok(()),
+    )
+    .await;
+    assert_eq!(
+        result.unwrap_err(),
+        "Scheduled task manifest does not match requested schedule."
+    );
+    assert_eq!(calls.load(Ordering::SeqCst), 0);
 }
