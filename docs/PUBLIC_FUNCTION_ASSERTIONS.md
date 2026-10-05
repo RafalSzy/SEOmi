@@ -27,7 +27,7 @@ The same tests also make direct assertions for Claude/Codex configuration, activ
 - The complete source-matched inventory must be regenerated after the full suites and coverage runs.
 - Factory-returned callables need their own contract evidence; do not assign invented function bodies or execution counts.
 - All other public TS/native functions still require an assertion review. The table above is deliberately incremental.
-- Coverage thresholds >=95% (user amendment, 2026-10-04) and the global LOC150 gate remain independent completion requirements. Earlier >99% measurements are retained as historical evidence.
+- Coverage thresholds >=98% (user amendment, 2026-10-05) and the global LOC150 gate remain independent completion requirements. Earlier >99% measurements are retained as historical evidence.
 
 ## MCP boundaries and canonical integration
 
