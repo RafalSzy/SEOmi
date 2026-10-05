@@ -34,6 +34,13 @@ describe('audit result tabs accessibility contract', () => {
   });
 
   it('connects the selected tab to its content panel and updates the relationship on navigation', async () => {
+    // This test verifies ARIA relationships. Load the real chunks before
+    // rendering so cold CI transforms are not bounded by findByRole's 1s.
+    await Promise.all([
+      import('@/components/Results/AuditTabs'),
+      import('@/components/Results/Overview'),
+      import('@/components/Results/MetadataTable'),
+    ]);
     render(<MainContent />);
 
     const overviewTab = await screen.findByRole('tab', { name: 'Overview' });
@@ -55,7 +62,7 @@ describe('audit result tabs accessibility contract', () => {
 
     render(<MainContent />);
 
-    expect(await screen.findByText(/DataForSEO/)).not.toBeNull();
+    expect((await screen.findAllByText(/DataForSEO/)).length).toBeGreaterThan(0);
     expect(screen.getByText('example.com')).not.toBeNull();
     expect(screen.queryByText(/No audit in this project/i)).toBeNull();
   });

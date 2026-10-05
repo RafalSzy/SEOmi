@@ -116,7 +116,7 @@
       "canonicalMissingDetail": "No rel=\"canonical\" declaration was found.",
       "canonicalTarget": "Canonical target returns an HTTP error",
       "canonicalTargetDetail": "The checked target returned HTTP {{status}}.",
-    "canonicalUnverified": "Canonical target was not verified",
+      "canonicalUnverified": "Canonical target was not verified",
       "viewportMissing": "Missing viewport",
       "viewportMissingDetail": "No meta name=\"viewport\" was found.",
       "indexingBlocked": "Indexing is blocked",
@@ -193,7 +193,8 @@
       "differentProperties": "Snapshots belong to different Search Console properties.",
       "differentFilters": "Snapshots use different Search Console filters; choose a snapshot with the same scope.",
       "samePeriod": "Choose two different periods.",
-      "overlapping": "Periods overlap or are out of order; choose disjoint ranges."
+      "overlapping": "Periods overlap or are out of order; choose disjoint ranges.",
+      "differentDurations": "Выберите периоды с одинаковым числом дней для сравнения трафика."
     },
     "reportTemplates": {
       "builtInName": "Site health · full report",
@@ -211,6 +212,7 @@
       "articleHeadlineOmitted": "Узел статьи пропущен: нет заголовка просканированной страницы для headline."
     },
     "backup": {
+      "tooLarge": "Резервная копия превышает лимит импорта.",
       "missingProject": "Backup file does not contain a project object.",
       "format": "Unsupported project backup format.",
       "secrets": "Backup has an invalid secrets policy.",
@@ -477,7 +479,8 @@
       "missingSignal": "Not observed now: {{value}}",
       "sharedTerms": "Общие термины: {{value}}",
       "weightedJaccard": "Взвешенный Jaccard: {{value}}",
-      "missing": "none"
+      "missing": "none",
+      "queryChangedTitle": "Observed query tokens changed: {{query}}"
     },
     "contentBrief": {
       "draftTitle": "Content draft",
@@ -535,6 +538,7 @@
     "settings": {
       "projectDataforseo": "Select a project before configuring DataForSEO.",
       "projectGoogle": "Select a project before configuring Google performance APIs.",
+      "configLoadFailed": "Не удалось загрузить сохранённые настройки. Текущие настройки сохранены. Восстановите корректный файл конфигурации и повторите попытку.",
       "configSaveFailed": "Не удалось сохранить конфигурацию в серверной части."
     },
     "export": {
@@ -552,7 +556,7 @@
       "none": "none",
       "available": "available",
       "unavailable": "unavailable",
-    "canonicalUnverified": "canonical unverified",
+      "canonicalUnverified": "canonical unverified",
       "notReciprocal": "not reciprocal",
       "reciprocityUnverified": "reciprocity unverified",
       "checked": "checked",
@@ -581,7 +585,11 @@
       "cliMissing": "Local CLI was not found on PATH.",
       "credentialSaved": "Credential saved in the system keychain. Test it to verify access.",
       "checkingConnection": "Checking connection…",
-      "localClientRequired": "{{provider}} is not configured to use its local subscription client."
+      "localClientRequired": "{{provider}} is not configured to use its local subscription client.",
+      "responseHidden": "Provider response withheld.",
+      "invalidResponse": "The AI provider returned an invalid response.",
+      "responseTooLarge": "The AI provider response exceeds the 1 MiB limit.",
+      "refused": "{{provider}} отклонил этот запрос. Переформулируйте его или выберите другую модель."
     },
     "pagespeed": {
       "projectRequired": "Choose a project before starting the measurement."
@@ -1614,7 +1622,8 @@
       "start": "starting address",
       "seed": "seed list",
       "sitemap": "sitemap",
-      "link": "internal link"
+      "link": "internal link",
+      "resume": "Saved crawl frontier"
     },
     "bottomNavigationAria": "Quick semantic map navigation",
     "bottomViewsAria": "Map views at bottom",
@@ -3326,7 +3335,11 @@
     "currentTier": "Текущий план",
     "upgradePro": "Перейти на Pro",
     "creditsLeft": "Остаток кредитов ИИ",
-    "connectAccount": "Подключить аккаунт"
+    "connectAccount": "Подключить аккаунт",
+    "refreshModels": "Обновить список моделей",
+    "modelsFromProvider": "{{count}} моделей из API провайдера",
+    "modelsDefault": "Модели по умолчанию — проверьте ключ API, чтобы загрузить ваши модели",
+    "modelsUnavailable": "Не удалось загрузить модели провайдера; показан последний известный список."
   },
   "schedules": {
     "saveError": "Unable to save the schedule.",
@@ -3460,7 +3473,14 @@
     "noPageRows": "The API returned no page rows for this date range.",
     "snapshotSaved": "Saved snapshot {{start}} — {{end}}.",
     "snapshotSaveError": "Could not save snapshot.",
-    "fullScope": "full scope"
+    "fullScope": "full scope",
+    "unmatchedDescription": "Строки, наблюдаемые только в одном периоде, не сравниваются. Отсутствие в загруженных данных не означает нулевой трафик или подтверждённую потерю.",
+    "unmatched": {
+      "baselineQueries": "Запросы только в базовом периоде: {{count}}",
+      "currentQueries": "Запросы только в текущем периоде: {{count}}",
+      "baselinePages": "URL только в базовом периоде: {{count}}",
+      "currentPages": "URL только в текущем периоде: {{count}}"
+    }
   },
   "settings": {
     "close": "Close settings",
@@ -3488,16 +3508,7 @@
     "ai": {
       "openai": "OpenAI / Codex",
       "claude": "Anthropic Claude",
-      "gemini": "Google Gemini",
-      "gpt4o": "GPT-4o (high-converting copy)",
-      "gpt4oMini": "GPT-4o Mini (fast and lightweight)",
-      "o3Mini": "o3-mini (reasoning model)",
-      "claude37": "Claude 3.7 Sonnet (latest)",
-      "claude35": "Claude 3.5 Sonnet",
-      "claudeHaiku": "Claude 3.5 Haiku",
-      "geminiFlash": "Gemini 2.0 Flash (fastest)",
-      "geminiPro": "Gemini 2.0 Pro",
-      "gemini15": "Gemini 1.5 Pro"
+      "gemini": "Google Gemini"
     },
     "renderWorker": {
       "title": "Локальный модуль рендеринга",
@@ -3536,7 +3547,7 @@
       "technicalDirectives": "Technical Directives & Robots",
       "canonical": "Canonical URL",
       "notSpecified": "Not specified",
-    "canonicalUnverified": "Target not verified",
+      "canonicalUnverified": "Target not verified",
       "robots": "Robots Directive",
       "robotsDefault": "index, follow (default)",
       "viewport": "Viewport (mobile)",
@@ -3549,7 +3560,18 @@
       "author": "Author",
       "technologies": "Detected technologies",
       "documentHttpSignals": "document or HTTP response signals only",
-      "technologyCategories": {"cmsPlatform": "CMS-платформа", "cmsGenerator": "CMS / генератор", "cms": "CMS", "commercePlatform": "Коммерческая платформа", "javascriptFramework": "JavaScript-фреймворк", "tagManager": "Менеджер тегов", "analyticsTag": "Аналитика / тег", "javascriptLibrary": "JavaScript-библиотека", "cssFramework": "CSS / UI-фреймворк", "analytics": "Аналитика"},
+      "technologyCategories": {
+        "cmsPlatform": "CMS-платформа",
+        "cmsGenerator": "CMS / генератор",
+        "cms": "CMS",
+        "commercePlatform": "Коммерческая платформа",
+        "javascriptFramework": "JavaScript-фреймворк",
+        "tagManager": "Менеджер тегов",
+        "analyticsTag": "Аналитика / тег",
+        "javascriptLibrary": "JavaScript-библиотека",
+        "cssFramework": "CSS / UI-фреймворк",
+        "analytics": "Аналитика"
+      },
       "confirmed": "confirmed",
       "heuristic": "heuristic",
       "favicons": "Declared favicons",
@@ -4301,6 +4323,7 @@
     }
   },
   "exportUi": {
+    "invalidPdf": "The generator returned invalid PDF data. Please try again.",
     "labels": {
       "field": "Field",
       "value": "Value",
@@ -4613,7 +4636,7 @@
       "bytes": "{{value}} B",
       "internal": "internal",
       "external": "external",
-    "canonicalUnverified": "canonical unverified"
+      "canonicalUnverified": "canonical unverified"
     }
   },
   "uiUnits": {
@@ -4652,5 +4675,90 @@
     "run": "Run {{count}}",
     "legacyRecognition": "Legacy brand recognition run",
     "legacyNote": "This saved run included the brand in the question. It is not an unprompted visibility measurement."
+  },
+  "gscOpportunities": {
+    "title": "GSC opportunities",
+    "near": "Queries just beyond TOP10 (10–20)",
+    "ctr": "CTR below observed peers",
+    "empty": "No rows meet the evidence thresholds.",
+    "benchmark": "CTR {{actual}}% · peers {{expected}}% ({{count}} queries)",
+    "method": "Average position is a period metric. CTR uses other queries within ±1 position, at least 3 peers and 300 peer impressions. Signals require review; brand, intent and SERP features can differ.",
+    "aiOverview": "Google includes AI Overviews and AI Mode in total Web traffic. This report cannot separate their metrics.",
+    "source": "Google documentation"
+  },
+  "gscCannibalization": {
+    "title": "Возможная каннибализация запросов",
+    "method": "Минимум два URL с 20 показами и 10% наблюдаемых показов запроса. Это сигналы для проверки, а не подтверждённая каннибализация.",
+    "unavailable": "Нет наблюдаемых пар запрос/URL. Обновите Search Console.",
+    "invalid": "Некорректные совместные наблюдения; обновите отчёт.",
+    "empty": "Нет запросов с двумя URL, достигающими порогов.",
+    "limited": "Google или локальное хранилище могут обрезать данные. Доли относятся только к наблюдаемым строкам.",
+    "previous": "Назад",
+    "next": "Далее"
+  },
+  "embeddingClusteringUi": {
+    "methodLabel": "Метод группировки",
+    "methods": {
+      "embeddings": {
+        "title": "Локальные эмбеддинги (бесплатно)",
+        "description": "Группирует фразы по смыслу на этом компьютере. Без ключа API и затрат; Ollama — по желанию."
+      },
+      "serp": {
+        "title": "Пересечение SERP (DataForSEO, платно)",
+        "description": "Группирует фразы, у которых в выдаче Google есть общие URL. Нужны учётные данные DataForSEO; каждая новая фраза — платный запрос."
+      }
+    },
+    "settingsTitle": "Настройки эмбеддингов",
+    "description": "Фразы преобразуются в эмбеддинги и группируются по сходству. Локальная модель работает офлайн для польского и английского; Ollama добавляет нейросетевую модель на этом компьютере.",
+    "provider": "Модель эмбеддингов",
+    "providers": {
+      "local": "Локальная (офлайн)",
+      "ollama": "Ollama",
+      "hybrid": "Локальная + Ollama"
+    },
+    "threshold": "Порог сходства: {{value}}",
+    "ollamaModel": "Модель эмбеддингов Ollama",
+    "labelModel": "Модель Ollama для названий групп (необязательно)",
+    "labelModelPlaceholder": "например, llama3.2 — оставьте пустым, чтобы пропустить",
+    "ollamaHint": "Ollama должна работать на этом компьютере по адресу 127.0.0.1:11434 с загруженной моделью (ollama pull <model>).",
+    "run": "Сгруппировать фразы",
+    "running": "Группировка…",
+    "free": "{{count}} фраз · бесплатно, без запросов к платным API",
+    "tooMany": "Не более {{max}} фраз за запуск",
+    "resultTitle": "Группы по эмбеддингам",
+    "resultMeta": "{{model}} · порог {{threshold}} · {{date}}",
+    "keywordCount": "{{count}} фраз",
+    "cohesion": "связность {{value}}%"
+  },
+  "dataforseoCost": {
+    "meterLabel": "Расходы DataForSEO",
+    "lastCall": "Последний вызов: {{cost}} ({{endpoint}})",
+    "noCallsYet": "В этом месяце вызовов DataForSEO ещё не было",
+    "monthNoLimit": "Этот месяц: {{spent}} · {{calls}} вызовов · лимит = баланс аккаунта",
+    "monthWithLimit": "Этот месяц: {{spent}} из {{limit}} ({{percent}}%)",
+    "balance": "Баланс ≈ {{balance}}",
+    "warning": "Приближается месячный лимит",
+    "exceeded": "Месячный лимит исчерпан — платные запросы заблокированы",
+    "invalidLimit": "Месячный лимит должен быть числом от 0 до 100 000 USD.",
+    "invalidWarn": "Порог предупреждения должен быть целым числом от 1 до 100.",
+    "limitReached": "Достигнут месячный лимит DataForSEO: израсходовано {{spent}} USD из {{limit}} USD; следующий запрос обойдётся примерно в {{expected}} USD. Увеличьте лимит в Настройки → API или дождитесь следующего месяца.",
+    "selectProject": "Выберите проект, чтобы увидеть расходы DataForSEO и задать лимит.",
+    "limitRemoved": "Месячный лимит удалён.",
+    "limitSaved": "Месячный лимит сохранён: {{limit}}.",
+    "balanceUnavailable": "DataForSEO не вернул баланс аккаунта.",
+    "settingsTitle": "Расходы, баланс и месячный лимит",
+    "balanceLabel": "Баланс аккаунта (оценка)",
+    "balanceChecked": "{{balance}} по данным на {{date}} минус последующие вызовы",
+    "monthLabel": "Потрачено в {{month}}",
+    "calls": "{{count}} вызовов",
+    "remainingLabel": "Осталось в этом месяце",
+    "noLimit": "До суммы баланса аккаунта",
+    "checkBalance": "Проверить баланс",
+    "limitLabel": "Месячный лимит (USD)",
+    "warnLabel": "Предупреждать с (% лимита)",
+    "limitHelp": "Лимит действует для этого проекта и обнуляется 1-го числа каждого месяца. Без месячного лимита лимитом служит баланс аккаунта: если оценочного баланса не хватает на следующий вызов, запросы блокируются до отправки. Стоимость каждого вызова — сумма, которую сообщает DataForSEO.",
+    "saveLimit": "Сохранить лимит",
+    "noLimitOption": "Без лимита — до суммы баланса аккаунта",
+    "balanceExhausted": "Баланс DataForSEO исчерпан (осталось ≈ {{balance}} USD, следующему запросу нужно около {{expected}} USD). Пополните аккаунт и нажмите «Проверить баланс»."
   }
 }

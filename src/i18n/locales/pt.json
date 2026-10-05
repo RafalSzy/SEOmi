@@ -116,7 +116,7 @@
       "canonicalMissingDetail": "No rel=\"canonical\" declaration was found.",
       "canonicalTarget": "Canonical target returns an HTTP error",
       "canonicalTargetDetail": "The checked target returned HTTP {{status}}.",
-    "canonicalUnverified": "Canonical target was not verified",
+      "canonicalUnverified": "Canonical target was not verified",
       "viewportMissing": "Missing viewport",
       "viewportMissingDetail": "No meta name=\"viewport\" was found.",
       "indexingBlocked": "Indexing is blocked",
@@ -193,7 +193,8 @@
       "differentProperties": "Snapshots belong to different Search Console properties.",
       "differentFilters": "Snapshots use different Search Console filters; choose a snapshot with the same scope.",
       "samePeriod": "Choose two different periods.",
-      "overlapping": "Periods overlap or are out of order; choose disjoint ranges."
+      "overlapping": "Periods overlap or are out of order; choose disjoint ranges.",
+      "differentDurations": "Escolha períodos com o mesmo número de dias para comparar o tráfego."
     },
     "reportTemplates": {
       "builtInName": "Site health · full report",
@@ -211,6 +212,7 @@
       "articleHeadlineOmitted": "Nó de artigo omitido: não há título de página rastreada disponível para o headline."
     },
     "backup": {
+      "tooLarge": "O backup excede o limite de importação.",
       "missingProject": "Backup file does not contain a project object.",
       "format": "Unsupported project backup format.",
       "secrets": "Backup has an invalid secrets policy.",
@@ -477,7 +479,8 @@
       "missingSignal": "Not observed now: {{value}}",
       "sharedTerms": "Termos partilhados: {{value}}",
       "weightedJaccard": "Jaccard ponderado: {{value}}",
-      "missing": "none"
+      "missing": "none",
+      "queryChangedTitle": "Observed query tokens changed: {{query}}"
     },
     "contentBrief": {
       "draftTitle": "Content draft",
@@ -535,6 +538,7 @@
     "settings": {
       "projectDataforseo": "Select a project before configuring DataForSEO.",
       "projectGoogle": "Select a project before configuring Google performance APIs.",
+      "configLoadFailed": "Não foi possível carregar as configurações salvas. As configurações atuais foram mantidas. Restaure um arquivo válido e tente novamente.",
       "configSaveFailed": "Não foi possível guardar a configuração no backend."
     },
     "export": {
@@ -552,7 +556,7 @@
       "none": "none",
       "available": "available",
       "unavailable": "unavailable",
-    "canonicalUnverified": "canonical unverified",
+      "canonicalUnverified": "canonical unverified",
       "notReciprocal": "not reciprocal",
       "reciprocityUnverified": "reciprocity unverified",
       "checked": "checked",
@@ -581,7 +585,11 @@
       "cliMissing": "Local CLI was not found on PATH.",
       "credentialSaved": "Credential saved in the system keychain. Test it to verify access.",
       "checkingConnection": "Checking connection…",
-      "localClientRequired": "{{provider}} is not configured to use its local subscription client."
+      "localClientRequired": "{{provider}} is not configured to use its local subscription client.",
+      "responseHidden": "Provider response withheld.",
+      "invalidResponse": "The AI provider returned an invalid response.",
+      "responseTooLarge": "The AI provider response exceeds the 1 MiB limit.",
+      "refused": "{{provider}} recusou esta solicitação. Reformule-a ou escolha outro modelo."
     },
     "pagespeed": {
       "projectRequired": "Choose a project before starting the measurement."
@@ -1614,7 +1622,8 @@
       "start": "starting address",
       "seed": "seed list",
       "sitemap": "sitemap",
-      "link": "internal link"
+      "link": "internal link",
+      "resume": "Saved crawl frontier"
     },
     "bottomNavigationAria": "Quick semantic map navigation",
     "bottomViewsAria": "Map views at bottom",
@@ -3326,7 +3335,11 @@
     "currentTier": "Plano Atual",
     "upgradePro": "Atualizar para Pro",
     "creditsLeft": "Créditos IA Restantes",
-    "connectAccount": "Conectar Conta"
+    "connectAccount": "Conectar Conta",
+    "refreshModels": "Atualizar lista de modelos",
+    "modelsFromProvider": "{{count}} modelos da API do fornecedor",
+    "modelsDefault": "Modelos padrão — teste a chave de API para carregar os seus modelos",
+    "modelsUnavailable": "Não foi possível carregar os modelos do fornecedor; é mostrada a última lista conhecida."
   },
   "schedules": {
     "saveError": "Unable to save the schedule.",
@@ -3460,7 +3473,14 @@
     "noPageRows": "The API returned no page rows for this date range.",
     "snapshotSaved": "Saved snapshot {{start}} — {{end}}.",
     "snapshotSaveError": "Could not save snapshot.",
-    "fullScope": "full scope"
+    "fullScope": "full scope",
+    "unmatchedDescription": "As linhas observadas num único período não são comparadas. A ausência nos dados carregados não significa tráfego zero nem uma perda confirmada.",
+    "unmatched": {
+      "baselineQueries": "Consultas apenas no período de referência: {{count}}",
+      "currentQueries": "Consultas apenas no período atual: {{count}}",
+      "baselinePages": "URLs apenas no período de referência: {{count}}",
+      "currentPages": "URLs apenas no período atual: {{count}}"
+    }
   },
   "settings": {
     "close": "Close settings",
@@ -3488,16 +3508,7 @@
     "ai": {
       "openai": "OpenAI / Codex",
       "claude": "Anthropic Claude",
-      "gemini": "Google Gemini",
-      "gpt4o": "GPT-4o (high-converting copy)",
-      "gpt4oMini": "GPT-4o Mini (fast and lightweight)",
-      "o3Mini": "o3-mini (reasoning model)",
-      "claude37": "Claude 3.7 Sonnet (latest)",
-      "claude35": "Claude 3.5 Sonnet",
-      "claudeHaiku": "Claude 3.5 Haiku",
-      "geminiFlash": "Gemini 2.0 Flash (fastest)",
-      "geminiPro": "Gemini 2.0 Pro",
-      "gemini15": "Gemini 1.5 Pro"
+      "gemini": "Google Gemini"
     },
     "renderWorker": {
       "title": "Worker de renderização local",
@@ -3536,7 +3547,7 @@
       "technicalDirectives": "Technical Directives & Robots",
       "canonical": "Canonical URL",
       "notSpecified": "Not specified",
-    "canonicalUnverified": "Target not verified",
+      "canonicalUnverified": "Target not verified",
       "robots": "Robots Directive",
       "robotsDefault": "index, follow (default)",
       "viewport": "Viewport (mobile)",
@@ -3549,7 +3560,18 @@
       "author": "Author",
       "technologies": "Detected technologies",
       "documentHttpSignals": "document or HTTP response signals only",
-      "technologyCategories": {"cmsPlatform": "Plataforma CMS", "cmsGenerator": "CMS / gerador", "cms": "CMS", "commercePlatform": "Plataforma de comércio", "javascriptFramework": "Framework JavaScript", "tagManager": "Gestor de etiquetas", "analyticsTag": "Análise / etiqueta", "javascriptLibrary": "Biblioteca JavaScript", "cssFramework": "Framework CSS / UI", "analytics": "Análise"},
+      "technologyCategories": {
+        "cmsPlatform": "Plataforma CMS",
+        "cmsGenerator": "CMS / gerador",
+        "cms": "CMS",
+        "commercePlatform": "Plataforma de comércio",
+        "javascriptFramework": "Framework JavaScript",
+        "tagManager": "Gestor de etiquetas",
+        "analyticsTag": "Análise / etiqueta",
+        "javascriptLibrary": "Biblioteca JavaScript",
+        "cssFramework": "Framework CSS / UI",
+        "analytics": "Análise"
+      },
       "confirmed": "confirmed",
       "heuristic": "heuristic",
       "favicons": "Declared favicons",
@@ -4301,6 +4323,7 @@
     }
   },
   "exportUi": {
+    "invalidPdf": "The generator returned invalid PDF data. Please try again.",
     "labels": {
       "field": "Field",
       "value": "Value",
@@ -4613,7 +4636,7 @@
       "bytes": "{{value}} B",
       "internal": "internal",
       "external": "external",
-    "canonicalUnverified": "canonical unverified"
+      "canonicalUnverified": "canonical unverified"
     }
   },
   "uiUnits": {
@@ -4652,5 +4675,90 @@
     "run": "Run {{count}}",
     "legacyRecognition": "Legacy brand recognition run",
     "legacyNote": "This saved run included the brand in the question. It is not an unprompted visibility measurement."
+  },
+  "gscOpportunities": {
+    "title": "GSC opportunities",
+    "near": "Queries just beyond TOP10 (10–20)",
+    "ctr": "CTR below observed peers",
+    "empty": "No rows meet the evidence thresholds.",
+    "benchmark": "CTR {{actual}}% · peers {{expected}}% ({{count}} queries)",
+    "method": "Average position is a period metric. CTR uses other queries within ±1 position, at least 3 peers and 300 peer impressions. Signals require review; brand, intent and SERP features can differ.",
+    "aiOverview": "Google includes AI Overviews and AI Mode in total Web traffic. This report cannot separate their metrics.",
+    "source": "Google documentation"
+  },
+  "gscCannibalization": {
+    "title": "Possível canibalização de consultas",
+    "method": "Pelo menos dois URLs com 20 impressões e 10% das impressões observadas. Sinais para análise, não canibalização confirmada.",
+    "unavailable": "Sem pares consulta/URL observados. Atualize o Search Console.",
+    "invalid": "Observações conjuntas inválidas; atualize o relatório.",
+    "empty": "Nenhuma consulta tem dois URLs que atinjam os limites.",
+    "limited": "O Google ou o armazenamento local podem truncar os dados. As percentagens referem-se às linhas observadas.",
+    "previous": "Anterior",
+    "next": "Seguinte"
+  },
+  "embeddingClusteringUi": {
+    "methodLabel": "Método de agrupamento",
+    "methods": {
+      "embeddings": {
+        "title": "Embeddings locais (grátis)",
+        "description": "Agrupa frases por significado neste computador. Sem chave de API nem custos; o Ollama é opcional."
+      },
+      "serp": {
+        "title": "Sobreposição de SERP (DataForSEO, pago)",
+        "description": "Agrupa frases cujos resultados do Google partilham URLs. Requer credenciais DataForSEO; cada frase nova é um pedido pago."
+      }
+    },
+    "settingsTitle": "Definições de embeddings",
+    "description": "As frases são convertidas em embeddings e agrupadas por semelhança. O modelo local funciona offline para polaco e inglês; o Ollama acrescenta um modelo neural neste computador.",
+    "provider": "Modelo de embeddings",
+    "providers": {
+      "local": "Local (offline)",
+      "ollama": "Ollama",
+      "hybrid": "Local + Ollama"
+    },
+    "threshold": "Limiar de semelhança: {{value}}",
+    "ollamaModel": "Modelo de embeddings do Ollama",
+    "labelModel": "Modelo do Ollama para nomes de grupos (opcional)",
+    "labelModelPlaceholder": "ex. llama3.2 — deixe vazio para ignorar",
+    "ollamaHint": "O Ollama tem de estar a correr neste computador em 127.0.0.1:11434 com o modelo descarregado (ollama pull <model>).",
+    "run": "Agrupar frases",
+    "running": "A agrupar…",
+    "free": "{{count}} frases · grátis, sem pedidos a APIs pagas",
+    "tooMany": "Até {{max}} frases por execução",
+    "resultTitle": "Grupos por embeddings",
+    "resultMeta": "{{model}} · limiar {{threshold}} · {{date}}",
+    "keywordCount": "{{count}} frases",
+    "cohesion": "coesão {{value}}%"
+  },
+  "dataforseoCost": {
+    "meterLabel": "Custos DataForSEO",
+    "lastCall": "Última chamada: {{cost}} ({{endpoint}})",
+    "noCallsYet": "Ainda não há chamadas DataForSEO este mês",
+    "monthNoLimit": "Este mês: {{spent}} · {{calls}} chamadas · limite = saldo da conta",
+    "monthWithLimit": "Este mês: {{spent}} de {{limit}} ({{percent}}%)",
+    "balance": "Saldo ≈ {{balance}}",
+    "warning": "A aproximar-se do limite mensal",
+    "exceeded": "Limite mensal atingido — os pedidos pagos estão bloqueados",
+    "invalidLimit": "O limite mensal tem de ser um número entre 0 e 100 000 USD.",
+    "invalidWarn": "O limiar de aviso tem de ser um número inteiro entre 1 e 100.",
+    "limitReached": "Limite mensal DataForSEO atingido: usados {{spent}} USD de {{limit}} USD; o próximo pedido custará cerca de {{expected}} USD. Aumente o limite em Definições → API ou aguarde pelo próximo mês.",
+    "selectProject": "Escolha um projeto para ver os custos DataForSEO e definir um limite.",
+    "limitRemoved": "Limite mensal removido.",
+    "limitSaved": "Limite mensal guardado: {{limit}}.",
+    "balanceUnavailable": "O DataForSEO não devolveu o saldo da conta.",
+    "settingsTitle": "Custos, saldo e limite mensal",
+    "balanceLabel": "Saldo da conta (estimado)",
+    "balanceChecked": "{{balance}} lido em {{date}}, menos as chamadas posteriores",
+    "monthLabel": "Gasto em {{month}}",
+    "calls": "{{count}} chamadas",
+    "remainingLabel": "Restante este mês",
+    "noLimit": "Até ao saldo da conta",
+    "checkBalance": "Verificar saldo",
+    "limitLabel": "Limite mensal (USD)",
+    "warnLabel": "Avisar a partir de (% do limite)",
+    "limitHelp": "O limite aplica-se a este projeto e reinicia no dia 1 de cada mês. Sem limite mensal, o saldo da conta é o limite: se o saldo estimado não cobrir a próxima chamada, os pedidos são bloqueados antes do envio. O custo de cada chamada é o valor indicado pelo DataForSEO.",
+    "saveLimit": "Guardar limite",
+    "noLimitOption": "Sem limite — até ao saldo da conta",
+    "balanceExhausted": "O saldo DataForSEO esgotou-se (restam ≈ {{balance}} USD e o próximo pedido precisa de cerca de {{expected}} USD). Carregue a conta e clique em «Verificar saldo»."
   }
 }

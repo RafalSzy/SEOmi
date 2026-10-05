@@ -7,6 +7,8 @@ release/
 
 # Node
 node_modules/
+/node_modules
+/mcp-server/node_modules
 dist/
 dist-ssr/
 *.local
@@ -14,6 +16,7 @@ dist-ssr/
 .yarn/
 .pnpm-store/
 .vite/
+.vitest/
 .turbo/
 .next/
 .output/
@@ -187,3 +190,6 @@ venv/
 **/*[Mm][Aa][Tt][Rr][Ii][Xx]*.txt
 **/*[Mm][Aa][Tt][Rr][Ii][Xx]*.pdf
 **/*[Mm][Aa][Tt][Rr][Ii][Xx]*.docx
+
+# Explicitly requested, versioned audit register.
+!/AUDIT_GAPS.md
