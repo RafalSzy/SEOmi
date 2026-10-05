@@ -2122,3 +2122,15 @@ Fresh frontend: 5465 tests / 711 files passed. Statements 16166/16399 (98.57% re
 Fresh native: 838 tests passed (827 library and 11 examples). Hash/AST/LLVM validated production: lines 16192/19394, functions 1674/2127, branches 3441/4490. Artifacts: /tmp/seomi-persistent-three-{sources.json,branches.lcov,llvm.json,production.lcov}. Windows-only uncompiled code is not verified by this macOS measurement.
 
 Fresh MCP: 104 tests passed, 24 real Node source maps/runtime hashes validated. Statements 738/791 (93.30%), functions 122/129 (94.57%), branches 572/654 (87.46%); still below 98%. Log: /tmp/seomi-persistent-three-mcp-coverage.log. TypeScript and changed-file ESLint passed; MAX LOC 150: 2350 files, zero violations; diff check passed. Original audit remains 69/72; complete assertions, 98% gates, expanded scope and final tagged release remain OPEN.
+
+### Delegated contracts continuation (2026-10-05)
+
+Same three agents reused. New direct contracts cover SiteAudit state panels, architecture-map selection/preferences/orphans, sidebar keyboard/project switching and navigation actions/badges, media evidence, content metrics/terms/fingerprints and backlink pagination. Four root modules measured 100% each metric (56 statements, 127 branches, 27 functions, 53 lines); SiteAudit and architecture state also passed 100% targeted coverage. Orphan assertions check an explicit URL list rather than an empty-list-compatible predicate, and store snapshots are restored.
+
+Native tests invoke actual Tauri crawler control handlers and assert real cancel/pause/resume state plus the exact cancelled-pause error. Dedicated security-policy assertions cover information disclosure and cross-origin headers. MCP adds CLI validation and defensive transport/error/lifecycle contracts. Review removed fixed local repo paths and converted CLI file URLs with fileURLToPath for portable Windows paths.
+
+Fresh source-frozen frontend: 5499 tests / 718 files passed; statements 16175/16399 (98.63%), functions 4768/4854 (98.22%), lines 13040/13177 (98.96%), branches 14099/14691 (95.97%). Branch target98 fails; 299 additional hits are required at this denominator, and failed threshold is not successful inventory evidence. Log: /tmp/seomi-contracts-next-frontend98.log.
+
+Fresh native: 841 tests passed (830 library + 11 examples). Validated production lines 16246/19394, functions 1679/2127, branches 3450/4490. Artifacts: /tmp/seomi-contracts-next-{sources.json,branches.lcov,llvm.json,production.lcov}. macOS does not prove uncompiled Windows code.
+
+Fresh MCP after frontend report cleanup: 115 tests passed and 24 sources remapped with matching source/runtime hashes. Statements 749/791 (94.69%), functions 122/129 (94.57%), branches 589/654 (90.06%). Log: /tmp/seomi-contracts-next-mcp.log. Stable report copies /tmp/seomi-contracts-next-{frontend,mcp}-final.json retained. TypeScript, changed-file ESLint, strict native Clippy/rustfmt and diff checks passed; MAX LOC 150: 2361 files, zero violations. Original69/72, native/global98%, complete public assertions, extended feature scope and final tag remain OPEN.

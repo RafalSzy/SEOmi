@@ -112,3 +112,28 @@ test('marks an HTML stream truncated when the byte limit is reached without Cont
   assert.equal(result.response_body_truncated, true);
   assert.equal(result.semantic_content_source, 'unavailable');
 });
+
+test('returns a body-less 204 as the final response', async () => {
+  response(204);
+  const result = await auditPublicUrl('http://1.1.1.1/no-content', 2_000);
+  assert.equal(result.status, 204);
+  assert.equal(result.response_body_truncated, false);
+  assert.deepEqual(result.redirects, []);
+  assert.equal(result.semantic_content_source, 'unavailable');
+});
+
+test('does not follow Location on an error status', async () => {
+  response(404, { location: 'http://8.8.8.8/ignored', 'content-type': 'text/html' }, '<title>Missing</title>');
+  const result = await auditPublicUrl('http://1.1.1.1/missing', 2_000);
+  assert.equal(result.status, 404);
+  assert.deepEqual(result.redirects, []);
+  assert.equal(result.final_url, 'http://1.1.1.1/missing');
+  assert.equal(result.title, 'Missing');
+});
+
+test('rejects unsafe or malformed redirect targets before the next request', async () => {
+  response(302, { location: 'http://127.0.0.1/private' });
+  await assert.rejects(auditPublicUrl('http://1.1.1.1/start', 2_000), /private|loopback/i);
+  response(302, { location: 'http://[invalid' });
+  await assert.rejects(auditPublicUrl('http://1.1.1.1/start', 2_000), /invalid URL/i);
+});

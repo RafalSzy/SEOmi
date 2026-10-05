@@ -4,6 +4,9 @@ use std::collections::HashMap;
 mod core_rules;
 mod policy_rules;
 #[cfg(test)]
+#[path = "security_checker/policy_tests.rs"]
+mod policy_tests;
+#[cfg(test)]
 mod tests;
 
 pub use core_rules::*;

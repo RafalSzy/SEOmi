@@ -86,3 +86,11 @@ test('rejects a listener collision while preserving the original running handle'
   const health = await globalThis.fetch(endpoint(api.port, '/health'), { headers: { authorization: `Bearer ${token}` } });
   assert.equal(health.status, 200);
 });
+
+test('starts with default runners and propagates a repeated close error', async () => {
+  api = await startLocalApi({ token, logger: () => {} });
+  const handle = api;
+  await api.close();
+  api = undefined;
+  await assert.rejects(handle.close(), /not running|ERR_SERVER_NOT_RUNNING/i);
+});

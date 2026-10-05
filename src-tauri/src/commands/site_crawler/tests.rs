@@ -79,6 +79,8 @@ mod hreflang_2;
 mod html_1;
 #[path = "tests/html_2.rs"]
 mod html_2;
+#[path = "tests/ipc.rs"]
+mod ipc;
 #[path = "tests/navigation_1.rs"]
 mod navigation_1;
 #[path = "tests/navigation_2.rs"]
