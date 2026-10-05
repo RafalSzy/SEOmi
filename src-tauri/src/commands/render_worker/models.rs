@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Arc, time::Duration};
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 use tokio::{
     sync::{oneshot, Mutex},
     task::JoinHandle,
@@ -36,12 +36,23 @@ pub(super) struct WorkerHandle {
     pub(super) task: JoinHandle<()>,
 }
 
-#[derive(Debug, Clone)]
-pub(super) struct WorkerShared {
-    pub(super) app: AppHandle,
+#[derive(Debug)]
+pub(super) struct WorkerShared<R: Runtime = tauri::Wry> {
+    pub(super) app: AppHandle<R>,
     pub(super) token: Arc<Mutex<Option<String>>>,
     pub(super) expires_at: Instant,
     pub(super) expires_at_text: String,
+}
+
+impl<R: Runtime> Clone for WorkerShared<R> {
+    fn clone(&self) -> Self {
+        Self {
+            app: self.app.clone(),
+            token: Arc::clone(&self.token),
+            expires_at: self.expires_at,
+            expires_at_text: self.expires_at_text.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]

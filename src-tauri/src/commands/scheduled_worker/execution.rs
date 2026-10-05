@@ -2,7 +2,7 @@ use super::models::ScheduledTaskManifest;
 use crate::commands::{scheduler, seo_audit, site_crawler};
 use serde_json::Value;
 use std::future::Future;
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 #[path = "execution_runner.rs"]
 mod runner;
@@ -35,8 +35,8 @@ where
     }
 }
 
-async fn execute_task(
-    app: &AppHandle,
+async fn execute_task<R: Runtime>(
+    app: &AppHandle<R>,
     project_id: &str,
     task: &ScheduledTaskManifest,
 ) -> Result<Value, String> {
@@ -72,8 +72,8 @@ async fn execute_task(
     execute_task_with(task.clone(), audit, crawl).await
 }
 
-pub async fn run_scheduled_task(
-    app: AppHandle,
+pub async fn run_scheduled_task<R: Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     schedule_id: String,
 ) -> Result<(), String> {

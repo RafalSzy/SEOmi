@@ -28,23 +28,7 @@ pub(super) async fn connect_search_console(
         .local_addr()
         .map_err(|error| format!("Unable to determine the OAuth port: {error}"))?
         .port();
-    let redirect_uri = format!("http://127.0.0.1:{port}/oauth2callback");
-    let state = Uuid::new_v4().simple().to_string();
-    let verifier = format!("{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple());
-    let challenge = code_challenge(&verifier);
-    let mut auth_url = Url::parse("https://accounts.google.com/o/oauth2/v2/auth")
-        .map_err(|error| error.to_string())?;
-    auth_url
-        .query_pairs_mut()
-        .append_pair("client_id", &client_id)
-        .append_pair("redirect_uri", &redirect_uri)
-        .append_pair("response_type", "code")
-        .append_pair("scope", OAUTH_SCOPE)
-        .append_pair("state", &state)
-        .append_pair("code_challenge", &challenge)
-        .append_pair("code_challenge_method", "S256")
-        .append_pair("access_type", "offline")
-        .append_pair("prompt", "consent");
+    let (redirect_uri, state, verifier, auth_url) = oauth_request(&client_id, port)?;
     send_browser_to(auth_url.as_str())?;
     let code = receive_oauth_code(listener, &state).await?;
     let client = reqwest::Client::builder()
@@ -87,4 +71,28 @@ pub(super) async fn connect_search_console(
             .map_err(|error| format!("Unable to save the Search Console client secret: {error}"))?;
     }
     Ok(properties)
+}
+
+pub(super) fn oauth_request(
+    client_id: &str,
+    port: u16,
+) -> Result<(String, String, String, Url), String> {
+    let redirect_uri = format!("http://127.0.0.1:{port}/oauth2callback");
+    let state = Uuid::new_v4().simple().to_string();
+    let verifier = format!("{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple());
+    let challenge = code_challenge(&verifier);
+    let mut auth_url = Url::parse("https://accounts.google.com/o/oauth2/v2/auth")
+        .map_err(|error| error.to_string())?;
+    auth_url
+        .query_pairs_mut()
+        .append_pair("client_id", client_id)
+        .append_pair("redirect_uri", &redirect_uri)
+        .append_pair("response_type", "code")
+        .append_pair("scope", OAUTH_SCOPE)
+        .append_pair("state", &state)
+        .append_pair("code_challenge", &challenge)
+        .append_pair("code_challenge_method", "S256")
+        .append_pair("access_type", "offline")
+        .append_pair("prompt", "consent");
+    Ok((redirect_uri, state, verifier, auth_url))
 }

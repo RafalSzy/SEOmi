@@ -7,6 +7,7 @@ use uuid::Uuid;
 
 mod control;
 mod rate_limiter;
+mod request;
 
 pub use control::AuditControl;
 use rate_limiter::audit_rate_limiter;
@@ -40,20 +41,18 @@ pub async fn inspect_url(
     let ua = user_agents::resolve_user_agent(user_agent.as_deref());
     let timeout = timeout_secs.unwrap_or(15).clamp(3, 60);
     let request_id = normalize_request_id(request_id);
-    let cancellation = control.register(&request_id);
-
-    let fetch_result = tokio::select! {
-        _ = cancellation.notified() => {
-            control.finish(&request_id);
-            return Err("Audit cancelled by user.".to_string());
-        }
-        result = fetch_and_analyze(&validated_url, &ua, timeout, max_redirects.unwrap_or(10), verify_ssl.unwrap_or(true)) => {
-            result.map_err(|e| format!("Network request failed: {}", e))?
-        }
-    };
-    let audit_data = fetch_result;
-    control.finish(&request_id);
-    Ok(audit_data)
+    request::run_controlled(&control, &request_id, async {
+        fetch_and_analyze(
+            &validated_url,
+            &ua,
+            timeout,
+            max_redirects.unwrap_or(10),
+            verify_ssl.unwrap_or(true),
+        )
+        .await
+        .map_err(|error| format!("Network request failed: {error}"))
+    })
+    .await
 }
 
 pub async fn inspect_url_headless(

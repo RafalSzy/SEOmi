@@ -10,6 +10,8 @@ mod inspection;
 mod mapping;
 mod models;
 mod performance;
+mod performance_source;
+mod performance_transport;
 mod pkce;
 mod properties;
 mod requests;
@@ -75,13 +77,25 @@ mod callback_tests;
 #[cfg(test)]
 mod command_tests;
 #[cfg(test)]
+#[path = "search_console/connect_entry_tests.rs"]
+mod connect_entry_tests;
+#[cfg(test)]
 mod joint_rows_tests;
+#[cfg(test)]
+#[path = "search_console/performance_entry_tests.rs"]
+mod performance_entry_tests;
+#[cfg(test)]
+#[path = "search_console/performance_fixture.rs"]
+mod performance_fixture;
 #[cfg(test)]
 mod rows_entry_tests;
 #[cfg(test)]
 mod rows_test_fixture;
 #[cfg(test)]
 mod rows_transport_tests;
+#[cfg(test)]
+#[path = "search_console/token_entry_tests.rs"]
+mod token_entry_tests;
 #[cfg(test)]
 mod token_transport_tests;
 #[cfg(test)]

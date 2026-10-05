@@ -10,6 +10,12 @@ pub mod text_utils;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+mod tests_edges;
+
+#[cfg(test)]
+mod tests_tables;
+
 use base64::Engine;
 use serde_json::Value;
 

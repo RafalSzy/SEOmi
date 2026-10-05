@@ -15,6 +15,27 @@ pub(super) async fn exchange_code(
     redirect_uri: &str,
     client_secret: Option<&str>,
 ) -> Result<TokenResponse, String> {
+    exchange_code_at(
+        client,
+        TOKEN_URL,
+        client_id,
+        code,
+        verifier,
+        redirect_uri,
+        client_secret,
+    )
+    .await
+}
+
+pub(super) async fn exchange_code_at(
+    client: &reqwest::Client,
+    token_url: &str,
+    client_id: &str,
+    code: &str,
+    verifier: &str,
+    redirect_uri: &str,
+    client_secret: Option<&str>,
+) -> Result<TokenResponse, String> {
     let mut form = vec![
         ("client_id", client_id.to_string()),
         ("code", code.to_string()),
@@ -26,7 +47,7 @@ pub(super) async fn exchange_code(
         form.push(("client_secret", secret.to_string()));
     }
     let response = client
-        .post(TOKEN_URL)
+        .post(token_url)
         .form(&form)
         .send()
         .await
@@ -48,16 +69,33 @@ pub(super) async fn refresh_access_token(
         .ok()
         .and_then(|key| secret_entry(&key).ok())
         .and_then(|entry| entry.get_password().ok());
+    refresh_access_token_at(
+        client,
+        TOKEN_URL,
+        client_id,
+        &refresh_token,
+        client_secret.as_deref(),
+    )
+    .await
+}
+
+pub(super) async fn refresh_access_token_at(
+    client: &reqwest::Client,
+    token_url: &str,
+    client_id: &str,
+    refresh_token: &str,
+    client_secret: Option<&str>,
+) -> Result<String, String> {
     let mut form = vec![
         ("client_id", client_id.to_string()),
-        ("refresh_token", refresh_token),
+        ("refresh_token", refresh_token.to_string()),
         ("grant_type", "refresh_token".to_string()),
     ];
     if let Some(secret) = client_secret.filter(|value| !value.trim().is_empty()) {
-        form.push(("client_secret", secret));
+        form.push(("client_secret", secret.to_string()));
     }
     let response = client
-        .post(TOKEN_URL)
+        .post(token_url)
         .form(&form)
         .send()
         .await
@@ -84,5 +122,12 @@ pub(super) async fn authorized_json(
     request: reqwest::RequestBuilder,
 ) -> Result<Value, String> {
     let access_token = refresh_access_token(client, project_id, client_id).await?;
-    token_json(&access_token, request).await
+    authorized_json_with_access_token(&access_token, request).await
+}
+
+pub(super) async fn authorized_json_with_access_token(
+    access_token: &str,
+    request: reqwest::RequestBuilder,
+) -> Result<Value, String> {
+    token_json(access_token, request).await
 }

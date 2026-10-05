@@ -1,6 +1,6 @@
 use tauri::{
     webview::{NewWindowResponse, PageLoadEvent, WebviewWindowBuilder},
-    AppHandle,
+    AppHandle, Runtime,
 };
 
 use super::models::{PREVIEW_NEEDLE_MAX_CHARS, PREVIEW_SELECTOR_MAX_CHARS};
@@ -28,8 +28,8 @@ pub(crate) fn normalize_preview_value(
 }
 
 #[tauri::command]
-pub async fn open_rendered_element_preview(
-    app: AppHandle,
+pub async fn open_rendered_element_preview<R: Runtime>(
+    app: AppHandle<R>,
     url: String,
     selector: String,
     needle: Option<String>,
