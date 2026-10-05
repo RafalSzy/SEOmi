@@ -12,8 +12,8 @@ use tauri::AppHandle;
 #[path = "storage_tests.rs"]
 mod tests;
 
-pub(super) fn task_path(
-    app: &AppHandle,
+pub(super) fn task_path<R: tauri::Runtime>(
+    app: &AppHandle<R>,
     project_id: &str,
     schedule_id: &str,
 ) -> Result<PathBuf, String> {
@@ -22,8 +22,8 @@ pub(super) fn task_path(
         .join(format!("scheduled_task_{schedule_id}.json")))
 }
 
-pub(super) fn execution_path(
-    app: &AppHandle,
+pub(super) fn execution_path<R: tauri::Runtime>(
+    app: &AppHandle<R>,
     project_id: &str,
     schedule_id: &str,
 ) -> Result<PathBuf, String> {
@@ -32,8 +32,8 @@ pub(super) fn execution_path(
         .join(format!("scheduled_execution_{schedule_id}.json")))
 }
 
-pub(super) fn result_path(
-    app: &AppHandle,
+pub(super) fn result_path<R: tauri::Runtime>(
+    app: &AppHandle<R>,
     project_id: &str,
     schedule_id: &str,
 ) -> Result<PathBuf, String> {

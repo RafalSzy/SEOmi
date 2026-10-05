@@ -29,8 +29,8 @@ use storage::*;
 use tauri::AppHandle;
 
 #[tauri::command]
-pub fn save_scheduled_task(
-    app: AppHandle,
+pub fn save_scheduled_task<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     task: ScheduledTaskManifest,
 ) -> Result<(), String> {
@@ -44,8 +44,8 @@ pub fn save_scheduled_task(
 }
 
 #[tauri::command]
-pub fn delete_scheduled_task(
-    app: AppHandle,
+pub fn delete_scheduled_task<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     schedule_id: String,
 ) -> Result<(), String> {
@@ -63,8 +63,8 @@ pub fn delete_scheduled_task(
 }
 
 #[tauri::command]
-pub fn load_scheduled_execution(
-    app: AppHandle,
+pub fn load_scheduled_execution<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     schedule_id: String,
 ) -> Result<Option<ScheduledExecutionHandoff>, String> {
@@ -82,8 +82,8 @@ pub fn load_scheduled_execution(
 }
 
 #[tauri::command]
-pub fn list_scheduled_executions(
-    app: AppHandle,
+pub fn list_scheduled_executions<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
 ) -> Result<Vec<ScheduledExecutionHandoff>, String> {
     if !valid_identifier(&project_id) {
@@ -122,8 +122,8 @@ pub fn list_scheduled_executions(
 }
 
 #[tauri::command]
-pub fn acknowledge_scheduled_execution(
-    app: AppHandle,
+pub fn acknowledge_scheduled_execution<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     schedule_id: String,
 ) -> Result<(), String> {
@@ -140,3 +140,7 @@ pub fn acknowledge_scheduled_execution(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "scheduled_worker/command_tests/mod.rs"]
+mod command_tests;

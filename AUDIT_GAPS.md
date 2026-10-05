@@ -2071,3 +2071,12 @@ Fresh full frontend: Test Files  669 passed (669); Tests  5307 passed (5307); en
 - [x] GAP-268: Readiness counted HTTP0 as healthy and counted one page twice when both description and canonical were missing. Two RED cases confirmed the failures. FIXED: absent responses contribute to HTTP errors; metadata warning pages are counted once, separately from title errors. Sixteen readiness contracts and four CSV import contracts cover response bounds, indexability, robots, truncation, language/schema/rendered evidence, empty/headerless/quoted/multiline rows and URL deduplication. Focused25tests/4filesPASS; TypeScript/changed-fileESLint/MAXLOC1502297filesPASS.
 
 Fresh full frontend:5327tests/671filesPASS; enforcing98%FAIL: statements16059/16399=97.92%,lines12947/13177=98.25%,functions4707/4854=96.97%,branches13853/14691=94.29%. Log:/tmp/seomi-readiness-coverage98.log. Source/test changes held during measurement. Original69/72, native98%, complete public assertions, expanded features and tag remainOPEN.
+
+
+### 2026-10-05 — direct scheduled-command and lexical evidence contracts
+
+Added eight direct native contracts for all five scheduled worker commands, including real isolated filesystem persistence/cleanup and registered IPC camelCase serialization. Runtime-generic handles enable MockRuntime while retaining the production runtime. Invalid identifiers, corrupt result/metadata, absent successful results, failed handoffs, idempotent cleanup, directory errors, ordering and twenty-record bound are asserted. Added ten frontend contracts for literal keyphrase evidence clipping and lexical link eligibility/normalization/weak overlap/dense cap. Focusedfrontend16/4filesPASS; TypeScript/ESLint/MAXLOC1502303files/diffPASS. Nativealltargets822testsPASS;strictClippyPASS. ReadinessbuildPASS.
+
+Fresh SHA256/AST/LLVM-validated nativeproduction:16054/19313lines=83.13%,1667/2115functions=78.82%,3415/4482branches=76.19%. Scheduled command facade itself87/91lines,7/9functions,23/26branches. Uncompiled Windows code is not measured. Evidence:/tmp/seomi-schedule-{sources.json,branches.lcov,llvm.json,production.lcov}; tests:/tmp/seomi-schedule-all-targets.log. No source/test mutations during either full coverage run.
+
+Remote refresh: no open issues/PRs; protectedmaster retains five strict contexts, admin enforcement, noforcepush/nodeletion. Coverage98%,completepublicassertions,extensionsand72/72remainOPEN;notagpublished.
