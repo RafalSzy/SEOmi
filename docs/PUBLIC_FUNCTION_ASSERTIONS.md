@@ -248,3 +248,19 @@ Final4012frontendtests/523filesPASS. Results evidence hook100%allfourmetrics:89s
 18 new native tests directly exercise run_audit_queue_with, conditional storage mutation and finalization, plus production run_audit_queue identifier/absent-queue guards. Real project-scoped FS and queue commands assert result payloads, selected URL/agent, attempt/status/error/timestamp updates, unrelated projects, ineligible states, malformed snapshots, concurrent execution lock, late failure/success after deletion/replacement/identical restoration, stop during inspection and finalization, bounded errors, result-write failures, generation/legacy/error paths and exact scheduler retirement IDs/nonretirement. Typed synthetic page observations execute the actual analyzer; inspector and scheduler seams explicitly avoid live provider/host scheduler actions. Two initial ownership RED cases plus overflow/final-stop RED cases precede corresponding fixes. Public worker full live inspection and platform runtime evidence remain separate requirements; filesystem publication is conditional, not a crash-atomic transaction across multiple files.
 
 803all-targetRusttestsPASS (792lib+11examples), stable/nightly;fmt/strictClippy/productionlibcheck/diffPASS;MAXLOC1502109files/zero violations. Production15885/19259lines82.48%,1645/2103functions78.22%,3358/4450branches75.46% after source-hash/AST/LLVM validation. current_state/finish/owner have full measured source coverage; remaining defensive/production adapter paths stay counted. Frontend unchanged from4049PASS/global95%FAIL. Complete public assertions, global95%, extensions and final release remainOPEN. Artifacts:/tmp/seomi-queue-final-{sources.json,branches.lcov,llvm.json,production.lcov,production.lcov.summary.json}.
+
+## Semantic term inflection contracts
+
+| Public function | Direct test | Asserted behavior |
+| --- | --- | --- |
+| `semanticTermKey` | `tests/semanticText.test.ts` | Polish case/number forms and regular English plurals share one key, short stems stay intact, unknown languages only fold diacritics |
+| `isSemanticNoiseTerm` | `tests/semanticText.test.ts` | Polish/English function words, navigation chrome, date fragments and number-dominated tokens are rejected; alphanumeric acronyms and every word of the previous crawler list keep their old outcome |
+| `isSemanticTopicalStatus` | `tests/semanticText.test.ts` | 2xx and unreported (0/null/undefined) statuses are topical; 1xx, 3xx, 4xx and 5xx are not |
+| `semanticPageLanguage` | `tests/semanticText.test.ts` | crawler grouping language first, declared language for older crawls, absent values preserved |
+| `uniqueSemanticTerms` | `tests/semanticText.test.ts` | first form per inflected word, no merging without a known language |
+| `buildTermInventory` | `tests/semanticMapTerms.test.ts` | per-page keys, noise and non-2xx exclusion, displayed form chosen by page count then length |
+| `termsFor`, `termCoverage` | `tests/polishInflectionEvidence.test.ts` | key to first observed form, query tokens matched across inflections |
+| `semantic_term_key`, `semantic_status_is_topical`, `semantic_noise_token` | `src-tauri/src/commands/site_crawler/tests/semantic_terms_2.rs` | the same suffix rules as the TypeScript helper, topical status bounds, previous stopwords preserved |
+| `extract_semantic_terms`, `semantic_term_language` | `src-tauri/src/commands/site_crawler/tests/semantic_terms_1.rs`, `orchestration/tests/page_semantic_language.rs` | merged inflections reported in the most frequent form, declared-then-inferred language, serialized `semantic_language`, no terms for redirect/error responses |
+
+The TypeScript callables above are executed under the frontend suite with a static test reference in the regenerated inventory. The suffix rules are a lexical heuristic for regular Polish and English forms, not a morphological analyser; irregular forms are not merged.

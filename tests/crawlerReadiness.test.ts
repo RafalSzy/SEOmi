@@ -79,4 +79,22 @@ describe('buildCrawlerReadiness', () => {
     expect(rendered?.status).toBe('pass');
     expect(rendered?.evidence).toContain('browser-rendered');
   });
+
+  it('does not report error pages as missing semantic terms because the crawler skips them', () => {
+    const report = buildCrawlerReadiness(baseResult({
+      pages: [
+        baseResult().pages[0],
+        { ...baseResult().pages[1], http_status: 404, semantic_terms: [] },
+      ],
+    }));
+    const semantics = report.checks.find((check) => check.id === 'content-semantics');
+    expect(semantics?.status).toBe('pass');
+    expect(semantics?.affectedPages).toBe(0);
+    expect(semantics?.evidenceParams).toEqual({ withTerms: 1, withoutTerms: 0 });
+
+    const onlyErrors = buildCrawlerReadiness(baseResult({
+      pages: baseResult().pages.map((page) => ({ ...page, http_status: 404, semantic_terms: [] })),
+    }));
+    expect(onlyErrors.checks.find((check) => check.id === 'content-semantics')?.status).toBe('unknown');
+  });
 });

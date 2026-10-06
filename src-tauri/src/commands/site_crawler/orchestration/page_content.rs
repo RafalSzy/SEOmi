@@ -8,6 +8,7 @@ use super::super::{
     content_metrics::{content_metrics, ContentMetrics},
     models::{CrawledDuplicateHeading, CrawledPageIssue},
     semantic_chrome::has_semantic_content_root,
+    semantic_terms::{semantic_status_is_topical, semantic_term_language},
     semantics::{extract_semantic_excerpts, extract_semantic_terms, semantic_content_source},
     simhash::content_simhash,
 };
@@ -22,6 +23,7 @@ pub struct PageContentOutcome {
     pub reading_time_minutes: Option<usize>,
     pub content_simhash: Option<String>,
     pub semantic_terms: Vec<String>,
+    pub semantic_language: Option<String>,
     pub semantic_excerpts: Vec<String>,
     pub has_primary_content_root: bool,
     pub semantic_content_source: String,
@@ -38,6 +40,7 @@ pub fn extract_page_content(input: ExtractPageContentInput<'_>) -> PageContentOu
     let ExtractPageContentInput {
         document,
         body_len,
+        status,
         is_html,
         body_truncated,
         body_read_failed,
@@ -70,8 +73,13 @@ pub fn extract_page_content(input: ExtractPageContentInput<'_>) -> PageContentOu
         ContentMetrics::default()
     };
     let content_simhash = is_html.then(|| content_simhash(document)).flatten();
-    let semantic_terms = if is_html {
-        extract_semantic_terms(document)
+    let semantic_language = if is_html {
+        semantic_term_language(document, document_language.as_deref())
+    } else {
+        None
+    };
+    let semantic_terms = if is_html && semantic_status_is_topical(status) {
+        extract_semantic_terms(document, semantic_language.as_deref())
     } else {
         Vec::new()
     };
@@ -107,6 +115,7 @@ pub fn extract_page_content(input: ExtractPageContentInput<'_>) -> PageContentOu
         reading_time_minutes: cm.reading_time_minutes,
         content_simhash,
         semantic_terms,
+        semantic_language,
         semantic_excerpts,
         has_primary_content_root,
         semantic_content_source,

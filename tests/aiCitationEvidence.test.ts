@@ -63,4 +63,12 @@ describe('AI citation crawl evidence', () => {
     expect(matchAiCitationToCrawl('javascript:alert(1)', run([]))).toMatchObject({ matched: false, normalizedUrl: null });
     expect(matchAiCitationToCrawl('https://example.test/page', null)).toMatchObject({ matched: false, normalizedUrl: 'https://example.test/page' });
   });
+
+  it('matches Polish page terms to a response that uses other inflections of them', () => {
+    const snapshot = run([{ url: 'https://example.test/oferta', final_url: 'https://example.test/oferta', title: 'Oferta', document_language: 'pl', semantic_terms: ['szkolenia', 'navigatora', 'sprzedaży'], http_status: 200, indexability_status: 'index', redirect_chain: [] }]);
+    const context = matchAiCitationToCrawl('https://example.test/oferta', snapshot, 'Szkolenie z Sales Navigator poprawia wyniki sprzedaży.').context;
+
+    expect(context?.matchedTerms).toEqual(['szkolenia', 'navigatora', 'sprzedaży']);
+    expect(context?.matchedTermEvidence.find((item) => item.term === 'szkolenia')?.response).toEqual({ start: 0, end: 9 });
+  });
 });

@@ -79,4 +79,18 @@ describe('buildEntityEvidenceGraph', () => {
     const graph = buildEntityEvidenceGraph({ ...document, entity: { ...document.entity, name: '' } }, [page('https://example.com', ['seo'])]);
     expect(graph).toEqual({ nodes: [], edges: [], entityNodeId: null, comparablePages: 0, structuredPages: 0, schemaTypes: 0, observedAssertions: 0, totalAssertions: 0, truncated: false });
   });
+
+  it('observes asserted facts on pages that use another inflection of the same words', () => {
+    const polish: TopicalMapDocument = {
+      ...document,
+      entity: { ...document.entity, facts: [{ id: 'fact-offer', attribute: 'Oferta', value: 'Szkolenia LinkedIn', sourceUrl: '', reuseStatus: 'verified' }] },
+    };
+    const graph = buildEntityEvidenceGraph(polish, [
+      { ...page('https://example.com/oferta', ['szkolenie', 'linkedin']), document_language: 'pl' } as CrawledPageSummary,
+    ]);
+
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'observed', source: 'fact:fact-offer', target: 'page:0', coverage: 1, matchedTerms: ['szkolenia', 'linkedin'] }),
+    ]));
+  });
 });

@@ -3,6 +3,7 @@ import type { AiCitationContextMatch } from './types';
 import { contextTokens, normalizeContextPhrase } from './text';
 import { bestSentenceMatch } from './sentences';
 import { locateText, termEvidence } from './spans';
+import { semanticPageLanguage, semanticTermKey } from '@/services/semanticText';
 
 export const buildContextMatch = (page: CrawledPageSummary, responseText: string | undefined): AiCitationContextMatch | undefined => {
   if (!responseText?.trim()) return undefined;
@@ -11,7 +12,13 @@ export const buildContextMatch = (page: CrawledPageSummary, responseText: string
   const contentTerms = [...new Set((page.semantic_terms ?? []).flatMap(contextTokens))];
   const titleTerms = contextTokens(page.title ?? '');
   const sourceTerms = contentTerms.length ? contentTerms : titleTerms;
-  const allMatchedTerms = sourceTerms.filter((term) => responseTerms.has(term));
+  // Match by inflection key; evidence keeps the page's form and locates the response's form.
+  const language = semanticPageLanguage(page);
+  // Reverse insertion keeps the first response form of each inflection key.
+  const responseForms = new Map([...responseTerms].reverse().map((term) => [semanticTermKey(term, language), term]));
+  // Evidence terms are matched source terms or tokens of a response sentence, so the key exists.
+  const responseForm = (term: string) => responseForms.get(semanticTermKey(term, language))!;
+  const allMatchedTerms = sourceTerms.filter((term) => responseForms.has(semanticTermKey(term, language)));
   const matchedTerms = allMatchedTerms.slice(0, 12);
   const normalizedResponse = normalizeContextPhrase(responseText);
   const matchedExcerpt = (page.semantic_excerpts ?? []).find((excerpt) => {
@@ -25,6 +32,7 @@ export const buildContextMatch = (page: CrawledPageSummary, responseText: string
     sentenceMatch?.matchedTerms || matchedTerms,
     responseText,
     sourceEvidenceText,
+    responseForm,
   );
   const responseSpan = sentenceMatch
     ? { text: sentenceMatch.text, start: sentenceMatch.start, end: sentenceMatch.end, source: 'response' as const }

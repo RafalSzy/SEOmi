@@ -105,6 +105,10 @@ mod runtime_3;
 mod schema;
 #[path = "tests/scope.rs"]
 mod scope;
+#[path = "tests/semantic_terms_1.rs"]
+mod semantic_terms_1;
+#[path = "tests/semantic_terms_2.rs"]
+mod semantic_terms_2;
 #[path = "tests/social_1.rs"]
 mod social_1;
 #[path = "tests/social_2.rs"]

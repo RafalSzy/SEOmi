@@ -4,6 +4,7 @@ import { normalize, evidenceTokens } from './primitives';
 import { bestBriefSentenceMatch } from './sentences';
 import { citationAliases } from '@/services/citationEvidence/aliases';
 import { normalizeHttpUrl as normalizeCitationUrl } from '@/services/citationEvidence/urls';
+import { semanticPageLanguage, semanticTermKey, uniqueSemanticTerms } from '@/services/semanticText';
 
 /**
  * Compare a reviewed paragraph with bounded content evidence from the selected
@@ -39,8 +40,10 @@ export const matchParagraphToCrawlSource = (
     sourceSpan: { start: 0, end: sentenceMatch.excerpt.length },
     pageUrl: page.final_url || page.url,
   };
-  const sourceTerms = evidenceTokens([page.title ?? '', ...(page.semantic_terms ?? [])].join(' '));
-  const allMatchedTerms = sourceTerms.filter((term) => paragraphTermSet.has(term));
+  const language = semanticPageLanguage(page);
+  const paragraphKeys = new Set([...paragraphTermSet].map((term) => semanticTermKey(term, language)));
+  const sourceTerms = uniqueSemanticTerms(evidenceTokens([page.title ?? '', ...(page.semantic_terms ?? [])].join(' ')), language);
+  const allMatchedTerms = sourceTerms.filter((term) => paragraphKeys.has(semanticTermKey(term, language)));
   const matchedTerms = allMatchedTerms.slice(0, 12);
   const overlapPercent = sourceTerms.length ? Math.round(allMatchedTerms.length / sourceTerms.length * 100) : null;
   if (matchedTerms.length >= 3 && overlapPercent !== null && overlapPercent >= 20) return { matched: true, scope: page.semantic_terms?.length ? 'semantic-terms' : 'title', matchedTerms, overlapPercent, pageUrl: page.final_url || page.url };
