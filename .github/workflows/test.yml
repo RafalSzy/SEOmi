@@ -87,7 +87,7 @@ jobs:
       - name: Lint TypeScript and React
         run: npm run lint
       - name: Run Vitest with full frontend coverage
-        run: npm run test:coverage
+        run: npm run test:coverage:target
       - name: Install MCP coverage dependencies
         run: npm ci --prefix mcp-server --ignore-scripts
       - name: Measure MCP source execution through Node tests
@@ -95,9 +95,11 @@ jobs:
       - name: Inventory TypeScript public functions and fresh execution evidence
         run: npm run test:inventory
       - name: Upload frontend coverage
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
+          if-no-files-found: error
           path: |
             coverage/
             test-results/frontend-coverage-sources.json
