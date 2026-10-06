@@ -52,6 +52,7 @@ pub async fn fetch_page_step(
                     .map(|selector| selector.chars().take(512).collect()),
                 wait_delay_ms: setup.config.render_wait_delay_ms.unwrap_or(0).min(10_000),
                 lazy_scroll_cycles: setup.config.render_lazy_scroll_cycles.unwrap_or(0).min(40),
+                allowed_hosts: setup.config.allowed_hosts.clone(),
             };
             match RenderedCrawlerSession::open(
                 app,

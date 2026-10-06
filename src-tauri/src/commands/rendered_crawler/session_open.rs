@@ -9,7 +9,7 @@ use tauri::{
 use tokio::sync::mpsc;
 
 use super::models::{CaptureEvent, RenderOptions, CAPTURE_SCHEME, MAX_CAPTURE_CHANNEL_EVENTS};
-use super::navigation::{is_allowed_navigation, parse_capture_chunk};
+use super::navigation::{is_allowed_crawl_navigation, parse_capture_chunk};
 use super::scripts::{capture_script, cookie_bootstrap_script};
 use super::session::RenderedCrawlerSession;
 use crate::{
@@ -41,6 +41,8 @@ impl RenderedCrawlerSession {
         let build_nonce = nonce.clone();
         let build_host = base_host.clone();
         let build_scope = scope_path.clone();
+        let allowed_hosts = options.allowed_hosts.clone();
+        let build_allowed_hosts = allowed_hosts.clone();
         let build_sequence = sequence.clone();
         let build_sender = sender.clone();
         let build_options = options.clone();
@@ -72,7 +74,7 @@ impl RenderedCrawlerSession {
                     }
                     return false;
                 }
-                is_allowed_navigation(url, &build_host, allow_subdomains, build_scope.as_deref())
+                is_allowed_crawl_navigation(url, &build_host, allow_subdomains, build_scope.as_deref(), &build_allowed_hosts)
             })
             .on_page_load(move |window, payload| {
                 if payload.event() != PageLoadEvent::Finished {
@@ -117,7 +119,11 @@ impl RenderedCrawlerSession {
             let result = builder
                 .build()
                 .map_err(|error| format!("Unable to create isolated renderer: {error}"));
-            let _ = built_tx.send(result);
+            if let Err(Ok(orphan)) = built_tx.send(result) {
+                // The caller stopped waiting (cancelled or timed out), so no
+                // session will ever own this window.
+                let _ = orphan.close();
+            }
         })
         .map_err(|error| format!("Unable to schedule renderer creation: {error}"))?;
 
@@ -131,9 +137,11 @@ impl RenderedCrawlerSession {
             receiver,
             nonce,
             requested_url: start_url.to_string(),
+            initial_load_pending: true,
             base_host,
             allow_subdomains,
             scope_path,
+            allowed_hosts,
         })
     }
 }
