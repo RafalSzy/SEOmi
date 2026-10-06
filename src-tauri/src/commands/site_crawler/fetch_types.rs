@@ -37,4 +37,10 @@ pub(crate) struct FetchedPageData {
     pub(crate) rendered_lcp_ms: Option<u64>,
     pub(crate) rendered_inp_ms: Option<u64>,
     pub(crate) rendered_cls: Option<f64>,
+    /// False only for a bare rendered snapshot, which carries no HTTP
+    /// status line or response headers.
+    pub(crate) response_headers_available: bool,
+    /// Set when rendered mode had to analyse the raw HTML response because
+    /// the browser could not produce a snapshot of the page.
+    pub(crate) render_fallback: Option<String>,
 }

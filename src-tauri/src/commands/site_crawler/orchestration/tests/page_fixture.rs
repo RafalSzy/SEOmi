@@ -53,6 +53,8 @@ pub(super) fn data(text: &str) -> FetchedPageData {
         rendered_lcp_ms: None,
         rendered_inp_ms: None,
         rendered_cls: None,
+        response_headers_available: true,
+        render_fallback: None,
     }
 }
 

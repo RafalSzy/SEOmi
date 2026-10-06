@@ -107,6 +107,8 @@ pub(super) async fn read_fetched_page_data(
                 rendered_lcp_ms: None,
                 rendered_inp_ms: None,
                 rendered_cls: None,
+                response_headers_available: true,
+                render_fallback: None,
             }
         }
         FetchedPageBody::Rendered(snapshot) => {
@@ -137,6 +139,8 @@ pub(super) async fn read_fetched_page_data(
                 rendered_lcp_ms: snapshot.lcp_ms,
                 rendered_inp_ms: snapshot.inp_ms,
                 rendered_cls: snapshot.cls,
+                response_headers_available: false,
+                render_fallback: None,
             }
         }
     }

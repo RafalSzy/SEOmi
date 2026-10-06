@@ -2143,7 +2143,7 @@
     "renderDelayAria": "Opóźnienie renderowania w milisekundach",
     "lazyScroll": "Przewinięcia dla lazy-load",
     "lazyScrollAria": "Liczba przewinięć lazy-load",
-    "browserModeNotice": "Tryb przeglądarki analizuje DOM po wykonaniu JavaScriptu. Własny User-Agent jest używany także w zapytaniu robots.txt. Wybrany profil może wstrzyknąć zwykłe cookies sesji do odizolowanego WebView; HttpOnly i pełny import magazynu cookies nie są możliwe. Dodatkowe nagłówki i proxy wymagają trybu HTTP. Nagłówki X-Robots-Tag i Cache-Control nie są dostępne z renderowanego DOM.",
+    "browserModeNotice": "Tryb przeglądarki analizuje DOM po wykonaniu JavaScriptu. Własny User-Agent jest używany także w zapytaniu robots.txt. Wybrany profil może wstrzyknąć zwykłe cookies sesji do odizolowanego WebView; HttpOnly i pełny import magazynu cookies nie są możliwe. Dodatkowe nagłówki i proxy wymagają trybu HTTP. Status HTTP, nagłówki odpowiedzi, takie jak X-Robots-Tag i Cache-Control, oraz przekierowania pochodzą z osobnego żądania HTTP do tego samego URL. Strona, której nie da się wyrenderować, jest analizowana z tego surowego HTML i oznaczana ostrzeżeniem.",
     "renderProfileWarning": "Wybrany profil zawiera własne nagłówki lub proxy. Tryb renderowany obsługuje z niego wyłącznie cookies — wybierz HTTP albo profil cookie-only.",
     "resourcesTitle": "Zasoby pobrane w crawl’u",
     "resourcesDescription": "Wyłącznie zasoby odkryte w bieżącym scope. Status i rozmiar pochodzą z rzeczywistych odpowiedzi HTTP.",
@@ -3990,6 +3990,8 @@
     "multipleTitle": "Znaleziono wiele tagów <title> ({{count}})",
     "emptyDescription": "Meta description jest pusta",
     "multipleDescription": "Znaleziono wiele tagów meta description ({{count}})",
+    "renderFallback": "Renderowanie w przeglądarce nie powiodło się; przeanalizowano surową odpowiedź HTML: {{reason}}",
+    "renderedSelfNavigation": "Strona sama przeszła w przeglądarce pod inny URL; status HTTP i nagłówki odpowiedzi dotyczą żądanego URL",
     "technicalDetail": "Szczegóły techniczne: {{detail}}"
   },
   "auditChecks": {

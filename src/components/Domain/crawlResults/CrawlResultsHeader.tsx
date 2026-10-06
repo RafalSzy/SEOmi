@@ -4,6 +4,8 @@ import type { useCrawlResultsSession } from './useCrawlResultsSession';
 type Session = ReturnType<typeof useCrawlResultsSession>;
 export const CrawlResultsHeader = ({ session }: { session: Session }) => {
 const { currentRun, deleteCurrentRun, isCrawling, onDeleteRun, onSelectRun, openMapSection, result, runs, t } = session;
+// A rendered page paired with its HTTP response carries real response headers.
+const responseHeadersObserved = result.pages.some((page) => page.robots_decision?.response_headers_available);
 return (
 <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900/35 p-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
@@ -31,7 +33,7 @@ return (
           >
             {result.start_url}
           </p>
-          {result.crawl_mode === "browser-rendered" && (
+          {result.crawl_mode === "browser-rendered" && !responseHeadersObserved && (
             <p className="mt-1 text-[11px] leading-4 text-amber-200/80">
               {t("crawlDeepUi.renderedDomNote")}
             </p>

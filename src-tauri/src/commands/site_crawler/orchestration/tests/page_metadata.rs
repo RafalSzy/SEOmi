@@ -57,6 +57,7 @@ fn metadata_extractor_reports_canonical_noindex_conflict_only_from_usable_html()
 fn status_diagnostics_report_bounded_browser_errors_and_unavailable_response_checks() {
     let mut page_data = data("");
     page_data.status = 0;
+    page_data.response_headers_available = false;
     page_data.declared_html = false;
     page_data.body_truncated = true;
     page_data.body_read_failed = true;

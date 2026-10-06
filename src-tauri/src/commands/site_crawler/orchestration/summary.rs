@@ -81,6 +81,11 @@ pub fn build_crawl_result(input: BuildCrawlResultInput<'_>) -> SiteCrawlResult {
         if state.timed_out {
             reasons.push("max_run_seconds".into());
         }
+        if state.render_health.fallback_pages > 0 {
+            // Some pages were analyzed from raw HTML, so a rendered crawl is
+            // not uniformly rendered. Each affected page carries a warning.
+            reasons.push("render_fallback".into());
+        }
         if state.pages.iter().any(|page| {
             page.issues
                 .iter()
@@ -122,7 +127,7 @@ pub fn build_crawl_result(input: BuildCrawlResultInput<'_>) -> SiteCrawlResult {
         limit_reasons,
     };
     control.finish(&setup.run_id);
-    if let Some(session) = state.rendered_session.take() {
+    for session in state.rendered_sessions.drain(..) {
         session.close();
     }
     result
