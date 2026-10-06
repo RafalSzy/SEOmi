@@ -99,6 +99,7 @@ pub fn build_crawled_page_summary(input: BuildCrawledPageSummaryInput<'_>) -> Cr
         content_hash: content.content_hash,
         content_simhash: content.content_simhash,
         semantic_terms: content.semantic_terms,
+        semantic_language: content.semantic_language,
         semantic_excerpts: content.semantic_excerpts,
         semantic_links: links.semantic_links,
         semantic_content_source: content.semantic_content_source,

@@ -54,6 +54,8 @@ mod schema_references;
 mod scope;
 mod scoring;
 mod semantic_chrome;
+mod semantic_inflection;
+mod semantic_terms;
 mod semantics;
 mod simhash;
 mod sitemap;
@@ -78,7 +80,8 @@ use {
 use {
     content_metrics::*, duplicate_annotation::*, favicon::*, frames::*, html_decoding::*,
     html_validation::*, js_redirects::*, post_processing::*, prefetch::*, resource_apply::*,
-    resource_discovery::*, schema::*, scoring::*, semantics::*, sitemap::*, social::*, srcset::*,
+    resource_discovery::*, schema::*, scoring::*, semantic_inflection::*, semantic_terms::*,
+    semantics::*, sitemap::*, social::*, srcset::*,
 };
 
 mod ipc;

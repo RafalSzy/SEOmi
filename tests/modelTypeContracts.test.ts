@@ -6,7 +6,7 @@ import { exportedTypeContract } from './fixtures/typeContracts';
 it('preserves every crawler export, property type, optional flag and declaration order', () => {
   expect(exportedTypeContract('src/types/crawl.ts')).toEqual({
     exports: 37,
-    sha256: '1a8cacd51a9b8216b11bcd6022e916a4b84be1d9100af0686e509fdcb2eab177',
+    sha256: '07208ac01894116c51cfa40e350c01234d17321480fab38027793acbd294ec45',
   });
 });
 

@@ -2,6 +2,7 @@ import type { CrawledPageSummary } from '@/types';
 import type { TopicalMapDocument } from '@/services/topicalMap';
 import { buildSemanticMap } from '@/services/semanticMap';
 import i18n from '@/i18n';
+import { isSemanticNoiseTerm, isSemanticTopicalStatus, semanticPageLanguage, semanticTermKey } from '@/services/semanticText';
 
 export const MAX_PAGES = 5_000;
 const MAX_TERMS_PER_PAGE = 40;
@@ -24,8 +25,20 @@ const normalizeUrl = (value: string): string | null => {
 
 export const pageIdentity = (page: CrawledPageSummary): string | null => normalizeUrl(page.url) || normalizeUrl(page.final_url);
 const pageAliases = (page: CrawledPageSummary): string[] => [...new Set([page.url, page.final_url].map(normalizeUrl).filter((url): url is string => Boolean(url)))];
-export const pageTerms = (page: CrawledPageSummary): Map<string, string> => new Map((page.semantic_terms ?? []).slice(0, MAX_TERMS_PER_PAGE)
-  .map((term) => [normalizeText(term), term.trim()] as const).filter(([key, value]) => Boolean(key && value)));
+/**
+ * Page terms by inflection key, mapped to an observed form. Noise terms and
+ * non-2xx pages are dropped on both sides so a run captured before the
+ * crawler filtered them compares cleanly with a newer run.
+ */
+export const pageTerms = (page: CrawledPageSummary): Map<string, string> => {
+  const terms = new Map<string, string>();
+  if (!isSemanticTopicalStatus(page.http_status)) return terms;
+  const language = semanticPageLanguage(page);
+  for (const term of (page.semantic_terms ?? []).slice(0, MAX_TERMS_PER_PAGE).map((value) => value.trim())) {
+    if (term && !isSemanticNoiseTerm(term)) terms.set(semanticTermKey(normalizeText(term), language), term);
+  }
+  return terms;
+};
 
 export const countSemanticLinks = (pages: CrawledPageSummary[]): Map<string, { source: string; target: string; anchor: string }> => {
   const links = new Map<string, { source: string; target: string; anchor: string }>();
@@ -93,7 +106,7 @@ export const queryObservation = (query: string, pages: CrawledPageSummary[]): { 
   const expected = tokenize(query);
   const comparable = pages.filter((page) => (page.semantic_terms ?? []).length > 0);
   if (!expected.length || !comparable.length) return null;
-  const observed = new Set(comparable.flatMap((page) => [...pageTerms(page).keys()]));
-  return { expected, matched: expected.filter((token) => observed.has(token)) };
+  const observed = comparable.map((page) => ({ terms: pageTerms(page), language: semanticPageLanguage(page) }));
+  return { expected, matched: expected.filter((token) => observed.some(({ terms, language }) => terms.has(semanticTermKey(token, language)))) };
 };
 

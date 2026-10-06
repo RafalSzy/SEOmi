@@ -1,6 +1,5 @@
 use super::*;
-use crate::models::audit_data::FaviconData;
-use crate::services::custom_search::CrawledCustomSearchResult;
+use crate::{models::audit_data::FaviconData, services::custom_search::CrawledCustomSearchResult};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -81,6 +80,8 @@ pub struct CrawledPageSummary {
     pub content_simhash: Option<String>,
     #[serde(default)]
     pub semantic_terms: Vec<String>,
+    /// Grouping language of `semantic_terms`: `html[lang]`, else inferred from the content.
+    pub semantic_language: Option<String>,
     #[serde(default)]
     pub semantic_excerpts: Vec<String>,
     #[serde(default)]

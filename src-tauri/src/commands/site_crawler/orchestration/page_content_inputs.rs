@@ -3,6 +3,7 @@ use super::*;
 pub struct ExtractPageContentInput<'a> {
     pub document: &'a Html,
     pub body_len: usize,
+    pub status: u16,
     pub is_html: bool,
     pub body_truncated: bool,
     pub body_read_failed: bool,

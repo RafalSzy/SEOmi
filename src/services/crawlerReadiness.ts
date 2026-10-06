@@ -1,5 +1,6 @@
 import type { CrawledPageSummary, SiteCrawlResult } from '@/types';
 import i18n from '@/i18n';
+import { isSemanticTopicalStatus } from '@/services/semanticText';
 
 export type CrawlerReadinessStatus = 'pass' | 'warning' | 'error' | 'unknown';
 export type TranslationParams = Record<string, string | number>;
@@ -70,7 +71,9 @@ export const buildCrawlerReadiness = (result: SiteCrawlResult): CrawlerReadiness
   const contentMissing = countPages(pages, (page) => page.word_count <= 0);
   const contentTruncated = countPages(pages, (page) => page.body_truncated);
   const missingLanguage = countPages(pages, (page) => !page.document_language?.trim());
-  const missingTerms = countPages(pages, (page) => !(page.semantic_terms?.length));
+  // The crawler extracts no terms from redirects and error pages; http-response reports those.
+  const termPages = countPages(pages, (page) => isSemanticTopicalStatus(page.http_status));
+  const missingTerms = countPages(pages, (page) => isSemanticTopicalStatus(page.http_status) && !(page.semantic_terms?.length));
   const schemaErrors = countPages(pages, (page) => page.schema_syntax_errors > 0 || Boolean(page.schema_validation_findings?.some((finding) => finding.finding.severity === 'error')));
   const schemaObserved = countPages(pages, (page) => page.schema_types.length > 0);
 
@@ -82,7 +85,7 @@ export const buildCrawlerReadiness = (result: SiteCrawlResult): CrawlerReadiness
     pageCheck('metadata', 'metadata.label', pages, missingTitle, metadataWarningPages, 'metadata.evidence', { titles: totalPages - missingTitle, descriptions: totalPages - missingDescription, canonicals: totalPages - missingCanonical }, missingTitle || missingDescription || missingCanonical ? 'metadata.recommendation' : undefined),
     pageCheck('language-accessibility', 'languageAccessibility.label', pages, 0, missingLanguage, 'languageAccessibility.evidence', { declared: totalPages - missingLanguage, missing: missingLanguage }, missingLanguage ? 'languageAccessibility.recommendation' : undefined),
     { id: 'structured-data', labelKey: 'structuredData.label', status: schemaErrors > 0 ? 'error' : schemaObserved > 0 ? 'pass' : 'unknown', affectedPages: schemaErrors, totalPages, evidenceKey: 'structuredData.evidence', evidenceParams: { observed: schemaObserved, errors: schemaErrors }, evidence: i18n.t('crawlerReadiness.checks.structuredData.evidence', { observed: schemaObserved, errors: schemaErrors }), recommendationKey: schemaErrors ? 'structuredData.recommendation' : undefined },
-    { id: 'content-semantics', labelKey: 'contentSemantics.label', status: missingTerms === totalPages ? 'unknown' : missingTerms > 0 ? 'warning' : 'pass', affectedPages: missingTerms, totalPages, evidenceKey: 'contentSemantics.evidence', evidenceParams: { withTerms: totalPages - missingTerms, withoutTerms: missingTerms }, evidence: i18n.t('crawlerReadiness.checks.contentSemantics.evidence', { withTerms: totalPages - missingTerms, withoutTerms: missingTerms }), recommendationKey: missingTerms ? 'contentSemantics.recommendation' : undefined },
+    { id: 'content-semantics', labelKey: 'contentSemantics.label', status: missingTerms === termPages ? 'unknown' : missingTerms > 0 ? 'warning' : 'pass', affectedPages: missingTerms, totalPages, evidenceKey: 'contentSemantics.evidence', evidenceParams: { withTerms: termPages - missingTerms, withoutTerms: missingTerms }, evidence: i18n.t('crawlerReadiness.checks.contentSemantics.evidence', { withTerms: termPages - missingTerms, withoutTerms: missingTerms }), recommendationKey: missingTerms ? 'contentSemantics.recommendation' : undefined },
     result.crawl_mode === 'browser-rendered' ? { id: 'rendered-dom', labelKey: 'renderedDom.label', status: 'pass' as const, affectedPages: 0, totalPages, evidenceKey: 'renderedDom.renderedEvidence', evidenceParams: {}, evidence: i18n.t('crawlerReadiness.checks.renderedDom.renderedEvidence'), recommendationKey: 'renderedDom.renderedRecommendation' } : unknownCheck('rendered-dom', 'renderedDom.label', pages, 'renderedDom.httpEvidence', {}, 'renderedDom.httpRecommendation'),
   ];
 

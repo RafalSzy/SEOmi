@@ -249,9 +249,24 @@ Final4012frontendtests/523filesPASS. Results evidence hook100%allfourmetrics:89s
 
 803all-targetRusttestsPASS (792lib+11examples), stable/nightly;fmt/strictClippy/productionlibcheck/diffPASS;MAXLOC1502109files/zero violations. Production15885/19259lines82.48%,1645/2103functions78.22%,3358/4450branches75.46% after source-hash/AST/LLVM validation. current_state/finish/owner have full measured source coverage; remaining defensive/production adapter paths stay counted. Frontend unchanged from4049PASS/global95%FAIL. Complete public assertions, global95%, extensions and final release remainOPEN. Artifacts:/tmp/seomi-queue-final-{sources.json,branches.lcov,llvm.json,production.lcov,production.lcov.summary.json}.
 
-
 ### 2026-10-05 — direct crawl UI, audit helper and Ollama transport assertions
 
 `crawlPaginationRowBranches`, `crawlDirectivesRowBranches`, `crawlFaviconCellBranches` and `crawlAmpRowBranches` directly assert absent/zero/actual HTTP status labels and measured/unchecked provenance. `formatResourceStatus` has direct strings for byte size, complete/incomplete dimensions and error precedence. `backlinkEquityBranches` asserts rendered unknown/actual percentages, anchor facts and disabled/enabled pagination callbacks. `auditHelpersDirect` asserts `isFiniteNumber`, `parseBatchQueue`, `parseBatchRun`, `recoverInterruptedBatch`, `auditHostname`, `beginAuditRequest`, `isLatestAuditRequest`, both error formatters and `batchSnapshotFingerprint` through their returned/state evidence. Separate history compaction/persistence and other native APIs still require complete direct proof.
 
 `ollamaTransportBoundaries` and `ollamaTransportDeadline` directly assert endpoint and integer settings validation, `ollamaSettings` defaults, `postOllama` exact POST/input/result, bounded bytes and strict UTF-8/JSON, adapter/stream deadlines and cancellation, aborted signals and private-error suppression. Existing embedding batching, vector validation, generation, CLI and UI assertions remain active. These fixture streams and adapter calls do not establish live Ollama/model availability or full assistant integration. Global 98% and complete public-function inventory remain independent requirements.
+
+## Semantic term inflection contracts
+
+| Public function | Direct test | Asserted behavior |
+| --- | --- | --- |
+| `semanticTermKey` | `tests/semanticText.test.ts` | Polish case/number forms and regular English plurals share one key, short stems stay intact, unknown languages only fold diacritics |
+| `isSemanticNoiseTerm` | `tests/semanticText.test.ts` | Polish/English function words, navigation chrome, date fragments and number-dominated tokens are rejected; alphanumeric acronyms and every word of the previous crawler list keep their old outcome |
+| `isSemanticTopicalStatus` | `tests/semanticText.test.ts` | 2xx and unreported (0/null/undefined) statuses are topical; 1xx, 3xx, 4xx and 5xx are not |
+| `semanticPageLanguage` | `tests/semanticText.test.ts` | crawler grouping language first, declared language for older crawls, absent values preserved |
+| `uniqueSemanticTerms` | `tests/semanticText.test.ts` | first form per inflected word, no merging without a known language |
+| `buildTermInventory` | `tests/semanticMapTerms.test.ts` | per-page keys, noise and non-2xx exclusion, displayed form chosen by page count then length |
+| `termsFor`, `termCoverage` | `tests/polishInflectionEvidence.test.ts` | key to first observed form, query tokens matched across inflections |
+| `semantic_term_key`, `semantic_status_is_topical`, `semantic_noise_token` | `src-tauri/src/commands/site_crawler/tests/semantic_terms_2.rs` | the same suffix rules as the TypeScript helper, topical status bounds, previous stopwords preserved |
+| `extract_semantic_terms`, `semantic_term_language` | `src-tauri/src/commands/site_crawler/tests/semantic_terms_1.rs`, `orchestration/tests/page_semantic_language.rs` | merged inflections reported in the most frequent form, declared-then-inferred language, serialized `semantic_language`, no terms for redirect/error responses |
+
+The TypeScript callables above are executed under the frontend suite with a static test reference in the regenerated inventory. The suffix rules are a lexical heuristic for regular Polish and English forms, not a morphological analyser; irregular forms are not merged.
