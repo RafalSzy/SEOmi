@@ -4,8 +4,11 @@ use std::{fs, path::PathBuf, sync::Mutex, time::Duration};
 use tauri::{Listener, Manager};
 use uuid::Uuid;
 
+const REQUIRED_RENDERER_CHECKS: usize = 26;
+
 fn main() {
     let report = PathBuf::from(std::env::args_os().nth(1).expect("report path argument"));
+    let renderer_enabled = std::env::var("SEOMI_E2E_RENDERER").ok().as_deref() == Some("1");
     let session = Uuid::new_v4();
     let mut context = tauri::generate_context!();
     context.config_mut().identifier = format!("com.seomi.desktop.e2e.{}", session.simple());
@@ -20,6 +23,10 @@ fn main() {
     let roots = std::sync::Arc::new(Mutex::new(Vec::<PathBuf>::new()));
     let roots_for_setup = roots.clone();
     let script = include_str!("desktop_e2e.js");
+    let renderer_script = include_str!("desktop_e2e_renderer.js");
+    let main_script = format!(
+        "window.__seomiE2eRendererEnabled = {renderer_enabled};\n{renderer_script}\n{script}"
+    );
     let plugin = tauri::plugin::Builder::<tauri::Wry, ()>::new("desktop-e2e")
         .setup(move |app, _| {
             eprintln!("desktop-e2e: listener setup");
@@ -31,24 +38,52 @@ fn main() {
             let report_path = report.clone();
             app.listen("seomi-desktop-e2e-result", move |event| {
                 let data: serde_json::Value = serde_json::from_str(event.payload()).unwrap();
+                let renderer = data.get("renderer");
+                let renderer_status = renderer.and_then(|value| value.get("status"));
+                let renderer_checks = renderer
+                    .and_then(|value| value.get("checks"))
+                    .and_then(serde_json::Value::as_array);
+                let renderer_passed = renderer
+                    .and_then(|value| value.get("passed"))
+                    .and_then(serde_json::Value::as_bool)
+                    .unwrap_or(false);
+                let renderer_valid = if renderer_enabled {
+                    renderer_status.and_then(serde_json::Value::as_str) == Some("executed")
+                        && renderer_passed
+                        && renderer_checks
+                            .is_some_and(|checks| checks.len() >= REQUIRED_RENDERER_CHECKS)
+                        && renderer
+                            .and_then(|value| value.get("previewEvidence"))
+                            .and_then(serde_json::Value::as_str)
+                            == Some("ipc-success")
+                } else {
+                    renderer_status.and_then(serde_json::Value::as_str) == Some("skipped")
+                        && renderer_passed
+                        && renderer.and_then(|value| value.get("reason")).is_some()
+                };
                 let passed = data["passed"] == true
                     && data["checks"]
                         .as_array()
-                        .is_some_and(|checks| checks.len() >= 24);
+                        .is_some_and(|checks| checks.len() >= 24)
+                    && renderer_valid;
                 fs::write(&report_path, serde_json::to_vec_pretty(&data).unwrap()).unwrap();
                 handle.exit(if passed { 0 } else { 1 });
             });
             let handle = app.clone();
             std::thread::spawn(move || {
-                std::thread::sleep(Duration::from_secs(90));
+                std::thread::sleep(Duration::from_secs(if renderer_enabled { 210 } else { 90 }));
                 handle.exit(2);
             });
             Ok(())
         })
         .on_page_load(move |webview, payload| {
             eprintln!("desktop-e2e: page load {:?}", payload.event());
-            if payload.event() == tauri::webview::PageLoadEvent::Finished {
-                webview.eval(script).expect("inject desktop E2E fixture");
+            if payload.event() == tauri::webview::PageLoadEvent::Finished
+                && webview.label() == "main"
+            {
+                webview
+                    .eval(&main_script)
+                    .expect("inject desktop E2E fixture");
             }
         })
         .build();

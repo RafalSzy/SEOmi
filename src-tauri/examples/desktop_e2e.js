@@ -2,6 +2,7 @@
   if (window.__seomiE2eRunning) return;
   window.__seomiE2eRunning = true;
   const invoke = window.__TAURI_INTERNALS__.invoke;
+  const rendererEnabled = window.__seomiE2eRendererEnabled === true;
   const checks = JSON.parse(sessionStorage.getItem('seomi-e2e-checks') || '[]');
   const check = (name, value) => {
     if (!value) throw new Error(name);
@@ -30,6 +31,7 @@
     input.dispatchEvent(new Event('change', { bubbles: true }));
   };
   const report = async payload => invoke('plugin:event|emit', { event: 'seomi-desktop-e2e-result', payload });
+  let renderer = null;
   try {
     check('real native IPC environment', !!window.__TAURI_INTERNALS__ && !!window.__TAURI__);
     if (!sessionStorage.getItem('seomi-e2e-stage')) {
@@ -92,8 +94,22 @@
     check('switch back preserves first native data', (await invoke('load_project_crawl_checkpoint', { projectId })).fixture === 'desktop-e2e-persistence');
     await invoke('delete_project_crawl_checkpoint', { projectId });
     check('native checkpoint deletion verified', await invoke('load_project_crawl_checkpoint', { projectId }) === null);
-    await report({ passed: true, checks, runtime: navigator.userAgent });
+    renderer = rendererEnabled
+      ? await window.__seomiRendererE2e.run({ invoke })
+      : window.__seomiRendererE2e.skipped();
+    await report({ passed: renderer.passed === true, checks, renderer, runtime: navigator.userAgent });
   } catch (error) {
-    await report({ passed: false, checks, failure: String(error), runtime: navigator.userAgent });
+    await report({
+      passed: false,
+      checks,
+      failure: String(error),
+      renderer: renderer || {
+        status: rendererEnabled ? 'executed' : 'skipped',
+        passed: false,
+        checks: [],
+        reason: rendererEnabled ? undefined : 'Renderer checks were disabled.',
+      },
+      runtime: navigator.userAgent,
+    });
   }
 })();

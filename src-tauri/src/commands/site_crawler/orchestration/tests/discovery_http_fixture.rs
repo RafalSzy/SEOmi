@@ -12,8 +12,16 @@ pub struct DiscoveryServer {
     task: JoinHandle<()>,
 }
 
+#[derive(Clone)]
+pub struct Route {
+    path: String,
+    status: u16,
+    body: String,
+    headers: Vec<String>,
+}
+
 impl DiscoveryServer {
-    pub async fn new(config: CrawlConfig, routes: Vec<(String, u16, String)>) -> Self {
+    pub async fn new(config: CrawlConfig, routes: Vec<Route>) -> Self {
         let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
         let address = listener.local_addr().unwrap();
         let mut setup = setup(config);
@@ -22,6 +30,7 @@ impl DiscoveryServer {
         setup.normalized_start_url = setup.parsed_base.clone();
         setup.client = reqwest::Client::builder()
             .no_proxy()
+            .redirect(reqwest::redirect::Policy::none())
             .resolve("example.test", address)
             .timeout(std::time::Duration::from_secs(2))
             .build()
@@ -46,13 +55,21 @@ impl DiscoveryServer {
                 let text = String::from_utf8(request).unwrap();
                 let path = text.split_whitespace().nth(1).unwrap().to_string();
                 observed.lock().unwrap().push(path.clone());
-                let route = routes.iter().find(|(candidate, _, _)| candidate == &path);
-                let (status, body) = route
-                    .map(|(_, code, body)| (*code, body.replace("{BASE}", &base)))
-                    .unwrap_or((404, String::new()));
+                let route = routes.iter().find(|route| route.path == path);
+                let (status, body, extra_headers) = route
+                    .map(|route| {
+                        (
+                            route.status,
+                            route.body.replace("{BASE}", &base),
+                            route.headers.join("\r\n"),
+                        )
+                    })
+                    .unwrap_or((404, String::new(), String::new()));
                 let headers = format!(
-                    "HTTP/1.1 {status} Fixture\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
-                    body.len()
+                    "HTTP/1.1 {status} Fixture\r\nContent-Length: {}\r\n{}{}Connection: close\r\n\r\n",
+                    body.len(),
+                    extra_headers,
+                    if extra_headers.is_empty() { "" } else { "\r\n" }
                 );
                 if socket.write_all(headers.as_bytes()).await.is_ok() {
                     let _ = socket.write_all(body.as_bytes()).await;
@@ -77,8 +94,25 @@ impl Drop for DiscoveryServer {
     }
 }
 
-pub fn route(path: &str, status: u16, body: &str) -> (String, u16, String) {
-    (path.into(), status, body.into())
+pub fn route(path: &str, status: u16, body: &str) -> Route {
+    Route {
+        path: path.into(),
+        status,
+        body: body.into(),
+        headers: Vec::new(),
+    }
+}
+
+pub fn redirect(path: &str, location: &str) -> Route {
+    let mut route = route(path, 302, "");
+    route.headers.push(format!("Location: {location}"));
+    route
+}
+
+pub fn html_route(path: &str, body: &str) -> Route {
+    let mut route = route(path, 200, body);
+    route.headers.push("Content-Type: text/html".into());
+    route
 }
 
 pub fn refused_setup() -> (CrawlSetup, tokio::net::TcpSocket) {

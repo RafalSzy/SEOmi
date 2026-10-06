@@ -142,3 +142,7 @@ mod tests;
 #[cfg(test)]
 #[path = "url_validator_hostname_tests.rs"]
 mod hostname_tests;
+
+#[cfg(test)]
+#[path = "url_validator_edge_tests.rs"]
+mod edge_tests;

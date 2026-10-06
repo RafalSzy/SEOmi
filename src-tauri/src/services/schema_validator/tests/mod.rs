@@ -8,3 +8,4 @@ mod group_03;
 mod group_04;
 mod group_05;
 mod group_06;
+mod traversal_contracts;

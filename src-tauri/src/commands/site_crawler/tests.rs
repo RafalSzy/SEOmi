@@ -111,9 +111,17 @@ mod runtime_3;
 mod schema;
 #[path = "tests/scope.rs"]
 mod scope;
+#[path = "tests/scope_contracts.rs"]
+mod scope_contracts;
+#[path = "tests/scope_edges.rs"]
+mod scope_edges;
 #[path = "tests/social_1.rs"]
 mod social_1;
 #[path = "tests/social_2.rs"]
 mod social_2;
 #[path = "tests/social_bounds.rs"]
 mod social_bounds;
+#[path = "tests/url_normalization_contracts.rs"]
+mod url_normalization_contracts;
+#[path = "tests/url_normalization_edges.rs"]
+mod url_normalization_edges;

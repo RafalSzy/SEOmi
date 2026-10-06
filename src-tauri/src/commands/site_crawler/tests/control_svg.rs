@@ -42,5 +42,13 @@ fn svg_dimensions_accept_bounded_tokens_and_viewbox_fallback() {
         svg_intrinsic_dimensions(br#"<svg viewBox="0,0,120,60"></svg>"#),
         Some((120, 60))
     );
+    assert_eq!(
+        svg_intrinsic_dimensions(br#"<svg viewBox="0 0 20"></svg>"#),
+        None
+    );
+    assert_eq!(
+        svg_intrinsic_dimensions(br#"<svg viewBox="0 0 -1 40"></svg>"#),
+        None
+    );
     assert!(svg_intrinsic_dimensions(&[0xff, 0xfe]).is_none());
 }

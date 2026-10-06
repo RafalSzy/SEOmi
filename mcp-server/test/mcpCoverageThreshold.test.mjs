@@ -6,9 +6,11 @@ const counts = (total, covered, branch = false) => branch
   ? {0: Array.from({length: total}, (_, index) => index < covered ? 1 : 0)}
   : Object.fromEntries(Array.from({length: total}, (_, index) => [`${index}`, index < covered ? 1 : 0]));
 
-const report = (covered, total = 10000) => ({
-  '/tmp/fixture.ts': {s: counts(total, covered), f: counts(total, covered), b: counts(total, covered, true)},
+const record = (total = 10000, statements = total, functions = total, branches = total) => ({
+  s: counts(total, statements), f: counts(total, functions), b: counts(total, branches, true),
 });
+
+const report = (covered, total = 10000) => ({ '/tmp/fixture.ts': record(total, covered, covered, covered) });
 
 test('rejects coverage below 98 percent', () => {
   assert.throws(() => assertMcpCoverageThreshold(report(9799)), /below 98%/);
@@ -18,6 +20,19 @@ test('accepts exactly 98 percent and returns real totals', () => {
   const summary = assertMcpCoverageThreshold(report(9800));
   assert.equal(summary.threshold, 98);
   for (const metric of Object.values(summary).slice(1)) assert.deepEqual(metric, {total: 10000, covered: 9800, percent: 98});
+});
+
+test('sums statements, functions, and branches across multiple records', () => {
+  const summary = assertMcpCoverageThreshold({ '/tmp/one.ts': record(), '/tmp/two.ts': record() });
+  for (const metric of Object.values(summary).slice(1)) assert.deepEqual(metric, {total: 20000, covered: 20000, percent: 100});
+});
+
+test('fails when functions alone are below the threshold', () => {
+  assert.throws(() => assertMcpCoverageThreshold({ '/tmp/fixture.ts': record(10000, 10000, 9799, 10000) }), /functions coverage 97\.99%/);
+});
+
+test('fails when branches alone are below the threshold', () => {
+  assert.throws(() => assertMcpCoverageThreshold({ '/tmp/fixture.ts': record(10000, 10000, 10000, 9799) }), /branches coverage 97\.99%/);
 });
 
 test('rejects missing and empty reports', () => {
