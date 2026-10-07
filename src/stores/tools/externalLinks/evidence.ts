@@ -1,6 +1,7 @@
 import type { CrawlRunRecord, ExternalLinkCheckBatchResult, SiteCrawlResult } from '@/types';
 import i18n from '@/i18n';
 import { normalizeCrawlLinkUrl } from '../crawlPersistence';
+import { crawlHealthScore } from '@/services/crawlHealthScore';
 
 export const collectExternalLinkTargets = (run: CrawlRunRecord, force: boolean): string[] =>
   [...new Set(run.result.pages.flatMap(page => page.links
@@ -39,7 +40,7 @@ export const applyExternalLinkEvidence = (result: SiteCrawlResult, batch: Extern
   const criticalCount = pages.reduce((count, page) => count + page.issues.filter((issue) => issue.severity === 'Critical').length, 0);
   const warningCount = pages.reduce((count, page) => count + page.issues.filter((issue) => issue.severity === 'Warning').length, 0);
   const noticeCount = pages.reduce((count, page) => count + page.issues.filter((issue) => issue.severity === 'Info').length, 0);
-  const healthScore = Math.max(20, 100 - Math.min(80, criticalCount * 15 + warningCount * 5));
+  const healthScore = crawlHealthScore(pages);
   const updated = { ...result, pages, critical_count: criticalCount, warning_count: warningCount, notice_count: noticeCount, health_score: healthScore };
   return updated;
 };
