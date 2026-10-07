@@ -16,15 +16,12 @@ pub use status::AiCliStatus;
 
 #[tauri::command]
 pub async fn detect_ai_clis() -> Vec<AiCliStatus> {
-    detect_ai_clis_with(|provider, command| async move {
-        version::version_check(&provider, &command).await
-    })
-    .await
+    detect_ai_clis_with(version::version_check).await
 }
 
 async fn detect_ai_clis_with<F, Fut>(mut check: F) -> Vec<AiCliStatus>
 where
-    F: FnMut(String, String) -> Fut,
+    F: FnMut(&'static str, &'static str) -> Fut,
     Fut: Future<Output = (bool, String)>,
 {
     let providers = [
@@ -34,7 +31,7 @@ where
     ];
     let mut results = Vec::with_capacity(providers.len());
     for (provider, command) in providers {
-        let (available, detail) = check(provider.to_string(), command.to_string()).await;
+        let (available, detail) = check(provider, command).await;
         results.push(AiCliStatus {
             provider: provider.to_string(),
             command: command.to_string(),
