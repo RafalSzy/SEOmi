@@ -1,4 +1,5 @@
-use tauri::AppHandle;
+use std::time::{Duration, Instant};
+use tauri::{AppHandle, Runtime};
 
 use super::super::{
     control::{wait_for_crawl_cancellation, CrawlControl},
@@ -30,12 +31,14 @@ pub fn render_options(setup: &CrawlSetup) -> RenderOptions {
 
 /// Fetch one page in rendered mode outside a prefetch window, reusing an idle
 /// renderer window when there is one.
-pub async fn fetch_rendered_step(
-    app: &AppHandle,
+pub async fn fetch_rendered_step<R: Runtime>(
+    app: &AppHandle<R>,
     control: &CrawlControl,
     setup: &CrawlSetup,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
     current_url: &str,
+    crawl_delay: Option<Duration>,
+    page_started_at: Instant,
 ) -> Result<FetchedResponse, CrawlFetchFailure> {
     let mut renderer = WebviewRenderer::new(
         app,
@@ -53,6 +56,7 @@ pub async fn fetch_rendered_step(
             &setup.config,
             state.render_health.rendering_enabled(),
             &mut renderer,
+            crawl_delay.map(|delay| (control, setup.run_id.as_str(), page_started_at, delay)),
         );
         tokio::select! {
             result = render => result,

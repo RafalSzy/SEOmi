@@ -29,8 +29,8 @@ use storage::*;
 use tauri::AppHandle;
 
 #[tauri::command]
-pub fn save_scheduled_task(
-    app: AppHandle,
+pub fn save_scheduled_task<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     task: ScheduledTaskManifest,
 ) -> Result<(), String> {
@@ -44,8 +44,8 @@ pub fn save_scheduled_task(
 }
 
 #[tauri::command]
-pub fn delete_scheduled_task(
-    app: AppHandle,
+pub fn delete_scheduled_task<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     schedule_id: String,
 ) -> Result<(), String> {
@@ -63,8 +63,8 @@ pub fn delete_scheduled_task(
 }
 
 #[tauri::command]
-pub fn load_scheduled_execution(
-    app: AppHandle,
+pub fn load_scheduled_execution<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     schedule_id: String,
 ) -> Result<Option<ScheduledExecutionHandoff>, String> {
@@ -74,6 +74,7 @@ pub fn load_scheduled_execution(
     else {
         return Ok(None);
     };
+    validate_handoff_identity(&project_id, &schedule_id, &handoff)?;
     let result_file = result_path(&app, &project_id, &schedule_id)?;
     if handoff.succeeded {
         handoff.result = read_json::<Value>(&result_file, MAX_RESULT_BYTES)?;
@@ -82,8 +83,8 @@ pub fn load_scheduled_execution(
 }
 
 #[tauri::command]
-pub fn list_scheduled_executions(
-    app: AppHandle,
+pub fn list_scheduled_executions<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
 ) -> Result<Vec<ScheduledExecutionHandoff>, String> {
     if !valid_identifier(&project_id) {
@@ -109,6 +110,8 @@ pub fn list_scheduled_executions(
         if let Some(mut handoff) =
             read_json::<ScheduledExecutionHandoff>(&path, MAX_EXECUTION_BYTES)?
         {
+            let file_schedule_id = &name["scheduled_execution_".len()..name.len() - ".json".len()];
+            validate_handoff_identity(&project_id, file_schedule_id, &handoff)?;
             let result_file = result_path(&app, &project_id, &handoff.schedule_id)?;
             if handoff.succeeded {
                 handoff.result = read_json::<Value>(&result_file, MAX_RESULT_BYTES)?;
@@ -122,8 +125,8 @@ pub fn list_scheduled_executions(
 }
 
 #[tauri::command]
-pub fn acknowledge_scheduled_execution(
-    app: AppHandle,
+pub fn acknowledge_scheduled_execution<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     schedule_id: String,
 ) -> Result<(), String> {
@@ -140,3 +143,7 @@ pub fn acknowledge_scheduled_execution(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "scheduled_worker/command_tests/mod.rs"]
+mod command_tests;

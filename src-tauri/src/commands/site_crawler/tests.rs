@@ -69,6 +69,8 @@ mod content_1;
 mod content_2;
 #[path = "tests/content_3.rs"]
 mod content_3;
+#[path = "tests/control_svg.rs"]
+mod control_svg;
 #[path = "tests/duplicates.rs"]
 mod duplicates;
 #[path = "tests/hreflang_1.rs"]
@@ -79,12 +81,16 @@ mod hreflang_2;
 mod html_1;
 #[path = "tests/html_2.rs"]
 mod html_2;
+#[path = "tests/ipc.rs"]
+mod ipc;
 #[path = "tests/navigation_1.rs"]
 mod navigation_1;
 #[path = "tests/navigation_2.rs"]
 mod navigation_2;
 #[path = "tests/relations.rs"]
 mod relations;
+#[path = "tests/resource_contracts.rs"]
+mod resource_contracts;
 #[path = "tests/resources_1.rs"]
 mod resources_1;
 #[path = "tests/resources_2.rs"]
@@ -105,9 +111,17 @@ mod runtime_3;
 mod schema;
 #[path = "tests/scope.rs"]
 mod scope;
+#[path = "tests/scope_contracts.rs"]
+mod scope_contracts;
+#[path = "tests/scope_edges.rs"]
+mod scope_edges;
 #[path = "tests/social_1.rs"]
 mod social_1;
 #[path = "tests/social_2.rs"]
 mod social_2;
 #[path = "tests/social_bounds.rs"]
 mod social_bounds;
+#[path = "tests/url_normalization_contracts.rs"]
+mod url_normalization_contracts;
+#[path = "tests/url_normalization_edges.rs"]
+mod url_normalization_edges;

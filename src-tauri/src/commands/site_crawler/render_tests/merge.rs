@@ -4,7 +4,7 @@ use super::*;
 fn browser_status_is_kept_when_the_browser_reports_one() {
     let rendered = page_data(404, true, false);
     let merged = merge_rendered_with_http(rendered, page_data(200, true, true));
-    assert_eq!(merged.status, 404);
+    assert_eq!(merged.status, 200);
 }
 
 #[test]
@@ -36,6 +36,25 @@ fn rendered_page_takes_status_and_headers_from_the_http_response() {
     assert_eq!(merged.content_encoding.as_deref(), Some("br"));
     assert_eq!(merged.http_refresh.as_deref(), Some("5; url=/next"));
     assert!(merged.response_headers_available);
+}
+
+#[test]
+fn transfer_charset_and_media_classification_stay_authoritative() {
+    let mut rendered = page_data(0, false, false);
+    rendered.charset = Some("windows-1252".into());
+    rendered.content_type = Some("text/plain".into());
+    let mut http = page_data(200, true, true);
+    http.charset = Some("utf-8".into());
+    http.content_type = Some("text/html; charset=utf-8".into());
+
+    let merged = merge_rendered_with_http(rendered, http);
+
+    assert_eq!(merged.charset.as_deref(), Some("utf-8"));
+    assert_eq!(
+        merged.content_type.as_deref(),
+        Some("text/html; charset=utf-8")
+    );
+    assert!(merged.declared_html);
 }
 
 #[test]

@@ -2,7 +2,7 @@
 mod inputs;
 pub use inputs::BuildCrawlResultInput;
 
-use tauri::{AppHandle, Emitter};
+use tauri::{Emitter, Runtime};
 
 use super::super::{
     control::{CrawlControl, CrawlProgress},
@@ -18,7 +18,7 @@ use super::setup::CrawlSetup;
 use super::sitemaps::CrawlSitemapsOutcome;
 use super::state::CrawlLoopState;
 
-pub fn build_crawl_result(input: BuildCrawlResultInput<'_>) -> SiteCrawlResult {
+pub fn build_crawl_result<R: Runtime>(input: BuildCrawlResultInput<'_, R>) -> SiteCrawlResult {
     let BuildCrawlResultInput {
         app,
         control,

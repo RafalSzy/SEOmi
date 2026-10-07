@@ -5,7 +5,10 @@ use std::collections::VecDeque;
 fn page_data(status: u16, declared_html: bool, headers: bool) -> FetchedPageData {
     FetchedPageData {
         status,
+        http_response_url: Some("https://example.com/file".into()),
+        response_url_mismatch: false,
         content_type: Some("text/html".into()),
+        content_disposition: None,
         content_length: None,
         content_encoding: None,
         http_refresh: None,
@@ -69,6 +72,7 @@ fn snapshot(final_url: &str, html: &str) -> RenderedPageSnapshot {
 }
 
 mod decision;
+mod delay;
 mod fetch;
 mod health;
 mod merge;

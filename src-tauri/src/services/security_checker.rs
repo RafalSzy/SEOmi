@@ -2,7 +2,13 @@ use crate::models::audit_data::{Issue, SecurityHeaders};
 use std::collections::HashMap;
 
 mod core_rules;
+#[cfg(test)]
+#[path = "security_checker/core_rules_tests.rs"]
+mod core_rules_tests;
 mod policy_rules;
+#[cfg(test)]
+#[path = "security_checker/policy_tests.rs"]
+mod policy_tests;
 #[cfg(test)]
 mod tests;
 

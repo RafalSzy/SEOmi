@@ -1,5 +1,5 @@
 use std::time::Duration;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Runtime};
 
 use super::super::{
     control::{CrawlControl, CrawlProgress},
@@ -16,11 +16,11 @@ use super::selectors::CrawlSelectors;
 use super::setup::CrawlSetup;
 use super::state::CrawlLoopState;
 
-pub async fn run_crawl_loop(
-    app: &AppHandle,
+pub async fn run_crawl_loop<R: Runtime>(
+    app: &AppHandle<R>,
     control: &CrawlControl,
     setup: &CrawlSetup,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
     selectors: &CrawlSelectors,
     robots_rules: &[RobotsRule],
     robots_crawl_delay: Option<Duration>,

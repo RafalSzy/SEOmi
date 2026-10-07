@@ -1,4 +1,5 @@
 use std::time::{Duration, Instant};
+use tauri::Runtime;
 use tokio::task::JoinSet;
 
 use super::super::{
@@ -8,10 +9,10 @@ use super::super::{
 use super::setup::CrawlSetup;
 use super::state::CrawlLoopState;
 
-async fn can_fetch_resources(
+async fn can_fetch_resources<R: Runtime>(
     setup: &CrawlSetup,
     control: &CrawlControl,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
 ) -> bool {
     if crawl_deadline_reached(setup.start_time, setup.max_run_seconds) {
         state.timed_out = true;
@@ -27,10 +28,10 @@ async fn can_fetch_resources(
     true
 }
 
-pub async fn crawl_secondary_resources(
+pub async fn crawl_secondary_resources<R: Runtime>(
     setup: &CrawlSetup,
     control: &CrawlControl,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
     robots_crawl_delay: Option<Duration>,
 ) -> (Vec<CrawledResource>, bool) {
     let max_resource_requests = setup

@@ -1,11 +1,12 @@
+use tauri::Runtime;
 use tokio::sync::mpsc;
 
 use super::models::CaptureEvent;
 use super::navigation::CLEAR_SESSION_SCRIPT;
 use crate::services::browser_proxy::BrowserRequestProxy;
 
-pub struct RenderedCrawlerSession {
-    pub(crate) window: tauri::WebviewWindow,
+pub struct RenderedCrawlerSession<R: Runtime = tauri::Wry> {
+    pub(crate) window: tauri::WebviewWindow<R>,
     pub(crate) proxy: Option<BrowserRequestProxy>,
     pub(crate) receiver: mpsc::Receiver<CaptureEvent>,
     pub(crate) nonce: String,
@@ -18,13 +19,13 @@ pub struct RenderedCrawlerSession {
     pub(crate) allowed_hosts: Vec<String>,
 }
 
-impl RenderedCrawlerSession {
+impl<R: Runtime> RenderedCrawlerSession<R> {
     pub fn close(self) {
         drop(self);
     }
 }
 
-impl Drop for RenderedCrawlerSession {
+impl<R: Runtime> Drop for RenderedCrawlerSession<R> {
     /// Closing on drop keeps hidden renderer windows from outliving a crawl
     /// that returned early, was cancelled or abandoned a failed session.
     fn drop(&mut self) {

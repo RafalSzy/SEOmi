@@ -10,10 +10,13 @@ mod inspection;
 mod mapping;
 mod models;
 mod performance;
+mod performance_source;
+mod performance_transport;
 mod pkce;
 mod properties;
 mod requests;
 mod rows;
+mod session;
 mod tokens;
 
 pub use models::{GscPerformanceFilters, GscSiteProperty};
@@ -69,29 +72,54 @@ pub async fn disconnect_search_console(project_id: String) -> Result<String, Str
 #[cfg(test)]
 mod analytics_tests;
 #[cfg(test)]
+#[path = "search_console/browser_contract_tests.rs"]
+mod browser_contract_tests;
+#[cfg(test)]
 mod callback_io_tests;
 #[cfg(test)]
 mod callback_tests;
 #[cfg(test)]
 mod command_tests;
 #[cfg(test)]
+#[path = "search_console/connect_entry_tests.rs"]
+mod connect_entry_tests;
+#[cfg(test)]
+#[path = "search_console/disconnect_transport_tests.rs"]
+mod disconnect_transport_tests;
+#[cfg(test)]
+#[path = "search_console/inspection_entry_tests.rs"]
+mod inspection_entry_tests;
+#[cfg(test)]
 mod joint_rows_tests;
-#[cfg(test)]
-mod rows_test_fixture;
-#[cfg(test)]
-mod rows_transport_tests;
-#[cfg(test)]
-mod token_transport_tests;
-#[cfg(test)]
-mod transport_regressions;
-#[cfg(test)]
-mod validation_tests;
-
 mod oauth_response;
 #[cfg(test)]
 #[path = "search_console/oauth_response_tests.rs"]
 mod oauth_response_tests;
+#[cfg(test)]
+#[path = "search_console/performance_entry_tests.rs"]
+mod performance_entry_tests;
+#[cfg(test)]
+#[path = "search_console/performance_fixture.rs"]
+mod performance_fixture;
+#[cfg(test)]
+#[path = "search_console/properties_entry_tests.rs"]
+mod properties_entry_tests;
+#[cfg(test)]
+mod rows_entry_tests;
+#[cfg(test)]
+mod rows_test_fixture;
+#[cfg(test)]
+mod rows_transport_tests;
 
 #[cfg(test)]
 #[path = "search_console/property_mapping_tests.rs"]
 mod property_mapping_tests;
+
+#[cfg(test)]
+#[path = "search_console/session_test_modules.rs"]
+mod session_test_modules;
+
+#[cfg(test)]
+mod token_transport_tests;
+#[cfg(test)]
+mod transport_fixture;

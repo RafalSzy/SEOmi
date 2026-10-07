@@ -1,4 +1,5 @@
 use scraper::Html;
+use tauri::Runtime;
 use url::Url;
 
 use super::super::{
@@ -12,14 +13,14 @@ use super::selectors::CrawlSelectors;
 use super::setup::CrawlSetup;
 use super::state::CrawlLoopState;
 
-pub async fn assemble_page_summary(
+pub async fn assemble_page_summary<R: Runtime>(
     fetched: FetchedResponse,
     page_duration: u64,
     current_url: &str,
     depth: usize,
     selectors: &CrawlSelectors,
     setup: &CrawlSetup,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
 ) -> Result<(), String> {
     let FetchedResponse {
         response,

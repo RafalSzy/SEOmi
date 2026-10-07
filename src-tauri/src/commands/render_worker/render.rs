@@ -3,10 +3,10 @@ use crate::commands::rendered_crawler::{
     RenderOptions, RenderedCrawlerSession, RenderedPageSnapshot,
 };
 use crate::utils::url_validator::validate_and_normalize_url;
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
-pub(super) async fn render_request(
-    app: &AppHandle,
+pub(super) async fn render_request<R: Runtime>(
+    app: &AppHandle<R>,
     request: RenderWorkerRequest,
 ) -> Result<RenderedPageSnapshot, String> {
     let target = validate_and_normalize_url(&request.url).map_err(|error| error.to_string())?;

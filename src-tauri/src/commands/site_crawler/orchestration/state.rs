@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::time::Instant;
+use tauri::Runtime;
 
 use super::super::{
     fetch_types::{CrawlFetchFailure, FetchedResponse},
@@ -9,7 +10,7 @@ use super::super::{
 use crate::commands::rendered_crawler::RenderedCrawlerSession;
 use crate::services::custom_search::MAX_CUSTOM_SEARCH_CHARS_PER_RUN;
 
-pub struct CrawlLoopState {
+pub struct CrawlLoopState<R: Runtime = tauri::Wry> {
     pub visited: HashSet<String>,
     pub queue: VecDeque<(String, usize)>,
     pub pages: Vec<CrawledPageSummary>,
@@ -25,13 +26,13 @@ pub struct CrawlLoopState {
     /// Idle renderer windows. Each one is an isolated browser context that
     /// renders a single page at a time; several render a window of queued
     /// pages concurrently.
-    pub rendered_sessions: Vec<RenderedCrawlerSession>,
+    pub rendered_sessions: Vec<RenderedCrawlerSession<R>>,
     pub render_health: RenderHealth,
     pub prefetched_order: VecDeque<(String, usize)>,
     pub prefetched_responses: HashMap<String, Result<FetchedResponse, CrawlFetchFailure>>,
 }
 
-impl CrawlLoopState {
+impl<R: Runtime> CrawlLoopState<R> {
     pub fn new(
         visited: HashSet<String>,
         queue: VecDeque<(String, usize)>,

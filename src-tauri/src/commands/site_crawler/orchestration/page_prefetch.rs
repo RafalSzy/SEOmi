@@ -1,5 +1,5 @@
 use std::time::Duration;
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 use super::super::{
     control::CrawlControl, models::CrawlConfig, prefetch::prefetch_http_pages,
@@ -26,11 +26,11 @@ pub fn prefetch_parallelism(config: &CrawlConfig, robots_crawl_delay: Option<Dur
 
 /// Fetch the next window of queued pages concurrently, unless the crawl is
 /// sequential, finished, cancelled or out of time.
-pub async fn prefetch_next_window(
-    app: &AppHandle,
+pub async fn prefetch_next_window<R: Runtime>(
+    app: &AppHandle<R>,
     control: &CrawlControl,
     setup: &CrawlSetup,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
     robots_rules: &[RobotsRule],
     parallelism: usize,
 ) {

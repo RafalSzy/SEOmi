@@ -1,5 +1,5 @@
 use base64::Engine as _;
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 use super::models::{
     RenderOptions, RenderedArtifactKind, RenderedPageArtifact, RenderedPageSnapshot,
@@ -8,8 +8,8 @@ use super::session::RenderedCrawlerSession;
 use crate::utils::url_validator::validate_and_normalize_url;
 
 #[tauri::command]
-pub async fn render_crawl_page(
-    app: AppHandle,
+pub async fn render_crawl_page<R: Runtime>(
+    app: AppHandle<R>,
     url: String,
     allow_subdomains: bool,
     scope_path: Option<String>,
@@ -48,8 +48,8 @@ pub async fn render_crawl_page(
 
 #[tauri::command]
 #[allow(clippy::too_many_arguments)]
-pub async fn capture_rendered_artifact(
-    app: AppHandle,
+pub async fn capture_rendered_artifact<R: Runtime>(
+    app: AppHandle<R>,
     url: String,
     allow_subdomains: bool,
     scope_path: Option<String>,

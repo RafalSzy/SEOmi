@@ -37,6 +37,8 @@ export const CrawledPageSummarySchema = z.object({
   redirect_stop_reason: z.union([z.string(), z.null()]).optional(),
   depth: z.number().finite(),
   http_status: z.number().finite(),
+  http_response_url: z.union([z.string(), z.null()]).optional(),
+  response_url_mismatch: z.boolean().optional(),
   response_time_ms: z.number().finite(),
   rendered_lcp_ms: z.union([z.number().finite(), z.null()]).optional(),
   rendered_inp_ms: z.union([z.number().finite(), z.null()]).optional(),

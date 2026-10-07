@@ -49,6 +49,12 @@ pub fn check_page_status_issues(
             message: "The page navigated to a different URL in the browser; the HTTP status and response headers describe the requested URL".into(),
         });
     }
+    if page_data.response_url_mismatch {
+        issues.push(CrawledPageIssue {
+            severity: "Warning".into(),
+            message: "The rendered DOM ended at a different URL; HTTP status and headers are reported for the requested response and are not applied as final-document directives".into(),
+        });
+    }
     if let Some(reason) = &page_data.render_fallback {
         issues.push(CrawledPageIssue {
             severity: "Warning".into(),

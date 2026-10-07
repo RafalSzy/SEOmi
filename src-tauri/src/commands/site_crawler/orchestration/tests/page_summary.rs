@@ -106,6 +106,20 @@ fn summary_marks_incomplete_bodies_without_inventing_semantic_provenance() {
 }
 
 #[test]
+fn summary_marks_raw_html_fallback_as_http_provenance() {
+    let mut page_data = data(HTML);
+    page_data.render_fallback = Some("renderer unavailable".into());
+    let signals = signals(
+        &page_data,
+        &setup(default_crawl_config(None)),
+        &mut state(),
+        &mut Vec::new(),
+    );
+    let page = summary(&page_data, signals, Vec::new(), "browser-rendered");
+    assert_eq!(page.semantic_content_provenance, "http");
+}
+
+#[test]
 fn complete_short_document_has_no_partial_marker() {
     let page_data = data("<html lang='en'><title>Evidence</title><main><h1>Evidence</h1><p>Observed text.</p></main></html>");
     let signals = signals(

@@ -47,7 +47,8 @@ async fn rendered_dom_is_merged_with_the_http_response_and_follows_the_browser_u
     assert_eq!(data.x_robots_tag.as_deref(), Some("noindex"));
     assert_eq!(data.rendered_lcp_ms, Some(300));
     assert!(data.rendered_diagnostics.is_some());
-    assert!(data.response_headers_available);
+    assert!(!data.response_headers_available);
+    assert!(data.response_url_mismatch);
     assert!(data.render_fallback.is_none());
 }
 
@@ -110,4 +111,7 @@ fn only_successful_html_responses_are_sent_to_the_renderer() {
     let mut unread = page_data(200, true, true);
     unread.body_read_failed = true;
     assert!(!is_renderable_response(&unread));
+    let mut attachment = page_data(200, true, true);
+    attachment.content_disposition = Some("attachment; filename=page.html".into());
+    assert!(!is_renderable_response(&attachment));
 }

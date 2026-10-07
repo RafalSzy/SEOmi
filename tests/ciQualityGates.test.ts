@@ -6,8 +6,9 @@ it('keeps strict static analysis, full coverage reporting and both macOS archite
   const release = readFileSync('.github/workflows/release.yml', 'utf8');
   expect(tests).toContain('cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings');
   expect(tests).toContain('npm run lint');
-  expect(tests).toContain('cargo llvm-cov --manifest-path src-tauri/Cargo.toml --lcov');
-  expect(tests).toContain('npm run test:coverage');
+  expect(tests).toContain('cargo +nightly llvm-cov --manifest-path src-tauri/Cargo.toml --branch --lcov');
+  expect(tests).toContain('node scripts/native-coverage-threshold.mjs coverage-rust-production.lcov.summary.json');
+  expect(tests).toContain('run: npm run test:coverage:target');
   expect(release).not.toContain('macos-13');
   expect(release).toContain("platform: 'macos-15-intel'");
   expect(release).toContain("args: '--target x86_64-apple-darwin'");

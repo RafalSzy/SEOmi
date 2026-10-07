@@ -1,5 +1,5 @@
 use std::time::{Duration, Instant};
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 use super::super::{
     control::CrawlControl,
@@ -12,11 +12,11 @@ use super::page_fetch_rendered::fetch_rendered_step;
 use super::setup::CrawlSetup;
 use super::state::CrawlLoopState;
 
-pub async fn fetch_page_step(
-    app: &AppHandle,
+pub async fn fetch_page_step<R: Runtime>(
+    app: &AppHandle<R>,
     control: &CrawlControl,
     setup: &CrawlSetup,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
     robots_crawl_delay: Option<Duration>,
     current_url: &str,
 ) -> (Result<FetchedResponse, CrawlFetchFailure>, u64) {
@@ -38,7 +38,16 @@ pub async fn fetch_page_step(
         if let Some(response) = prefetched_response {
             response
         } else if setup.config.crawl_mode == "browser-rendered" {
-            fetch_rendered_step(app, control, setup, state, current_url).await
+            fetch_rendered_step(
+                app,
+                control,
+                setup,
+                state,
+                current_url,
+                robots_crawl_delay,
+                page_start,
+            )
+            .await
         } else {
             request_with_safe_redirects(
                 &setup.client,
@@ -56,6 +65,11 @@ pub async fn fetch_page_step(
                 message: error.to_string(),
             })
         };
+    if setup.config.crawl_mode == "browser-rendered" && robots_crawl_delay.is_some() {
+        // The browser navigation is a second transport request. Start the
+        // next crawl-delay interval after that request has been gated.
+        state.last_page_request_at = Some(Instant::now());
+    }
     let page_duration = page_start.elapsed().as_millis() as u64;
     (resp, page_duration)
 }

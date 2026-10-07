@@ -11,22 +11,10 @@ const sourceFiles = (directory: string): string[] => readdirSync(directory, { wi
   return entry.name.endsWith('.ts') || entry.name.endsWith('.tsx') ? [path] : [];
 });
 
-const frontendCommands = (): Set<string> => {
-  const commands = new Set<string>();
-  for (const path of sourceFiles(sourceRoot)) {
-    const source = readFileSync(path, 'utf8');
-    for (const match of source.matchAll(/invokeTauriCommand(?:<[^>]+>)?\(\s*['"]([^'"]+)['"]/g)) {
-      commands.add(match[1]);
-    }
-  }
-
-  // PDF exports pass the command through a typed helper rather than calling
-  // invokeTauriCommand at the call site.
-  const exportSource = readFileSync(resolve(sourceRoot, 'services/export.ts'), 'utf8');
-  for (const match of exportSource.matchAll(/downloadPdf\(['"]([^'"]+)['"]/g)) {
-    commands.add(match[1]);
-  }
-  return commands;
+const frontendCommands = (path: string): Set<string> => {
+  const source = readFileSync(path, 'utf8');
+  return new Set([...source.matchAll(/invokeTauriCommand(?:<[^>]+>)?\(\s*['"]([^'"]+)['"]/g)]
+    .map((match) => match[1]));
 };
 
 const fallbackDesktopCommands = (): Set<string> => {
@@ -42,10 +30,24 @@ const registeredCommands = (): Set<string> => {
 };
 
 describe('Tauri IPC command contract', () => {
-  it('registers every frontend command in the native invoke handler', () => {
+  const paths = sourceFiles(sourceRoot);
+  it('discovers the full frontend source tree', () => {
+    expect(paths.length).toBeGreaterThan(100);
+    expect(registeredCommands().size).toBeGreaterThan(30);
+  });
+
+  it.each(paths)('registers frontend commands from %s', (path) => {
     const registered = registeredCommands();
-    const missing = [...frontendCommands()].filter((command) => !registered.has(command)).sort();
+    const missing = [...frontendCommands(path)].filter((command) => !registered.has(command)).sort();
     expect(missing).toEqual([]);
+  });
+
+  it('registers PDF commands passed through the typed export helper', () => {
+    const commands = paths.flatMap(path => [...readFileSync(path, 'utf8')
+      .matchAll(/downloadPdf\(\s*['"]([^'"]+)['"]/g)].map(match => match[1]));
+    expect(commands.length).toBeGreaterThan(0);
+    const registered = registeredCommands();
+    expect(commands.filter(command => !registered.has(command))).toEqual([]);
   });
 
   it('registers every desktop-only browser-fallback command in the native invoke handler', () => {

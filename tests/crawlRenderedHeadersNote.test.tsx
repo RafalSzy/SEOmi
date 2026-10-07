@@ -40,4 +40,18 @@ describe('rendered crawl response-header note', () => {
     expect(screen.getByText(saved.start_url)).toBeTruthy();
     expect(note()).toBeNull();
   });
+
+  it('warns when a rendered run contains both known and unknown response headers', () => {
+    const mixed = crawl('browser-rendered', true);
+    mixed.pages[1] = {
+      ...mixed.pages[1],
+      robots_decision: {
+        indexability: 'index',
+        link_following: 'follow',
+        response_headers_available: false,
+      },
+    };
+    render(<Header crawl={mixed} />);
+    expect(note()).toBeTruthy();
+  });
 });

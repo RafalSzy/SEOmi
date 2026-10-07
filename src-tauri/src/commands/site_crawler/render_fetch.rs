@@ -1,9 +1,12 @@
-use tauri::AppHandle;
+use std::time::{Duration, Instant};
+use tauri::{AppHandle, Runtime};
 
+use super::control::CrawlControl;
+use super::crawl_delay::wait_for_crawl_delay;
 use super::fetch_data::read_fetched_page_data;
 use super::fetch_types::{CrawlFetchFailure, FetchedPageBody, FetchedResponse};
 use super::models::CrawlConfig;
-use super::render_decision::{render_or_fallback, PageRenderer};
+use super::render_decision::{is_renderable_response, render_or_fallback, PageRenderer};
 use super::request_error::request_error_kind;
 use super::transport::request_with_safe_redirects;
 use crate::commands::rendered_crawler::{
@@ -11,8 +14,8 @@ use crate::commands::rendered_crawler::{
 };
 
 /// Renders in a hidden webview, reusing an idle session when it has one.
-pub(crate) struct WebviewRenderer {
-    app: AppHandle,
+pub(crate) struct WebviewRenderer<R: Runtime = tauri::Wry> {
+    app: AppHandle<R>,
     base_host: String,
     allow_subdomains: bool,
     scope_path: Option<String>,
@@ -20,16 +23,16 @@ pub(crate) struct WebviewRenderer {
     /// Present only while idle and healthy. It is taken for the duration of a
     /// capture, so an abandoned or failed capture drops it, which closes its
     /// window instead of leaving stale load events for the next page.
-    pub(crate) session: Option<RenderedCrawlerSession>,
+    pub(crate) session: Option<RenderedCrawlerSession<R>>,
 }
 
-impl WebviewRenderer {
+impl<R: Runtime> WebviewRenderer<R> {
     pub(crate) fn new(
-        app: &AppHandle,
+        app: &AppHandle<R>,
         base_host: &str,
         config: &CrawlConfig,
         options: &RenderOptions,
-        session: Option<RenderedCrawlerSession>,
+        session: Option<RenderedCrawlerSession<R>>,
     ) -> Self {
         Self {
             app: app.clone(),
@@ -42,7 +45,7 @@ impl WebviewRenderer {
     }
 }
 
-impl PageRenderer for WebviewRenderer {
+impl<R: Runtime> PageRenderer for WebviewRenderer<R> {
     async fn render(&mut self, url: &str) -> Result<RenderedPageSnapshot, String> {
         let mut session = match self.session.take() {
             Some(session) => session,
@@ -77,6 +80,7 @@ pub(crate) async fn fetch_rendered_page<R: PageRenderer>(
     config: &CrawlConfig,
     rendering_enabled: bool,
     renderer: &mut R,
+    render_gate: Option<(&CrawlControl, &str, Instant, Duration)>,
 ) -> Result<FetchedResponse, CrawlFetchFailure> {
     let max_response_bytes = config
         .max_response_bytes
@@ -103,6 +107,16 @@ pub(crate) async fn fetch_rendered_page<R: PageRenderer>(
         message: error.to_string(),
     })?;
     let http = read_fetched_page_data(response, max_response_bytes).await;
+    if rendering_enabled && is_renderable_response(&http) {
+        if let Some((control, run_id, request_started_at, delay)) = render_gate {
+            if !wait_for_crawl_delay(control, run_id, request_started_at, delay).await {
+                return Err(CrawlFetchFailure {
+                    kind: "cancelled".into(),
+                    message: "Crawl was cancelled during rendered crawl-delay pause.".into(),
+                });
+            }
+        }
+    }
     let (data, final_url) = render_or_fallback(
         http,
         final_url,

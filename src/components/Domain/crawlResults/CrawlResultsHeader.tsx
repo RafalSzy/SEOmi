@@ -4,8 +4,8 @@ import type { useCrawlResultsSession } from './useCrawlResultsSession';
 type Session = ReturnType<typeof useCrawlResultsSession>;
 export const CrawlResultsHeader = ({ session }: { session: Session }) => {
 const { currentRun, deleteCurrentRun, isCrawling, onDeleteRun, onSelectRun, openMapSection, result, runs, t } = session;
-// A rendered page paired with its HTTP response carries real response headers.
-const responseHeadersObserved = result.pages.some((page) => page.robots_decision?.response_headers_available);
+// Warn when any rendered page lacks headers applicable to its final DOM.
+const responseHeadersObserved = result.pages.every((page) => page.robots_decision?.response_headers_available === true);
 return (
 <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900/35 p-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">

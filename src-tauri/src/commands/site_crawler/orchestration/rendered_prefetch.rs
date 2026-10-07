@@ -1,5 +1,5 @@
 use std::collections::{HashMap, VecDeque};
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 use tokio::task::JoinSet;
 
 use super::super::{
@@ -45,16 +45,18 @@ pub fn take_prefetch_window(
 /// Render a bounded window of pages concurrently, one hidden renderer window
 /// per page. Parsing and queue expansion stay in the main loop and keep the
 /// crawl order deterministic, exactly as with `prefetch_http_pages`.
-pub async fn prefetch_rendered_pages(
-    app: &AppHandle,
+pub async fn prefetch_rendered_pages<R: Runtime>(
+    app: &AppHandle<R>,
     control: &CrawlControl,
     setup: &CrawlSetup,
-    state: &mut CrawlLoopState,
+    state: &mut CrawlLoopState<R>,
     parallelism: usize,
     robots_rules: &[RobotsRule],
 ) {
     let planned = state.pages.len() + state.prefetched_order.len();
-    let slots = parallelism.min(setup.limit.saturating_sub(planned));
+    let slots = parallelism
+        .min(super::super::render_health::MAX_RENDER_SESSIONS)
+        .min(setup.limit.saturating_sub(planned));
     if slots < 2 || state.queue.is_empty() {
         return;
     }
@@ -89,6 +91,7 @@ pub async fn prefetch_rendered_pages(
                 &config,
                 rendering_enabled,
                 &mut renderer,
+                None,
             )
             .await;
             (url, renderer.session.take(), result)

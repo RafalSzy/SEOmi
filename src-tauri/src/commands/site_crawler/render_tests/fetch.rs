@@ -8,7 +8,7 @@ use tokio::{
 };
 
 /// Local origin answering each route with a fixed status, headers and body.
-async fn origin(routes: Vec<(&'static str, u16, &'static str, &'static str)>) -> Origin {
+pub(super) async fn origin(routes: Vec<(&'static str, u16, &'static str, &'static str)>) -> Origin {
     let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
     let address = listener.local_addr().unwrap();
     let client = reqwest::Client::builder()
@@ -38,9 +38,9 @@ async fn origin(routes: Vec<(&'static str, u16, &'static str, &'static str)>) ->
     }
 }
 
-struct Origin {
-    client: reqwest::Client,
-    base: String,
+pub(super) struct Origin {
+    pub(super) client: reqwest::Client,
+    pub(super) base: String,
 }
 
 impl Origin {
@@ -51,7 +51,7 @@ impl Origin {
     ) -> Result<FetchedResponse, CrawlFetchFailure> {
         let config: CrawlConfig = serde_json::from_value(serde_json::json!({})).unwrap();
         let (url, host) = (format!("{}{path}", self.base), "example.test");
-        fetch_rendered_page(&self.client, &url, host, 5, &config, true, renderer).await
+        fetch_rendered_page(&self.client, &url, host, 5, &config, true, renderer, None).await
     }
 }
 
@@ -98,10 +98,20 @@ async fn downloads_and_error_pages_never_reach_a_renderer_window() {
     let origin = origin(vec![
         ("/gone", 404, "Content-Type: text/html\r\n", "<h1>Gone</h1>"),
         ("/file.zip", 200, "Content-Type: application/zip\r\n", "PK"),
+        (
+            "/download",
+            200,
+            "Content-Type: text/html\r\nContent-Disposition: attachment\r\n",
+            "<h1>Download</h1>",
+        ),
     ])
     .await;
     let mut renderer = FakeRenderer::returning(Vec::new());
-    for (path, status, body) in [("/gone", 404, "<h1>Gone</h1>"), ("/file.zip", 200, "PK")] {
+    for (path, status, body) in [
+        ("/gone", 404, "<h1>Gone</h1>"),
+        ("/file.zip", 200, "PK"),
+        ("/download", 200, "<h1>Download</h1>"),
+    ] {
         let fetched = origin.fetch(path, &mut renderer).await.ok().unwrap();
         assert_eq!(fetched.final_url, format!("{}{path}", origin.base));
         let data = page(fetched).await;

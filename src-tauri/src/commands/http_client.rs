@@ -34,3 +34,7 @@ pub async fn check_link(
         }),
     }
 }
+
+#[cfg(test)]
+#[path = "http_client_tests.rs"]
+mod tests;

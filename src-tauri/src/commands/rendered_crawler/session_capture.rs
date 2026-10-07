@@ -1,5 +1,6 @@
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use std::time::Duration;
+use tauri::Runtime;
 use tokio::time::timeout;
 
 use super::models::{
@@ -10,7 +11,7 @@ use super::navigation::is_allowed_crawl_navigation;
 use super::session::RenderedCrawlerSession;
 use crate::utils::url_validator::validate_and_normalize_url;
 
-impl RenderedCrawlerSession {
+impl<R: Runtime> RenderedCrawlerSession<R> {
     pub async fn capture(&mut self, url: &str) -> Result<RenderedPageSnapshot, String> {
         let normalized = validate_and_normalize_url(url).map_err(|error| error.to_string())?;
         if !is_allowed_crawl_navigation(

@@ -14,6 +14,7 @@ pub(crate) enum FetchedPageBody {
     Prefetched(Box<FetchedPageData>),
 }
 
+#[derive(Debug)]
 pub(crate) struct CrawlFetchFailure {
     pub(crate) kind: String,
     pub(crate) message: String,
@@ -21,7 +22,12 @@ pub(crate) struct CrawlFetchFailure {
 
 pub(crate) struct FetchedPageData {
     pub(crate) status: u16,
+    /// URL whose HTTP response supplied status and transfer headers.
+    pub(crate) http_response_url: Option<String>,
+    /// True when the rendered DOM ended at a different network document.
+    pub(crate) response_url_mismatch: bool,
     pub(crate) content_type: Option<String>,
+    pub(crate) content_disposition: Option<String>,
     pub(crate) content_length: Option<u64>,
     pub(crate) content_encoding: Option<String>,
     pub(crate) http_refresh: Option<String>,

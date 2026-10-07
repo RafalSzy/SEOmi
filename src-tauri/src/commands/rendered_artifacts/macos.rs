@@ -8,7 +8,7 @@ use {
     objc2_web_kit::{WKPDFConfiguration, WKSnapshotConfiguration, WKWebView},
     std::sync::{Arc, Mutex},
     std::time::Duration,
-    tauri::WebviewWindow,
+    tauri::{Runtime, WebviewWindow},
     tokio::sync::oneshot,
     tokio::time::timeout,
 };
@@ -17,8 +17,8 @@ use {
 type ArtifactSender = Arc<Mutex<Option<oneshot::Sender<Result<Vec<u8>, String>>>>>;
 
 #[cfg(target_os = "macos")]
-pub(crate) async fn capture_macos(
-    window: &WebviewWindow,
+pub(crate) async fn capture_macos<R: Runtime>(
+    window: &WebviewWindow<R>,
     kind: RenderedArtifactKind,
 ) -> Result<Vec<u8>, String> {
     let (sender, receiver) = oneshot::channel::<Result<Vec<u8>, String>>();

@@ -1,6 +1,10 @@
 use super::super::{fetch_types::CrawlFetchFailure, models::CrawledDiscoverySource};
 use super::setup_config::default_crawl_config;
 use super::*;
+use super::{
+    loop_runner::run_crawl_loop, robots::fetch_and_eval_robots, selectors::CrawlSelectors,
+    sitemaps::discover_and_parse_sitemaps, state::CrawlLoopState,
+};
 
 fn setup(config: CrawlConfig) -> CrawlSetup {
     CrawlSetup::init(
@@ -41,6 +45,9 @@ fn failure(kind: &str) -> CrawlFetchFailure {
 mod discovery;
 mod discovery_http_fixture;
 mod frontier;
+mod frontier_normalization;
+mod loop_runner_guards;
+mod loop_runner_transport;
 mod page_assembly;
 mod page_directives;
 mod page_error;
@@ -49,18 +56,23 @@ mod page_fixture;
 mod page_frontier;
 mod page_link_contracts;
 mod page_metadata;
+mod page_render_mismatch;
 mod page_render_status;
 mod page_signals;
 mod page_summary;
 mod page_text;
+mod pipeline_runtime;
+mod pipeline_scope;
 mod rendered_prefetch;
 mod resource_contracts;
 mod resource_deadlines;
 mod resource_regressions;
 mod robots_contracts;
+mod runtime_generic;
 mod setup_contracts;
 mod setup_lifecycle;
 mod sitemap_contracts;
 mod sitemap_limits;
 mod sitemap_regressions;
 mod state;
+mod summary_limits;

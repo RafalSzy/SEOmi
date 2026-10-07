@@ -15,7 +15,7 @@
 | EXT-009 | Embeddingi + SERP overlap | PARTIAL: scalono darmowy domyślny tryb lokalnych wektorów cech, embeddingi Ollamy/hybrid i metrykę spójności; brak połączonego scoringu z rzeczywistym SERP overlap, wersji/rynku i uzasadnień par; nie utożsamiać lokalnych wektorów cech z modelem semantycznym |
 | EXT-010 | Audyt frazy docelowej | OPEN: fraza+konkretny URL, tytuł/H1/treść/intencja/linki, dowody z audytu, bez obietnic pozycji |
 | EXT-011 | Luki treści TOP10 | OPEN: faktycznie pobrane strony TOP10, dostępność i daty, tematy/dowody/udział stron; brak danych nie oznacza luki |
-| EXT-012 | Ollama | PARTIAL: scalono embed/generate w usługach embeddingów i ustawienia modelu w panelu klastrów; CLI ma endpoint, desktop używa loopback11434. Pełne połączenie z asystentem/chat, test połączenia, konfiguracja LAN w desktopie, limity transportu i weryfikacja live pozostają OPEN |
+| EXT-012 | Ollama | PARTIAL: scalono embed/generate w usługach embeddingów i ustawienia modelu w panelu klastrów; CLI ma endpoint, desktop używa loopback11434. Dodano testowane limity transportu (8 MiB, timeout i partię), walidację originu oraz prywatne błędy. Pełne połączenie z asystentem/chat, test połączenia, konfiguracja LAN w desktopie i weryfikacja live pozostają OPEN |
 | EXT-013 | Crawl w czasie | OPEN: porównanie dwóch ukończonych crawlów jednego projektu/zakresu; dodane/usunięte/zmienione strony i dowody |
 | EXT-014 | Graf ważony GSC | OPEN: wewnętrzny PageRank + osobne rzeczywiste metryki GSC, rozróżnienie struktury od ruchu |
 | EXT-015 | Darmowe odkrywanie fraz/intencja | OPEN: autocomplete/import, pochodzenie sugestii, dopasowanie fraz do stron i sygnały intencji z niepewnością |

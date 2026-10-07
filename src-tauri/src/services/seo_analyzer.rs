@@ -132,4 +132,6 @@ pub async fn analyze_page(fetch_result: FetchResult) -> Result<PageAuditData> {
 }
 
 #[cfg(test)]
+mod metadata_tests;
+#[cfg(test)]
 mod tests;

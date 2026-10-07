@@ -4,7 +4,7 @@ use super::page_fixture::*;
 use super::*;
 use crate::commands::site_crawler::fetch_types::{FetchedPageBody, FetchedResponse};
 
-fn rendered_config() -> CrawlConfig {
+pub(super) fn rendered_config() -> CrawlConfig {
     let mut config = default_crawl_config(None);
     config.crawl_mode = "browser-rendered".into();
     config
@@ -57,7 +57,7 @@ fn render_fallback_is_a_page_warning_carrying_the_reason() {
     );
 }
 
-async fn assembled(
+pub(super) async fn assembled(
     page_data: super::super::super::fetch_types::FetchedPageData,
     state: &mut CrawlLoopState,
 ) {

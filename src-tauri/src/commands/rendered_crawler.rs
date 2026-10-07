@@ -8,6 +8,10 @@ pub mod session_capture;
 pub mod session_open;
 
 #[cfg(test)]
+mod tests_capture;
+#[cfg(test)]
+mod tests_commands;
+#[cfg(test)]
 mod tests_navigation;
 #[cfg(test)]
 mod tests_scripts;

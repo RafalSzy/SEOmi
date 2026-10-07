@@ -1,5 +1,4 @@
 use crate::models::audit_data::PageAuditData;
-use crate::services::{http_client, seo_analyzer};
 use crate::utils::{url_validator, user_agents};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::State;
@@ -7,9 +6,12 @@ use uuid::Uuid;
 
 mod control;
 mod rate_limiter;
+mod request;
+mod transport;
 
 pub use control::AuditControl;
 use rate_limiter::audit_rate_limiter;
+use transport::fetch_and_analyze;
 
 fn normalize_request_id(value: Option<String>) -> String {
     value
@@ -40,20 +42,18 @@ pub async fn inspect_url(
     let ua = user_agents::resolve_user_agent(user_agent.as_deref());
     let timeout = timeout_secs.unwrap_or(15).clamp(3, 60);
     let request_id = normalize_request_id(request_id);
-    let cancellation = control.register(&request_id);
-
-    let fetch_result = tokio::select! {
-        _ = cancellation.notified() => {
-            control.finish(&request_id);
-            return Err("Audit cancelled by user.".to_string());
-        }
-        result = fetch_and_analyze(&validated_url, &ua, timeout, max_redirects.unwrap_or(10), verify_ssl.unwrap_or(true)) => {
-            result.map_err(|e| format!("Network request failed: {}", e))?
-        }
-    };
-    let audit_data = fetch_result;
-    control.finish(&request_id);
-    Ok(audit_data)
+    request::run_controlled(&control, &request_id, async {
+        fetch_and_analyze(
+            &validated_url,
+            &ua,
+            timeout,
+            max_redirects.unwrap_or(10),
+            verify_ssl.unwrap_or(true),
+        )
+        .await
+        .map_err(|error| format!("Network request failed: {error}"))
+    })
+    .await
 }
 
 pub async fn inspect_url_headless(
@@ -70,32 +70,6 @@ pub async fn inspect_url_headless(
         .map_err(|error| error.to_string())
 }
 
-async fn fetch_and_analyze(
-    validated_url: &url::Url,
-    user_agent: &str,
-    timeout_secs: u64,
-    max_redirects: usize,
-    verify_ssl: bool,
-) -> Result<PageAuditData, anyhow::Error> {
-    let request = if max_redirects == 10 && verify_ssl {
-        http_client::fetch_page(validated_url, user_agent, timeout_secs).await
-    } else {
-        http_client::fetch_page_with_options(
-            validated_url,
-            user_agent,
-            timeout_secs,
-            max_redirects,
-            verify_ssl,
-        )
-        .await
-    };
-    let fetch_result =
-        request.map_err(|error| anyhow::anyhow!("Network request failed: {error}"))?;
-    seo_analyzer::analyze_page(fetch_result)
-        .await
-        .map_err(|error| anyhow::anyhow!("SEO analysis failed: {error}"))
-}
-
 #[tauri::command]
 pub fn cancel_inspect_url(
     request_id: String,
@@ -108,3 +82,6 @@ pub fn cancel_inspect_url(
 #[cfg(test)]
 #[path = "seo_audit/tests.rs"]
 mod tests;
+#[cfg(test)]
+#[path = "seo_audit/transport_tests.rs"]
+mod transport_tests;

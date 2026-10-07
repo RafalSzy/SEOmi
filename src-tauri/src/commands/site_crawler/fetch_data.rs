@@ -1,21 +1,12 @@
 use super::*;
 
+#[path = "fetch_data_media.rs"]
+mod media;
+use media::is_html_media_type;
+
 #[cfg(test)]
 #[path = "fetch_data_tests/mod.rs"]
 mod tests;
-
-fn is_html_media_type(value: &str) -> bool {
-    matches!(
-        value
-            .split(';')
-            .next()
-            .unwrap_or("")
-            .trim()
-            .to_ascii_lowercase()
-            .as_str(),
-        "text/html" | "application/xhtml+xml"
-    )
-}
 
 pub(super) async fn read_fetched_page_data(
     source: FetchedPageBody,
@@ -25,9 +16,15 @@ pub(super) async fn read_fetched_page_data(
         FetchedPageBody::Prefetched(data) => *data,
         FetchedPageBody::Http(mut response) => {
             let status = response.status().as_u16();
+            let http_response_url = Some(response.url().to_string());
             let content_type = response
                 .headers()
                 .get(reqwest::header::CONTENT_TYPE)
+                .and_then(|value| value.to_str().ok())
+                .map(str::to_owned);
+            let content_disposition = response
+                .headers()
+                .get(reqwest::header::CONTENT_DISPOSITION)
                 .and_then(|value| value.to_str().ok())
                 .map(str::to_owned);
             let content_length = response.content_length();
@@ -91,7 +88,10 @@ pub(super) async fn read_fetched_page_data(
             }
             FetchedPageData {
                 status,
+                http_response_url,
+                response_url_mismatch: false,
                 content_type,
+                content_disposition,
                 content_length,
                 content_encoding,
                 http_refresh,
@@ -119,7 +119,10 @@ pub(super) async fn read_fetched_page_data(
             let declared_html = content_type.as_deref().is_some_and(is_html_media_type);
             FetchedPageData {
                 status: snapshot.http_status.unwrap_or(0),
+                http_response_url: None,
+                response_url_mismatch: false,
                 content_type,
+                content_disposition: None,
                 // A serialized DOM length is not the transferred response size.
                 content_length: None,
                 content_encoding: None,
