@@ -17,10 +17,10 @@ describe('semantic map term inventory', () => {
       topicPage('https://site.test/gone', ['szkolenia'], { document_language: 'pl', http_status: 410 }),
     ]);
 
-    expect(inventory.termsByPage).toEqual([['szkolen', 'sprzedaz'], ['szkolen', 'sprzedaz'], ['szkolen'], []]);
-    expect(inventory.displayTerm('szkolen')).toBe('szkolenie');
+    expect(inventory.termsByPage).toEqual([['pl:szkolen', 'pl:sprzedaz'], ['pl:szkolen', 'pl:sprzedaz'], ['pl:szkolen'], []]);
+    expect(inventory.displayTerm('pl:szkolen')).toBe('szkolenie');
     // One page each: the shorter observed form wins the tie.
-    expect(inventory.displayTerm('sprzedaz')).toBe('sprzedaż');
+    expect(inventory.displayTerm('pl:sprzedaz')).toBe('sprzedaż');
   });
 
   it('keeps error pages out of topical clusters and topic edges', () => {
@@ -96,5 +96,23 @@ describe('semantic map term inventory', () => {
 
     expect(map.topicEdges).toHaveLength(1);
     expect(map.nodes[0].clusterId).toBe(map.nodes[1].clusterId);
+  });
+
+  it('does not connect identical surface terms from different language pages', () => {
+    const pages = [
+      topicPage('https://site.test/pl', ['firmy', 'oferta'], { semantic_language: 'pl' }),
+      topicPage('https://site.test/en', ['firm', 'offer'], { semantic_language: 'en' }),
+    ];
+
+    expect(buildSemanticMap(pages, pages[0].url).topicEdges).toEqual([]);
+  });
+
+  it('does not connect identical topical words when only the page language differs', () => {
+    const pages = [
+      topicPage('https://site.test/pl', ['seo', 'marketing'], { semantic_language: 'pl' }),
+      topicPage('https://site.test/en', ['seo', 'marketing'], { semantic_language: 'en' }),
+    ];
+
+    expect(buildSemanticMap(pages, pages[0].url).topicEdges).toEqual([]);
   });
 });

@@ -1,7 +1,7 @@
 import type { CrawledPageSummary } from '@/types';
 import type { SemanticAuditFinding } from './types';
 import i18n from '@/i18n';
-import { normalizeSemanticText, semanticPageLanguage, semanticTermKey } from '@/services/semanticText';
+import { normalizeSemanticText, semanticPageTermInventory, semanticPageLanguage, semanticTermIdentity } from '@/services/semanticText';
 
 export const MAX_FINDINGS = 500;
 export const MAX_PAGES = 5000;
@@ -30,13 +30,7 @@ const normalize = normalizeSemanticText;
 export const tokens = (value: string) => normalize(value).split(/[^\p{L}\p{N}]+/u).filter((token) => token.length > 2);
 /** Page terms keyed by inflection key, mapped to the first observed (normalized) form. */
 export const termsFor = (page: CrawledPageSummary): Map<string, string> => {
-  const language = semanticPageLanguage(page);
-  const terms = new Map<string, string>();
-  for (const term of (page.semantic_terms ?? []).slice(0, MAX_TERMS_PER_PAGE).map(normalize).filter(Boolean)) {
-    const key = semanticTermKey(term, language);
-    if (!terms.has(key)) terms.set(key, term);
-  }
-  return terms;
+  return semanticPageTermInventory(page, MAX_TERMS_PER_PAGE);
 };
 export const urlKey = (value: string | null | undefined, base?: string) => {
   const trimmed = typeof value === 'string' ? value.trim() : '';
@@ -56,7 +50,7 @@ export const termCoverage = (query: string, page: CrawledPageSummary) => {
   if (!expected.length) return null;
   const observed = termsFor(page);
   const language = semanticPageLanguage(page);
-  return { expected, matched: expected.filter((term) => observed.has(semanticTermKey(term, language))) };
+  return { expected, matched: expected.filter((term) => observed.has(semanticTermIdentity(term, language))) };
 };
 
 export const normalizedProviderIntent = (value: string | null | undefined): string | null => {

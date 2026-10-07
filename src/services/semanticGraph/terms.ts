@@ -1,5 +1,5 @@
 import type { CrawledPageSummary } from '@/types';
-import { isSemanticNoiseTerm, isSemanticTopicalStatus, semanticPageLanguage, semanticTermKey } from '@/services/semanticText';
+import { semanticPageTermEntries } from '@/services/semanticText';
 
 const MAX_TERMS_PER_PAGE = 40;
 
@@ -11,22 +11,12 @@ const MAX_TERMS_PER_PAGE = 40;
 export const buildTermInventory = (selectedPages: CrawledPageSummary[]) => {
   const surfaceForms = new Map<string, Map<string, number>>();
   const termsByPage = selectedPages.map((page) => {
-    // Redirects and error pages describe the response, not a topic of the site.
-    if (!isSemanticTopicalStatus(page.http_status)) return [];
-    const language = semanticPageLanguage(page);
-    const keys: string[] = [];
-    for (const term of page.semantic_terms ?? []) {
-      if (keys.length >= MAX_TERMS_PER_PAGE) break;
-      // Keep diacritics for display; comparison happens on the folded key.
-      const surface = term.normalize('NFKC').trim().toLocaleLowerCase();
-      if (!surface || isSemanticNoiseTerm(surface)) continue;
-      const key = semanticTermKey(surface, language);
-      if (keys.includes(key)) continue;
-      keys.push(key);
+    const keys = semanticPageTermEntries(page, MAX_TERMS_PER_PAGE).map(({ key, surface }) => {
       const forms = surfaceForms.get(key) ?? new Map<string, number>();
       forms.set(surface, (forms.get(surface) ?? 0) + 1);
       surfaceForms.set(key, forms);
-    }
+      return key;
+    });
     return keys;
   });
   // The form used by most pages; ties prefer the shorter, then the lexically first form.

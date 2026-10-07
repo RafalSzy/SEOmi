@@ -1,6 +1,6 @@
 import type { CrawledPageSummary, SiteCrawlResult } from '@/types';
 import i18n from '@/i18n';
-import { isSemanticTopicalStatus } from '@/services/semanticText';
+import { isSemanticTopicalStatus, semanticPageTermEntries } from '@/services/semanticText';
 
 export type CrawlerReadinessStatus = 'pass' | 'warning' | 'error' | 'unknown';
 export type TranslationParams = Record<string, string | number>;
@@ -73,7 +73,7 @@ export const buildCrawlerReadiness = (result: SiteCrawlResult): CrawlerReadiness
   const missingLanguage = countPages(pages, (page) => !page.document_language?.trim());
   // The crawler extracts no terms from redirects and error pages; http-response reports those.
   const termPages = countPages(pages, (page) => isSemanticTopicalStatus(page.http_status));
-  const missingTerms = countPages(pages, (page) => isSemanticTopicalStatus(page.http_status) && !(page.semantic_terms?.length));
+  const missingTerms = countPages(pages, (page) => isSemanticTopicalStatus(page.http_status) && semanticPageTermEntries(page).length === 0);
   const schemaErrors = countPages(pages, (page) => page.schema_syntax_errors > 0 || Boolean(page.schema_validation_findings?.some((finding) => finding.finding.severity === 'error')));
   const schemaObserved = countPages(pages, (page) => page.schema_types.length > 0);
 

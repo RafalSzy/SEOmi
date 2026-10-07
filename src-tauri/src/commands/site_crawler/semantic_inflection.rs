@@ -2,21 +2,59 @@ use super::*;
 
 /// Lowercases and folds Polish diacritics so "wiecej" and "więcej" compare equal.
 pub(super) fn fold_semantic_text(value: &str) -> String {
-    value
-        .to_lowercase()
-        .chars()
-        .map(|character| match character {
-            'ą' => 'a',
-            'ć' => 'c',
-            'ę' => 'e',
-            'ł' => 'l',
-            'ń' => 'n',
-            'ó' => 'o',
-            'ś' => 's',
-            'ź' | 'ż' => 'z',
+    let mut folded = String::with_capacity(value.len());
+    for character in value.to_lowercase().chars() {
+        if ('\u{300}'..='\u{36f}').contains(&character) {
+            continue;
+        }
+        if ('\u{ff01}'..='\u{ff5e}').contains(&character) {
+            if let Some(ascii) = char::from_u32(character as u32 - 0xfee0) {
+                folded.push(ascii);
+                continue;
+            }
+        }
+        folded.push(match character {
+            'à' | 'á' | 'â' | 'ã' | 'ä' | 'å' | 'ā' | 'ă' | 'ą' | 'ǎ' | 'ǻ' => 'a',
+            'ç' | 'ć' | 'ĉ' | 'ċ' | 'č' => 'c',
+            'ď' | 'đ' => 'd',
+            'è' | 'é' | 'ê' | 'ë' | 'ē' | 'ĕ' | 'ė' | 'ę' | 'ě' => 'e',
+            'ĝ' | 'ğ' | 'ġ' | 'ģ' => 'g',
+            'ĥ' | 'ħ' => 'h',
+            'ì' | 'í' | 'î' | 'ï' | 'ĩ' | 'ī' | 'ĭ' | 'į' | 'ǐ' => 'i',
+            'ĵ' => 'j',
+            'ķ' => 'k',
+            'ĺ' | 'ļ' | 'ľ' | 'ŀ' | 'ł' => 'l',
+            'ñ' | 'ń' | 'ņ' | 'ň' => 'n',
+            'ò' | 'ó' | 'ô' | 'õ' | 'ö' | 'ō' | 'ŏ' | 'ő' | 'ơ' | 'ǒ' => 'o',
+            'ŕ' | 'ŗ' | 'ř' => 'r',
+            'ś' | 'ŝ' | 'ş' | 'š' => 's',
+            'ţ' | 'ť' | 'ŧ' => 't',
+            'ù' | 'ú' | 'û' | 'ü' | 'ũ' | 'ū' | 'ŭ' | 'ů' | 'ű' | 'ų' | 'ư' | 'ǔ' => {
+                'u'
+            }
+            'ŵ' => 'w',
+            'ý' | 'ÿ' | 'ŷ' => 'y',
+            'ź' | 'ż' | 'ž' => 'z',
+            'ß' => {
+                folded.push_str("ss");
+                continue;
+            }
+            'ø' => {
+                folded.push('o');
+                continue;
+            }
+            'æ' => {
+                folded.push_str("ae");
+                continue;
+            }
+            'œ' => {
+                folded.push_str("oe");
+                continue;
+            }
             other => other,
-        })
-        .collect()
+        });
+    }
+    folded
 }
 
 /// Function words, navigation chrome and date fragments. The list is shared

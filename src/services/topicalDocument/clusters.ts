@@ -3,7 +3,7 @@ import type { SemanticMap } from '@/services/semanticMap';
 import type { TopicalMapDocument } from './types';
 import { cleanText, MAX_NODES, MAX_TERMS_PER_NODE } from './primitives';
 import { createTopicalNode } from './factories';
-import { semanticPageLanguage, semanticTermKey } from '@/services/semanticText';
+import { semanticPageTermEntries } from '@/services/semanticText';
 
 export const importCrawlClusters = (
   document: TopicalMapDocument,
@@ -18,9 +18,8 @@ export const importCrawlClusters = (
     const sourceUrls = pages.filter((page) => memberUrls.has(page.url) || memberUrls.has(page.final_url)).map((page) => page.final_url || page.url);
     // One evidence term per word: inflected forms from different member pages share a key.
     const seenKeys = new Set<string>();
-    const evidenceTerms = members.flatMap((node) => (node.page.semantic_terms ?? []).map((term) => ({ term: cleanText(term, 100).toLocaleLowerCase(), language: semanticPageLanguage(node.page) })))
-      .filter(({ term, language }) => {
-        const key = semanticTermKey(term, language);
+    const evidenceTerms = members.flatMap((node) => semanticPageTermEntries(node.page).map(({ key, surface }) => ({ key, term: cleanText(surface, 100) })))
+      .filter(({ key, term }) => {
         if (!term || seenKeys.has(key)) return false;
         seenKeys.add(key);
         return true;

@@ -93,4 +93,14 @@ describe('buildEntityEvidenceGraph', () => {
       expect.objectContaining({ kind: 'observed', source: 'fact:fact-offer', target: 'page:0', coverage: 1, matchedTerms: ['szkolenia', 'linkedin'] }),
     ]));
   });
+
+  it('excludes error-page terms from comparable entity evidence', () => {
+    const graph = buildEntityEvidenceGraph(document, [
+      { ...page('https://example.com/missing', ['acme', 'seo', 'warszawa']), http_status: 404 } as CrawledPageSummary,
+    ]);
+
+    expect(graph.comparablePages).toBe(0);
+    expect(graph.observedAssertions).toBe(0);
+    expect(graph.edges.some((edge) => edge.kind === 'observed')).toBe(false);
+  });
 });

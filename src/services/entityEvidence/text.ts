@@ -1,6 +1,6 @@
 import type { CrawledPageSummary } from '@/types';
 import type { TopicalEntityFact } from '@/services/topicalMap';
-import { semanticPageLanguage, semanticTermKey } from '@/services/semanticText';
+import { semanticPageTermInventory, semanticPageLanguage, semanticTermIdentity } from '@/services/semanticText';
 
 export const MAX_FACTS = 300;
 export const MAX_PAGES = 500;
@@ -37,8 +37,8 @@ export const assertionLabel = (fact: TopicalEntityFact): string => `${fact.attri
 
 export const coverageFor = (assertionTerms: string[], page: CrawledPageSummary): { matched: string[]; coverage: number } | null => {
   const language = semanticPageLanguage(page);
-  const observed = new Set((page.semantic_terms ?? []).map(normalize).filter(Boolean).map((term) => semanticTermKey(term, language)));
+  const observed = new Set(semanticPageTermInventory(page).keys());
   if (!assertionTerms.length || !observed.size) return null;
-  const matched = assertionTerms.filter((term) => observed.has(semanticTermKey(term, language)));
+  const matched = assertionTerms.filter((term) => observed.has(semanticTermIdentity(normalize(term), language)));
   return { matched, coverage: matched.length / assertionTerms.length };
 };

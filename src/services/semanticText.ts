@@ -11,11 +11,16 @@ export const normalizeSemanticText = (value: string): string => value
   .replace(/[\u0300-\u036f]/g, '')
   .replace(/[łŁ]/g, 'l')
   .replace(/[đĐ]/g, 'd')
+  .replace(/[Ħħ]/g, 'h')
+  .replace(/[Ĵĵ]/g, 'j')
+  .replace(/[Ķķ]/g, 'k')
+  .replace(/[Ŧŧ]/g, 't')
+  .replace(/[Ŵŵ]/g, 'w')
   .replace(/ß/g, 'ss')
   .replace(/[øØ]/g, 'o')
   .replace(/[æÆ]/g, 'ae')
   .replace(/[œŒ]/g, 'oe')
-  .toLocaleLowerCase()
+  .toLowerCase()
   .trim();
 
 const SEMANTIC_STOPWORDS = new Set(
@@ -32,7 +37,7 @@ const POLISH_SUFFIXES = [
 const MIN_POLISH_STEM_CHARS = 4;
 
 const primaryLanguage = (language: string | null | undefined): string =>
-  (language ?? '').split(/[-_]/)[0].trim().toLocaleLowerCase();
+  (language ?? '').split(/[-_]/)[0].trim().toLowerCase();
 
 /**
  * Comparison key for a semantic term: diacritics are folded and regular
@@ -53,6 +58,10 @@ export const semanticTermKey = (term: string, language: string | null | undefine
   }
   return folded;
 };
+
+/** A page-safe key: language is part of identity, so inflection cannot cross languages. */
+export const semanticTermIdentity = (term: string, language: string | null | undefined): string =>
+  `${primaryLanguage(language) || 'und'}:${semanticTermKey(term, language)}`;
 
 /**
  * True for function words, navigation chrome, date fragments and tokens that
@@ -76,16 +85,57 @@ export const isSemanticTopicalStatus = (status: number | null | undefined): bool
   !status || (status >= 200 && status < 300);
 
 /** Grouping language for a page's terms; legacy runs only have the declared language. */
-export const semanticPageLanguage = (page: { semantic_language?: string | null; document_language?: string | null }): string | null | undefined =>
-  page.semantic_language ?? page.document_language;
+export const semanticPageLanguage = (page: { semantic_language?: string | null; document_language?: string | null }): string | null | undefined => {
+  const declared = [page.semantic_language, page.document_language]
+    .find((value): value is string => typeof value === 'string' && value.trim().length > 0);
+  if (declared) return declared;
+  return page.semantic_language !== undefined ? page.semantic_language : page.document_language;
+};
 
 /** Keeps the first form of each word, treating inflections as the same term. */
 export const uniqueSemanticTerms = (terms: string[], language: string | null | undefined): string[] => {
   const seen = new Set<string>();
   return terms.filter((term) => {
-    const key = semanticTermKey(term, language);
+    if (!term.trim() || isSemanticNoiseTerm(term)) return false;
+    const key = semanticTermIdentity(term, language);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 };
+
+export interface SemanticPageTermSource {
+  http_status?: number | null;
+  semantic_terms?: string[] | null;
+  semantic_language?: string | null;
+  document_language?: string | null;
+}
+
+export interface SemanticPageTermEntry { key: string; surface: string; observed: string }
+
+const semanticSurface = (value: string): string => value.normalize('NFKC').trim().toLowerCase();
+const semanticComparable = (value: string): string => normalizeSemanticText(value).replace(/[^\p{L}\p{N}]+/gu, '');
+
+/** One bounded, filtered inventory shared by every evidence consumer. */
+export const semanticPageTermEntries = (page: SemanticPageTermSource, limit = 40): SemanticPageTermEntry[] => {
+  if (!isSemanticTopicalStatus(page.http_status)) return [];
+  const language = semanticPageLanguage(page);
+  const seen = new Set<string>();
+  const entries: SemanticPageTermEntry[] = [];
+  for (const raw of page.semantic_terms ?? []) {
+    if (entries.length >= limit) break;
+    if (typeof raw !== 'string') continue;
+    const observed = raw.trim();
+    const surface = semanticSurface(observed);
+    const comparable = semanticComparable(surface);
+    if (!surface || !comparable || isSemanticNoiseTerm(comparable)) continue;
+    const key = semanticTermIdentity(comparable, language);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    entries.push({ key, surface, observed });
+  }
+  return entries;
+};
+
+export const semanticPageTermInventory = (page: SemanticPageTermSource, limit = 40): Map<string, string> =>
+  new Map(semanticPageTermEntries(page, limit).map(({ key, surface }) => [key, surface]));

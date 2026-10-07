@@ -41,6 +41,29 @@ fn semantic_term_key_matches_the_semantic_map_rules() {
 }
 
 #[test]
+fn semantic_folding_matches_the_frontend_for_common_latin_characters() {
+    assert_eq!(
+        fold_semantic_text("café Straße øvelse encyclopædia œuf Żółć"),
+        "cafe strasse ovelse encyclopaedia oeuf zolc"
+    );
+}
+
+#[test]
+fn semantic_folding_matches_the_shared_cross_runtime_fixtures() {
+    let fixtures: Vec<serde_json::Value> = serde_json::from_str(include_str!(
+        "../../../../../src/constants/semanticFoldFixtures.json"
+    ))
+    .expect("semantic fold fixtures are valid JSON");
+    for fixture in fixtures {
+        let input = fixture["input"].as_str().expect("fixture input is text");
+        let expected = fixture["expected"]
+            .as_str()
+            .expect("fixture expected value is text");
+        assert_eq!(fold_semantic_text(input), expected, "{input}");
+    }
+}
+
+#[test]
 fn semantic_terms_are_only_extracted_for_successful_or_unknown_status() {
     for status in [0, 200, 203, 299] {
         assert!(semantic_status_is_topical(status), "{status}");

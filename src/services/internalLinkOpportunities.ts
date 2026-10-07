@@ -1,5 +1,5 @@
 import type { CrawledPageSummary } from '@/types';
-import { semanticPageLanguage, semanticTermKey, uniqueSemanticTerms } from '@/services/semanticText';
+import { semanticPageTermInventory } from '@/services/semanticText';
 
 const MAX_PAGES = 160;
 const MAX_CAPTURED_CONTENT_LINKS = 1_000;
@@ -34,8 +34,6 @@ const normalizeUrl = (value: string): string => {
   } catch { return ''; }
 };
 
-const normalizeTerm = (term: string) => term.normalize('NFKC').trim().toLocaleLowerCase();
-
 /**
  * Suggests review candidates from bounded main-content terms and captured main-content
  * links only. This is lexical evidence, not a claim that a link is needed or will rank.
@@ -45,11 +43,8 @@ export const findInternalLinkOpportunities = (pages: CrawledPageSummary[]): Inte
   const omittedByLimit = Math.max(0, pages.length - boundedPages.length);
   const eligible = boundedPages.flatMap((page) => {
     const url = normalizeUrl(page.final_url || page.url);
-    const language = semanticPageLanguage(page);
-    // Inflections share a key; shared-term evidence shows this page's own form.
-    const forms = new Map(uniqueSemanticTerms((page.semantic_terms ?? []).map(normalizeTerm).filter(Boolean), language)
-      .slice(0, 40)
-      .map((term) => [semanticTermKey(term, language), term] as const));
+    // Inflections share a language-namespaced key; evidence shows an observed form.
+    const forms = semanticPageTermInventory(page);
     const terms = [...forms.keys()];
     const links = page.semantic_links;
     const indexability = (page.indexability_status ?? '').toLocaleLowerCase();

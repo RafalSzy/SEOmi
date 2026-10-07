@@ -97,4 +97,14 @@ describe('buildCrawlerReadiness', () => {
     }));
     expect(onlyErrors.checks.find((check) => check.id === 'content-semantics')?.status).toBe('unknown');
   });
+
+  it('does not count stored stopwords as semantic coverage', () => {
+    const report = buildCrawlerReadiness(baseResult({
+      pages: [{ ...baseResult().pages[0], semantic_terms: ['ale', '2026'] }],
+      pages_crawled: 1,
+    }));
+    const semantics = report.checks.find((check) => check.id === 'content-semantics');
+    expect(semantics?.status).toBe('unknown');
+    expect(semantics?.evidenceParams).toEqual({ withTerms: 0, withoutTerms: 1 });
+  });
 });

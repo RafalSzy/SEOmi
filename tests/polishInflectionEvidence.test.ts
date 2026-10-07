@@ -22,7 +22,7 @@ describe('Polish inflection in semantic evidence', () => {
   it('keys audited page terms by inflection and keeps the first observed form', () => {
     const offer = page('https://site.test/oferta', ['Szkolenia', 'szkolenie', 'sprzedaży'], { document_language: 'pl' });
 
-    expect([...termsFor(offer)]).toEqual([['szkolen', 'szkolenia'], ['sprzedaz', 'sprzedazy']]);
+    expect([...termsFor(offer)]).toEqual([['pl:szkolen', 'szkolenia'], ['pl:sprzedaz', 'sprzedaży']]);
     expect(termCoverage('szkoleniem sprzedaż wideo', offer)).toEqual({ expected: ['szkoleniem', 'sprzedaz', 'wideo'], matched: ['szkoleniem', 'sprzedaz'] });
   });
 

@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { isSemanticNoiseTerm, isSemanticTopicalStatus, normalizeSemanticText, semanticPageLanguage, semanticTermKey, uniqueSemanticTerms } from '@/services/semanticText';
+import { isSemanticNoiseTerm, isSemanticTopicalStatus, normalizeSemanticText, semanticPageLanguage, semanticPageTermEntries, semanticTermIdentity, semanticTermKey, uniqueSemanticTerms } from '@/services/semanticText';
+import foldFixtures from '@/constants/semanticFoldFixtures.json';
 
 describe('normalizeSemanticText', () => {
+  it.each(foldFixtures)('matches the shared Rust folding fixture for %s', ({ input, expected }) => {
+    expect(normalizeSemanticText(input)).toBe(expected);
+  });
+
   it('normalizes composed and non-decomposing Latin characters consistently', () => {
     expect(normalizeSemanticText('ŻÓŁĆ  ŚWIAT')).toBe('zolc  swiat');
     expect(normalizeSemanticText('Zolc  świat')).toBe('zolc  swiat');
     expect(normalizeSemanticText('straße øvelse encyclopædia œuf')).toBe('strasse ovelse encyclopaedia oeuf');
+    expect(normalizeSemanticText('Ħ Ĵ Ķ Ŧ Ŵ')).toBe('h j k t w');
   });
 });
 
@@ -63,6 +69,7 @@ describe('semantic page helpers', () => {
   it('prefers the crawler grouping language and falls back to the declared one for older crawls', () => {
     expect(semanticPageLanguage({ semantic_language: 'pl', document_language: 'en' })).toBe('pl');
     expect(semanticPageLanguage({ semantic_language: null, document_language: 'pl-PL' })).toBe('pl-PL');
+    expect(semanticPageLanguage({ semantic_language: ' ', document_language: 'en-US' })).toBe('en-US');
     expect(semanticPageLanguage({ document_language: null })).toBeNull();
     expect(semanticPageLanguage({})).toBeUndefined();
   });
@@ -70,5 +77,24 @@ describe('semantic page helpers', () => {
   it('keeps the first form of each inflected word and leaves unknown languages untouched', () => {
     expect(uniqueSemanticTerms(['szkolenia', 'oferta', 'szkolenie', 'ofertę'], 'pl')).toEqual(['szkolenia', 'oferta']);
     expect(uniqueSemanticTerms(['szkolenia', 'szkolenie', 'szkolenia'], undefined)).toEqual(['szkolenia', 'szkolenie']);
+  });
+
+  it('namespaces inflection identities so equivalent words in different languages do not collide', () => {
+    expect(semanticTermIdentity('firmy', 'pl')).toBe('pl:firm');
+    expect(semanticTermIdentity('firm', 'en')).toBe('en:firm');
+    expect(semanticTermIdentity('firm', undefined)).toBe('und:firm');
+    expect(new Set([
+      semanticTermIdentity('firmy', 'pl'),
+      semanticTermIdentity('firm', 'en'),
+      semanticTermIdentity('firm', undefined),
+    ]).size).toBe(3);
+  });
+
+  it('returns no semantic inventory for legacy error pages or stored noise', () => {
+    expect(semanticPageTermEntries({ http_status: 404, semantic_terms: ['espresso', 'coffee'] })).toEqual([]);
+    expect(semanticPageTermEntries({ http_status: 200, semantic_terms: ['ale', '2026', ''] })).toEqual([]);
+    expect(semanticPageTermEntries({ http_status: 200, semantic_terms: ['coffee', 42 as unknown as string] })).toEqual([
+      { key: 'und:coffee', surface: 'coffee', observed: 'coffee' },
+    ]);
   });
 });

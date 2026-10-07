@@ -71,4 +71,11 @@ describe('AI citation crawl evidence', () => {
     expect(context?.matchedTerms).toEqual(['szkolenia', 'navigatora', 'sprzedaży']);
     expect(context?.matchedTermEvidence.find((item) => item.term === 'szkolenia')?.response).toEqual({ start: 0, end: 9 });
   });
+
+  it('does not claim semantic context for an error page that retained legacy terms', () => {
+    const snapshot = run([{ url: 'https://example.test/missing', final_url: 'https://example.test/missing', title: 'Coffee', semantic_terms: ['coffee', 'beans'], http_status: 404, indexability_status: 'Blocked by HTTP error', redirect_chain: [] }]);
+    expect(matchAiCitationToCrawl('https://example.test/missing', snapshot, 'Coffee beans are useful.').context).toMatchObject({
+      scope: 'no-content-signal', meetsMinimum: false, matchedTerms: [], sourceTermCount: 0,
+    });
+  });
 });
