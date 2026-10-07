@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -20,13 +20,16 @@ test('semantic extraction strips empty-attribute and hidden blocks from body con
 
 test('budget helpers use the safe default ledger and normalize invalid costs', () => {
   assert.match(ledgerPath({ DATAFORSEO_LEDGER_PATH: '  ' }), /\.seomi[\\/]mcp-dataforseo-spend\.json$/);
+  const directory = mkdtempSync(join(tmpdir(), 'seomi-budget-edge-'));
   const env = {
     DATAFORSEO_MONTHLY_LIMIT_USD: '5',
-    DATAFORSEO_LEDGER_PATH: join(mkdtempSync(join(tmpdir(), 'seomi-budget-edge-')), 'ledger.json'),
+    DATAFORSEO_LEDGER_PATH: join(directory, 'ledger.json'),
   };
-  assert.deepEqual(recordMcpCost(env, 'not-a-cost', new Date(2026, 9, 1)), {
-    month: '2026-10', totalUsd: 0, calls: 1,
-  });
+  try {
+    assert.deepEqual(recordMcpCost(env, 'not-a-cost', new Date(2026, 9, 1)), {
+      month: '2026-10', totalUsd: 0, calls: 1,
+    });
+  } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
 test('server default public-target validation accepts a public IP for Google tools', async () => {

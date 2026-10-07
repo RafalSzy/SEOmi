@@ -68,7 +68,7 @@ const stop = async (result) => {
   if (child.exitCode === null && child.signalCode === null) child.kill('SIGTERM');
   let exited = await waitForResult(result);
   if (!exited) {
-    child.kill();
+    child.kill('SIGKILL');
     exited = await waitForResult(result, 1_000);
   }
   return exited;

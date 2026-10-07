@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { assertMcpCoverageThreshold } from '../../scripts/run-mcp-coverage.mjs';
+import { assertMcpCoverage, assertMcpCoverageThreshold } from '../../scripts/run-mcp-coverage.mjs';
 
 const counts = (total, covered, branch = false) => branch
   ? {0: Array.from({length: total}, (_, index) => index < covered ? 1 : 0)}
@@ -61,4 +61,27 @@ test('rejects malformed, negative, and fractional counters', () => {
     value['/tmp/fixture.ts'][metric] = metric === 'b' ? {0: invalid} : {0: invalid};
     assert.throws(() => assertMcpCoverageThreshold(value), /Invalid/);
   }
+});
+
+const mapped = (total, covered) => {
+  const ids = Array.from({length: total}, (_, id) => `${id}`);
+  const values = Object.fromEntries(ids.map(id => [id, Number(Number(id) < covered)]));
+  return {'/tmp/mapped.ts': {
+    s: {...values}, f: {...values}, b: Object.fromEntries(ids.map(id => [id, [values[id]]])),
+    statementMap: Object.fromEntries(ids.map(id => [id, {start: {line: Number(id) + 1}}])),
+  }};
+};
+
+test('enforces exact 98 percent across statements, functions, branches and lines', () => {
+  const summary = assertMcpCoverage(mapped(100, 98));
+  for (const metric of ['statements', 'functions', 'branches', 'lines']) {
+    assert.deepEqual(summary[metric], {total: 100, covered: 98, percent: 98});
+  }
+});
+
+test('rejects an unrounded result below 98 percent and invalid line counters', () => {
+  assert.throws(() => assertMcpCoverage(mapped(1099, 1077)), /statements coverage 98\.00% is below 98%/);
+  const invalid = mapped(1, 1);
+  invalid['/tmp/mapped.ts'].statementMap['0'].start.line = 0;
+  assert.throws(() => assertMcpCoverage(invalid), /Invalid MCP line coverage data/);
 });

@@ -3,18 +3,21 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, realpathSync } from 'node:fs';
 import { resolve, dirname, relative, join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import v8Coverage from '@bcoe/v8-coverage';
 import { createRequire } from 'node:module';
 const { mergeProcessCovs } = v8Coverage;
 import { convert } from 'ast-v8-to-istanbul';
 import { parseAstAsync } from 'vite';
 import { sourceFiles, sourceHashes } from './public-function-inventory.mjs';
+import { assertMcpCoverage } from './mcp-coverage-metrics.mjs';
+
+export { assertMcpCoverage, assertMcpCoverageThreshold } from './mcp-coverage-metrics.mjs';
 
 const normalize = file => relative(process.cwd(), resolve(file)).replaceAll('\\', '/');
 
 const fileUrlPath = value => {
-  try { const parsed = new URL(value); return parsed.protocol === 'file:' ? parsed.pathname : null; } catch { return null; }
+  try { const parsed = new URL(value); parsed.search = ''; parsed.hash = ''; return fileURLToPath(parsed); } catch { return null; }
 };
 
 const mergeRuntimeRecords = (records, runtimeUrl, alternateUrl) => {
@@ -52,34 +55,8 @@ export async function mapRuntimeCoverage(processCoverage, runtimeFiles, expected
       output[path] = record;
     }
   }
+  if (JSON.stringify(Object.keys(output).map(normalize).sort()) !== JSON.stringify(Object.keys(expectedSources).sort())) throw new Error('Incomplete MCP source coverage mapping');
   return output;
-}
-
-const validCount = value => Number.isSafeInteger(value) && value >= 0;
-
-const metricTotals = (records, metric, branches = false) => {
-  let total = 0; let covered = 0;
-  for (const record of records) {
-    const values = Object.values(record[metric]);
-    if (branches) {
-      if (values.some(value => !Array.isArray(value))) throw new Error(`Invalid ${metric} coverage counts`);
-      for (const branch of values.flat()) { if (!validCount(branch)) throw new Error(`Invalid ${metric} coverage counts`); total++; if (branch > 0) covered++; }
-    } else {
-      if (values.some(value => !validCount(value))) throw new Error(`Invalid ${metric} coverage counts`);
-      total += values.length; covered += values.filter(value => value > 0).length;
-    }
-  }
-  if (!total) throw new Error(`MCP ${metric} coverage has a zero denominator`);
-  return {total, covered, percent: (covered * 100) / total};
-};
-
-export function assertMcpCoverageThreshold(coverage, threshold = 98) {
-  if (!coverage || typeof coverage !== 'object' || !Number.isFinite(threshold) || threshold < 0 || threshold > 100) throw new Error('Invalid MCP coverage report or threshold');
-  const records = Object.values(coverage);
-  if (!records.length || records.some(record => !record || typeof record !== 'object' || !record.s || !record.f || !record.b || Array.isArray(record.s) || Array.isArray(record.f) || Array.isArray(record.b))) throw new Error('MCP coverage report is empty or malformed');
-  const metrics = {statements: metricTotals(records, 's'), functions: metricTotals(records, 'f'), branches: metricTotals(records, 'b', true)};
-  for (const [name, result] of Object.entries(metrics)) if (result.covered * 100 < result.total * threshold) throw new Error(`MCP ${name} coverage ${result.percent.toFixed(2)}% is below ${threshold}%`);
-  return {threshold, ...metrics};
 }
 
 export async function runMcpCoverage() {
@@ -88,8 +65,10 @@ export async function runMcpCoverage() {
   mkdirSync('test-results', {recursive:true});
   mkdirSync('coverage', {recursive:true});
   // Failed runs must invalidate older evidence before invoking any command.
-  writeFileSync('test-results/mcp-coverage-sources.json', '{}');
-  writeFileSync('coverage/mcp-coverage-final.json', '{}');
+  for (const artifact of [
+    'test-results/mcp-coverage-sources.json', 'test-results/mcp-runtime-sources.json',
+    'coverage/mcp-coverage-final.json', 'coverage/mcp-v8-raw.json', 'coverage/mcp-coverage-summary.json',
+  ]) writeFileSync(artifact, '{}');
   rmSync('mcp-server/dist', {recursive:true,force:true});
   const build = spawnSync(process.execPath, [createRequire(resolve('mcp-server/package.json')).resolve('typescript/bin/tsc'), '-p', 'mcp-server/tsconfig.json'], {stdio:'inherit'});
   if (build.status !== 0) throw new Error('MCP coverage build failed');
@@ -103,15 +82,17 @@ export async function runMcpCoverage() {
   const rawDirectory = mkdtempSync(join(tmpdir(), 'seomi-mcp-v8-'));
   try {
     const tests = sourceFiles('mcp-server/test').filter(file => file.endsWith('.test.mjs'));
+    if (!tests.length) throw new Error('Missing MCP tests');
     const result = spawnSync(process.execPath, ['--test', ...tests.map(file => resolve(file))], {cwd:resolve('mcp-server'),stdio:'inherit',env:{...process.env,NODE_V8_COVERAGE:rawDirectory}});
     if (result.status !== 0) throw new Error('MCP coverage tests failed');
     const raw = readdirSync(rawDirectory).filter(file => file.endsWith('.json')).map(file => JSON.parse(readFileSync(join(rawDirectory,file),'utf8')));
     if (!raw.length) throw new Error('Missing MCP V8 coverage');
     const merged = mergeProcessCovs(raw);
     const mapped = await mapRuntimeCoverage(merged, runtime, before, runtimeHashes);
-    const summary = assertMcpCoverageThreshold(mapped);
     writeFileSync('coverage/mcp-v8-raw.json', JSON.stringify(merged));
     writeFileSync('coverage/mcp-coverage-final.json', JSON.stringify(mapped));
+    const summary = assertMcpCoverage(mapped);
+    writeFileSync('coverage/mcp-coverage-summary.json', JSON.stringify(summary, null, 2));
     writeFileSync('test-results/mcp-runtime-sources.json', JSON.stringify(runtimeHashes,null,2));
     writeFileSync('test-results/mcp-coverage-sources.json', JSON.stringify(before,null,2));
     console.log(`MCP coverage: ${Object.keys(mapped).length} source files mapped; ${JSON.stringify(summary)}`);
