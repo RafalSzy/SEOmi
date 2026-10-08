@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 
-it('keeps strict static analysis, full coverage reporting and both macOS architectures in CI', () => {
-  const tests = readFileSync('.github/workflows/test.yml', 'utf8');
-  const release = readFileSync('.github/workflows/release.yml', 'utf8');
+it.each(['\n', '\r\n'])('keeps strict CI gates with %j line endings', (newline) => {
+  const readWorkflow = (name: string) => readFileSync(`.github/workflows/${name}.yml`, 'utf8')
+    .replace(/\r?\n/g, newline);
+  const tests = readWorkflow('test');
+  const release = readWorkflow('release');
   const rust = tests.split('  test-rust:')[1].split('  test-frontend:')[0];
   expect(tests).toContain('cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings');
   expect(tests).toContain('npm run lint');
