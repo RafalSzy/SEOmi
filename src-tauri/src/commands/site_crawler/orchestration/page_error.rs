@@ -95,6 +95,7 @@ pub fn handle_page_error<R: Runtime>(
         content_hash: None,
         content_simhash: None,
         semantic_terms: Vec::new(),
+        semantic_language: None,
         semantic_excerpts: Vec::new(),
         semantic_links: Vec::new(),
         semantic_content_source: "none".into(),

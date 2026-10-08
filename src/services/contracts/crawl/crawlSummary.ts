@@ -94,6 +94,7 @@ export const CrawledPageSummarySchema = z.object({
   html_validation_findings: z.array(CrawledHtmlValidationFindingSchema).nullable().transform(value => value ?? undefined).optional(),
   html_validation_truncated: z.boolean().nullable().transform(value => value ?? undefined).optional(),
   document_language: z.union([z.string(), z.null()]).optional(),
+  semantic_language: z.union([z.string(), z.null()]).optional(),
   hreflangs: z.array(CrawledHreflangSchema),
   amp_url: z.union([z.string(), z.null()]).optional(),
   amp_target_http_status: z.union([z.number().finite(), z.null()]).optional(),

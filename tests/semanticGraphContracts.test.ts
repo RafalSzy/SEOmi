@@ -49,7 +49,7 @@ describe('semantic graph evidence responsibilities', () => {
     const terms = ['żółć', 'zolc', '', ...Array.from({ length: 50 }, (_, index) => `term${index}`)];
     const graph = buildSemanticTopics([page('https://site.test/coffee', terms), page('https://site.test/coffee2')]);
     expect(graph.termsByPage[0]).toHaveLength(40);
-    expect(graph.termsByPage[0].slice(0, 3)).toEqual(['zolc', 'term0', 'term1']);
+    expect(graph.termsByPage[0].slice(0, 3)).toEqual(['und:zolc', 'und:term0', 'und:term1']);
     expect(graph.termsByPage[1]).toEqual([]);
     expect(graph.groupMembers.size).toBe(2);
     expect(graph.topicEdges).toEqual([]);

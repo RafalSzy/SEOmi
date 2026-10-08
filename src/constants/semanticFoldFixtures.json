@@ -1,0 +1,18 @@
+[
+  {
+    "input": "ŻÓŁĆ świat",
+    "expected": "zolc swiat"
+  },
+  {
+    "input": "café Straße øvelse encyclopædia œuf",
+    "expected": "cafe strasse ovelse encyclopaedia oeuf"
+  },
+  {
+    "input": "Ħ Ĵ Ķ Ŧ Ŵ",
+    "expected": "h j k t w"
+  },
+  {
+    "input": "e\u0301 I\u0307 Ｆｕｌｌｗｉｄｔｈ",
+    "expected": "e i fullwidth"
+  }
+]

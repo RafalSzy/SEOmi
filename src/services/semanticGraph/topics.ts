@@ -1,14 +1,12 @@
 import type { CrawledPageSummary } from '@/types';
 import type { SemanticTopicEdge } from './types';
 import i18n from '@/i18n';
-import { normalizeSemanticText } from '@/services/semanticText';
+import { buildTermInventory } from './terms';
 
 export const MAX_TOPIC_EDGES = 5_000;
 
 export const buildSemanticTopics = (selectedPages: CrawledPageSummary[]) => {
-  const termsByPage = selectedPages.map((page) =>
-    [...new Set((page.semantic_terms ?? []).map(normalizeSemanticText).filter(Boolean))].slice(0, 40),
-  );
+  const { termsByPage, displayTerm } = buildTermInventory(selectedPages);
   const documentFrequency = new Map<string, number>();
   termsByPage.forEach((terms) => terms.forEach((term) => documentFrequency.set(term, (documentFrequency.get(term) ?? 0) + 1)));
   const parent = selectedPages.map((_, index) => index);
@@ -54,7 +52,7 @@ export const buildSemanticTopics = (selectedPages: CrawledPageSummary[]) => {
             id: `topic-page-${left}->page-${right}`,
             source: `page-${left}`,
             target: `page-${right}`,
-            sharedTerms: [...leftTerms].filter((term) => rightTerms.has(term)).sort().slice(0, 8),
+            sharedTerms: [...leftTerms].filter((term) => rightTerms.has(term)).sort().slice(0, 8).map(displayTerm),
             weightedJaccard,
           });
         }
@@ -71,10 +69,10 @@ export const buildSemanticTopics = (selectedPages: CrawledPageSummary[]) => {
   for (const [root, members] of groupMembers) {
     const counts = new Map<string, number>();
     members.forEach((index) => termsByPage[index].forEach((term) => counts.set(term, (counts.get(term) ?? 0) + 1)));
-    const label = [...counts.entries()]
-      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0]
-      // A group with any terms necessarily has a non-empty count inventory.
-      ?? i18n.t('runtimeErrors.semanticMap.noSignals');
+    const labelKey = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0];
+    // A group with any terms necessarily has a non-empty count inventory.
+    const label = labelKey ? displayTerm(labelKey) : i18n.t('runtimeErrors.semanticMap.noSignals');
     groupDetails.set(root, { id: `cluster-${members[0]}`, label });
   }
 

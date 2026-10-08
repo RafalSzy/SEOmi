@@ -69,6 +69,7 @@ pub fn extract_page_signals<R: Runtime>(
     let content = extract_page_content(super::page_content::ExtractPageContentInput {
         document,
         body_len: page_data.body.len(),
+        status: page_data.status,
         is_html,
         body_truncated: page_data.body_truncated,
         body_read_failed: page_data.body_read_failed,

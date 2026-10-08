@@ -8,6 +8,11 @@ import { codeFiles } from '../scripts/check-max-loc.mjs';
 const domains = ['ai.ts', 'audit.ts', 'backlinks.ts', 'crawl.ts', 'dataforseo.ts', 'gsc.ts', 'mcp.ts', 'research.ts', 'workspace.ts'];
 const parse = (name: string) => ts.createSourceFile(name, readFileSync(`src/types/${name}`, 'utf8'), ts.ScriptTarget.Latest, true);
 const modules = codeFiles('src/types').map(file => relative('src/types', file)).filter(file => file !== 'index.ts');
+// Optional fields added after the refactor; each has its own additive-contract test below.
+const additive: Record<string, string[]> = {
+  GscPerformanceData: ['query_pages', 'query_pages_may_be_truncated'],
+  CrawledPageSummary: ['semantic_language'],
+};
 
 it('keeps the type barrel declaration-free and exports all domain contracts as types', () => {
   expect(readdirSync('src/types').filter((file) => file.endsWith('.ts') && file !== 'index.ts').sort()).toEqual(domains);
@@ -25,10 +30,10 @@ it('preserves the reviewed 117 contracts including suggestion provenance and unk
     const source = parse(name);
     return source.statements.flatMap((node) => ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)
       ? [[node.name.text, printer.printNode(ts.EmitHint.Unspecified,
-        ts.isInterfaceDeclaration(node) && node.name.text === 'GscPerformanceData'
+        ts.isInterfaceDeclaration(node) && additive[node.name.text]
           ? ts.factory.updateInterfaceDeclaration(node, node.modifiers, node.name, node.typeParameters,
             node.heritageClauses, node.members.filter(member => !member.name
-              || !['query_pages', 'query_pages_may_be_truncated'].includes(member.name.getText(source))))
+              || !additive[node.name.text].includes(member.name.getText(source))))
           : node, source)]] : []);
   }).sort((a, b) => a[0].localeCompare(b[0]));
   expect(signatures).toHaveLength(117);
@@ -48,6 +53,16 @@ it('adds only optional observed query/page fields to the legacy GSC contract', (
   expect(truncated.questionToken).toBeDefined();
   expect(pairs.type?.getText(source)).toBe('GscMetricRow[]');
   expect(truncated.type?.getText(source)).toBe('boolean');
+});
+
+it('adds only an optional semantic grouping language to the legacy crawled page contract', () => {
+  const source = parse('crawl/page.ts');
+  const page = source.statements.find(node => ts.isInterfaceDeclaration(node) && node.name.text === 'CrawledPageSummary');
+  if (!page || !ts.isInterfaceDeclaration(page)) throw new Error('Missing crawled page contract');
+  const language = page.members.find(member => member.name?.getText(source) === 'semantic_language');
+  if (!language || !ts.isPropertySignature(language)) throw new Error('Missing additive field');
+  expect(language.questionToken).toBeDefined();
+  expect(language.type?.getText(source)).toBe('string | null');
 });
 
 it('allows only declarations and direct type imports/exports, with no circular module dependency', () => {

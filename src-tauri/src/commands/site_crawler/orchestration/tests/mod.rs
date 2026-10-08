@@ -60,6 +60,7 @@ mod page_frontier;
 mod page_link_contracts;
 mod page_metadata;
 mod page_resources_discovery_contracts;
+mod page_semantic_language;
 mod page_signals;
 mod page_summary;
 mod page_text;

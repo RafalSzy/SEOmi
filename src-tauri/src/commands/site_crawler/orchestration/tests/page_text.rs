@@ -57,6 +57,7 @@ fn content_extractor_reports_missing_language_and_thin_text_without_inventing_ro
     let result = extract_page_content(ExtractPageContentInput {
         document: &document,
         body_len: text.len(),
+        status: 200,
         is_html: true,
         body_truncated: false,
         body_read_failed: false,
