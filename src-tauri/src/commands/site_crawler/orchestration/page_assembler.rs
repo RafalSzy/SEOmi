@@ -34,6 +34,7 @@ pub async fn assemble_page_summary<R: Runtime>(
     let current_parsed = Url::parse(current_url).unwrap_or_else(|_| final_base.clone());
 
     let page_data = read_fetched_page_data(response, setup.max_response_bytes).await;
+    state.render_health.observe(&page_data);
     let page_duration = page_data
         .browser_navigation_time_ms
         .or(request_duration_ms)

@@ -7,7 +7,6 @@ use tauri::{
     WebviewWindowBuilder,
 };
 use tokio::sync::mpsc;
-
 fn fixture(events: Vec<CaptureEvent>) -> (StorageApp, RenderedCrawlerSession<MockRuntime>) {
     let app = StorageApp::new(mock_builder());
     let window = WebviewWindowBuilder::new(&app.app, "capture-test", Default::default())
@@ -24,9 +23,11 @@ fn fixture(events: Vec<CaptureEvent>) -> (StorageApp, RenderedCrawlerSession<Moc
         receiver,
         nonce: "capture-test-nonce".into(),
         requested_url: "https://example.test/".into(),
+        initial_load_pending: true,
         base_host: "example.test".into(),
         allow_subdomains: false,
         scope_path: None,
+        allowed_hosts: Vec::new(),
     };
     (app, session)
 }

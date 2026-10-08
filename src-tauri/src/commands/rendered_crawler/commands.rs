@@ -30,6 +30,7 @@ pub async fn render_crawl_page<R: Runtime>(
             .filter(|value| !value.is_empty()),
         wait_delay_ms: wait_delay_ms.unwrap_or(0).min(10_000),
         lazy_scroll_cycles: lazy_scroll_cycles.unwrap_or(0).min(40),
+        allowed_hosts: Vec::new(),
     };
     let mut session = RenderedCrawlerSession::open(
         &app,
@@ -72,6 +73,7 @@ pub async fn capture_rendered_artifact<R: Runtime>(
             .filter(|value| !value.is_empty()),
         wait_delay_ms: wait_delay_ms.unwrap_or(0).min(10_000),
         lazy_scroll_cycles: lazy_scroll_cycles.unwrap_or(0).min(40),
+        allowed_hosts: Vec::new(),
     };
     let mut session = RenderedCrawlerSession::open(
         &app,

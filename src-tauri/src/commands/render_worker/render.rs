@@ -26,6 +26,7 @@ pub(super) async fn render_request<R: Runtime>(
         wait_for_selector,
         wait_delay_ms: request.wait_delay_ms.min(10_000),
         lazy_scroll_cycles: request.lazy_scroll_cycles.min(40),
+        allowed_hosts: Vec::new(),
     };
     let mut session = RenderedCrawlerSession::open(
         app,

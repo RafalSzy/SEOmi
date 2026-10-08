@@ -8,6 +8,19 @@ use tauri::{
 };
 use tokio::sync::mpsc;
 
+pub(super) async fn rendered_server() -> super::discovery_http_fixture::DiscoveryServer {
+    let mut config = default_crawl_config(None);
+    config.crawl_mode = "browser-rendered".into();
+    super::discovery_http_fixture::DiscoveryServer::new(
+        config,
+        vec![super::discovery_http_fixture::html_route(
+            "/rendered",
+            "<html><main>http</main></html>",
+        )],
+    )
+    .await
+}
+
 pub(super) fn rendered_setup() -> CrawlSetup {
     let mut config = default_crawl_config(None);
     config.crawl_mode = "browser-rendered".into();
@@ -71,9 +84,20 @@ pub(super) fn session(
         receiver,
         nonce: "page-fetch".into(),
         requested_url: "https://example.test/rendered".into(),
+        initial_load_pending: true,
         base_host: "example.test".into(),
         allow_subdomains: false,
         scope_path: None,
+        allowed_hosts: Vec::new(),
     };
     (app, session, held)
+}
+
+pub(super) fn configure_session(
+    session: &mut RenderedCrawlerSession<MockRuntime>,
+    requested_url: &str,
+    base_host: &str,
+) {
+    session.requested_url = requested_url.into();
+    session.base_host = base_host.into();
 }

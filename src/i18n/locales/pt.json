@@ -2240,7 +2240,7 @@
     "renderDelayAria": "Render delay in milliseconds",
     "lazyScroll": "Lazy-load scroll cycles",
     "lazyScrollAria": "Number of lazy-load scroll cycles",
-    "browserModeNotice": "Browser mode analyzes the DOM after JavaScript execution. Custom User-Agent is also used for robots.txt. The selected profile may inject ordinary session cookies into an isolated WebView; HttpOnly and full cookie-store import are unavailable. Additional headers and proxy require HTTP mode. X-Robots-Tag and Cache-Control headers are unavailable from rendered DOM.",
+    "browserModeNotice": "Browser mode analyzes the DOM after JavaScript execution. Custom User-Agent is also used for robots.txt. The selected profile may inject ordinary session cookies into an isolated WebView; HttpOnly and full cookie-store import are unavailable. Additional headers and proxy require HTTP mode. The HTTP status, response headers such as X-Robots-Tag and Cache-Control, and redirect hops come from a separate HTTP request for the same URL. A page that cannot be rendered is analyzed from that raw HTML and marked with a warning.",
     "renderProfileWarning": "The selected profile contains custom headers or a proxy. Rendered mode uses only its cookies — choose HTTP or a cookie-only profile.",
     "resourcesTitle": "Resources fetched during the crawl",
     "resourcesDescription": "Only resources discovered in the current scope. Status and size come from real HTTP responses.",
@@ -4117,6 +4117,8 @@
     "multipleTitle": "Várias tags <title> encontradas ({{count}})",
     "emptyDescription": "A meta description está vazia",
     "multipleDescription": "Várias tags meta description encontradas ({{count}})",
+    "renderFallback": "A renderização no navegador falhou; a resposta HTML bruta foi analisada em vez disso: {{reason}}",
+    "renderedSelfNavigation": "A página navegou para outro URL no navegador; o status HTTP e os cabeçalhos de resposta descrevem o URL solicitado",
     "technicalDetail": "Detalhe técnico: {{detail}}"
   },
   "auditChecks": {

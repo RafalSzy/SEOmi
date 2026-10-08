@@ -51,6 +51,8 @@ pub fn handle_page_error<R: Runtime>(
         redirect_stop_reason: None,
         depth,
         http_status: 0,
+        http_response_url: None,
+        response_url_mismatch: Some(false),
         response_time_ms: page_duration,
         rendered_lcp_ms: None,
         rendered_inp_ms: None,

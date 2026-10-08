@@ -21,9 +21,11 @@ fn fixture() -> (StorageApp, RenderedCrawlerSession<MockRuntime>) {
         receiver,
         nonce: "lifecycle-test-nonce".into(),
         requested_url: "https://example.test/".into(),
+        initial_load_pending: true,
         base_host: "example.test".into(),
         allow_subdomains: false,
         scope_path: None,
+        allowed_hosts: Vec::new(),
     };
     (app, session)
 }

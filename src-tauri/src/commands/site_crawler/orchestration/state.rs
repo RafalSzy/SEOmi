@@ -5,6 +5,7 @@ use tauri::Runtime;
 use super::super::{
     fetch_types::{CrawlFetchFailure, FetchedResponse},
     models::{CrawledDiscoverySource, CrawledPageSummary, RejectedCrawlUrl, ResourceCandidate},
+    render_health::RenderHealth,
 };
 use crate::commands::rendered_crawler::RenderedCrawlerSession;
 use crate::services::custom_search::MAX_CUSTOM_SEARCH_CHARS_PER_RUN;
@@ -22,8 +23,11 @@ pub struct CrawlLoopState<R: Runtime = tauri::Wry> {
     pub depth_limit_reached: bool,
     pub timed_out: bool,
     pub last_page_request_at: Option<Instant>,
-    pub rendered_session: Option<RenderedCrawlerSession<R>>,
-    pub rendered_init_error: Option<String>,
+    /// Idle renderer windows. Each one is an isolated browser context that
+    /// renders a single page at a time; several render a window of queued
+    /// pages concurrently.
+    pub rendered_sessions: Vec<RenderedCrawlerSession<R>>,
+    pub render_health: RenderHealth,
     pub prefetched_order: VecDeque<(String, usize)>,
     pub prefetched_responses: HashMap<String, Result<FetchedResponse, CrawlFetchFailure>>,
 }
@@ -50,8 +54,8 @@ impl<R: Runtime> CrawlLoopState<R> {
             depth_limit_reached: false,
             timed_out,
             last_page_request_at: None,
-            rendered_session: None,
-            rendered_init_error: None,
+            rendered_sessions: Vec::new(),
+            render_health: RenderHealth::default(),
             prefetched_order: VecDeque::new(),
             prefetched_responses: HashMap::new(),
         }
