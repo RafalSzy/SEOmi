@@ -76,7 +76,8 @@ export function productionCoverage(raw, sources, readSource = file => readFileSy
         if (!declaration || declaration.calls !== fn.count) throw new Error('LCOV and JSON function evidence differ');
         const region = fn.regions[0];
         if (!region || region.slice(0, 4).some(value => !Number.isSafeInteger(value) || value < 1)) throw new Error('Invalid source function region');
-        const identity = JSON.stringify(region.slice(0, 4));
+        // LLVM identifies a source function by its start; generic region ends may differ.
+        const identity = JSON.stringify(region.slice(0, 2));
         const existing = groups.get(identity);
         if (existing) {
           if (existing.excluded !== declaration.excluded) throw new Error('Ambiguous source/test boundary');
