@@ -51,4 +51,26 @@ fn remaining_run_time_is_unbounded_without_a_budget_and_never_negative() {
     assert!(partial <= Duration::from_secs(100));
     std::thread::sleep(Duration::from_millis(5));
     assert_eq!(remaining_run_time(started, Some(0)), Duration::ZERO);
+    let past = Instant::now() - Duration::from_secs(10);
+    assert_eq!(remaining_run_time(past, Some(5)), Duration::ZERO);
+}
+
+#[test]
+fn health_constants_and_mixed_observation_edges() {
+    assert_eq!(
+        crate::commands::site_crawler::render_health::MAX_RENDER_SESSIONS,
+        6
+    );
+    assert_eq!(MAX_CONSECUTIVE_RENDER_FAILURES, 5);
+
+    let mut health = RenderHealth::default();
+    let unhandled = page_data(301, false, false);
+    health.observe(&unhandled);
+    assert_eq!((health.fallback_pages, health.consecutive_failures), (0, 0));
+
+    let mut mixed = page_data(200, true, true);
+    mixed.rendered_diagnostics = Some((Vec::new(), Vec::new()));
+    mixed.render_fallback = Some("partial error".into());
+    health.observe(&mixed);
+    assert_eq!((health.fallback_pages, health.consecutive_failures), (1, 1));
 }

@@ -111,3 +111,7 @@ mod http_tests;
 #[cfg(test)]
 #[path = "external_link_checker/network_error_path_tests.rs"]
 mod network_error_path_tests;
+
+#[cfg(test)]
+#[path = "external_link_checker/batch_and_edge_error_tests.rs"]
+mod batch_and_edge_error_tests;

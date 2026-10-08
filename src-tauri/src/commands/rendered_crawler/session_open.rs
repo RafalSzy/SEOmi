@@ -9,7 +9,7 @@ use tauri::{
 use tokio::sync::mpsc;
 
 use super::models::{CaptureEvent, RenderOptions, CAPTURE_SCHEME, MAX_CAPTURE_CHANNEL_EVENTS};
-use super::navigation::{is_allowed_crawl_navigation, parse_capture_chunk};
+use super::navigation::{is_allowed_crawl_navigation, parse_capture_chunk, parse_transfer_failed};
 use super::scripts::{capture_script, cookie_bootstrap_script};
 use super::session::RenderedCrawlerSession;
 use crate::{
@@ -67,10 +67,8 @@ impl<R: Runtime> RenderedCrawlerSession<R> {
                 if url.scheme() == CAPTURE_SCHEME {
                     if let Some(chunk) = parse_capture_chunk(url, &navigation_nonce) {
                         let _ = navigation_sender.blocking_send(CaptureEvent::Chunk(chunk));
-                    } else if url.host_str() == Some(navigation_nonce.as_str()) {
-                        if let Some(sequence) = url.path().strip_suffix("/error").and_then(|value| value.trim_start_matches('/').parse::<u64>().ok()) {
-                            let _ = navigation_sender.blocking_send(CaptureEvent::TransferFailed(sequence));
-                        }
+                    } else if let Some(sequence) = parse_transfer_failed(url, &navigation_nonce) {
+                        let _ = navigation_sender.blocking_send(CaptureEvent::TransferFailed(sequence));
                     }
                     return false;
                 }

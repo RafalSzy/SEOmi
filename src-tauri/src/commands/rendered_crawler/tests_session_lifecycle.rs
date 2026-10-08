@@ -53,3 +53,22 @@ fn close_is_safe_on_the_mock_runtime() {
     // and the successful consuming call still cover the lifecycle boundary.
     assert!(app.app.get_webview_window("lifecycle-test").is_some());
 }
+
+#[tokio::test]
+async fn session_open_succeeds_on_mock_runtime() {
+    let app = StorageApp::new(mock_builder());
+    let session = RenderedCrawlerSession::open(
+        &app.handle(),
+        "https://example.test/",
+        "example.test",
+        false,
+        None,
+        Default::default(),
+    )
+    .await
+    .unwrap();
+    assert_eq!(session.base_host, "example.test");
+    assert_eq!(session.requested_url, "https://example.test/");
+    assert!(session.initial_load_pending);
+    session.close();
+}

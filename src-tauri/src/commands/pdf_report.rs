@@ -16,6 +16,12 @@ mod tests_edges;
 #[cfg(test)]
 mod tests_tables;
 
+#[cfg(test)]
+mod tests_generator;
+
+#[cfg(test)]
+mod tests_text_and_charts;
+
 use base64::Engine;
 use serde_json::Value;
 

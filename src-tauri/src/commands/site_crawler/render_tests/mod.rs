@@ -72,6 +72,7 @@ fn snapshot(final_url: &str, html: &str) -> RenderedPageSnapshot {
 }
 
 mod decision;
+mod decision_edges;
 mod delay;
 mod fetch;
 mod health;

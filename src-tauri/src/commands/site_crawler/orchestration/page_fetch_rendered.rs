@@ -40,6 +40,20 @@ pub async fn fetch_rendered_step<R: Runtime>(
     crawl_delay: Option<Duration>,
     page_started_at: Instant,
 ) -> Result<FetchedResponse, CrawlFetchFailure> {
+    if control.is_cancelled(&setup.run_id) {
+        return Err(CrawlFetchFailure {
+            kind: "cancelled".into(),
+            message: "Crawl was cancelled during page rendering.".into(),
+        });
+    }
+    let remaining = remaining_run_time(setup.start_time, setup.max_run_seconds);
+    if remaining.is_zero() {
+        state.timed_out = true;
+        return Err(CrawlFetchFailure {
+            kind: "timeout".into(),
+            message: "Rendered page exceeded the remaining crawl time.".into(),
+        });
+    }
     let mut renderer = WebviewRenderer::new(
         app,
         &setup.base_host,
@@ -66,7 +80,7 @@ pub async fn fetch_rendered_step<R: Runtime>(
             // A single page is already bounded by the capture timeout. This
             // branch only enforces the remaining run budget, so a slow page
             // cannot be mistaken for an exhausted crawl.
-            _ = tokio::time::sleep(remaining_run_time(setup.start_time, setup.max_run_seconds)) => {
+            _ = tokio::time::sleep(remaining) => {
                 state.timed_out = true;
                 Err(CrawlFetchFailure {
                     kind: "timeout".into(),

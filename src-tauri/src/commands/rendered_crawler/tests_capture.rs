@@ -137,7 +137,7 @@ async fn capture_handles_duplicate_chunks_and_bad_payloads() {
         "Renderer capture channel closed before completion."
     );
     assert_eq!(
-        capture_error(vec![CaptureEvent::PageReady(1), chunk(1, 0, 1, "!"),]).await,
+        capture_error(vec![CaptureEvent::PageReady(1), chunk(1, 0, 1, "!")]).await,
         "Renderer snapshot is not valid base64url."
     );
     let invalid_json = URL_SAFE_NO_PAD.encode(b"not-json");

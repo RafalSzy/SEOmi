@@ -35,6 +35,12 @@ mod transport_regressions;
 mod validation_tests;
 
 #[cfg(test)]
+#[path = "credentials_error_tests.rs"]
+mod credentials_error_tests;
+#[cfg(test)]
+#[path = "pkce_and_disconnect_tests.rs"]
+mod pkce_and_disconnect_tests;
+#[cfg(test)]
 #[path = "session_request_helpers.rs"]
 mod session_request_helpers;
 #[cfg(test)]

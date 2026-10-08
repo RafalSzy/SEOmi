@@ -14,7 +14,7 @@ use {
 };
 
 #[cfg(target_os = "macos")]
-type ArtifactSender = Arc<Mutex<Option<oneshot::Sender<Result<Vec<u8>, String>>>>>;
+pub(crate) type ArtifactSender = Arc<Mutex<Option<oneshot::Sender<Result<Vec<u8>, String>>>>>;
 
 #[cfg(target_os = "macos")]
 pub(crate) async fn capture_macos<R: Runtime>(
@@ -117,7 +117,7 @@ pub(crate) async fn capture_macos<R: Runtime>(
 }
 
 #[cfg(target_os = "macos")]
-fn send_artifact_result(sender: &ArtifactSender, result: Result<Vec<u8>, String>) {
+pub(crate) fn send_artifact_result(sender: &ArtifactSender, result: Result<Vec<u8>, String>) {
     if let Ok(mut sender) = sender.lock() {
         if let Some(sender) = sender.take() {
             let _ = sender.send(result);
@@ -126,7 +126,7 @@ fn send_artifact_result(sender: &ArtifactSender, result: Result<Vec<u8>, String>
 }
 
 #[cfg(target_os = "macos")]
-fn ns_data_bytes(data: &objc2_foundation::NSData) -> Vec<u8> {
+pub(crate) fn ns_data_bytes(data: &objc2_foundation::NSData) -> Vec<u8> {
     use std::ffi::c_void;
     use std::ptr::NonNull;
 

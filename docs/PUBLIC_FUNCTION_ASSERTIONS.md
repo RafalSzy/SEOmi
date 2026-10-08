@@ -283,3 +283,20 @@ Ten focused direct assertion test batches (`tests/unreferencedComponentsBatch1Di
 | `extract_semantic_terms`, `semantic_term_language` | `src-tauri/src/commands/site_crawler/tests/semantic_terms_1.rs`, `orchestration/tests/page_semantic_language.rs` | merged inflections reported in the most frequent form, declared-then-inferred language, serialized `semantic_language`, no terms for redirect/error responses |
 
 The TypeScript callables above are executed under the frontend suite with a static test reference in the regenerated inventory. The suffix rules are a lexical heuristic for regular Polish and English forms, not a morphological analyser; irregular forms are not merged.
+
+## 2026-10-08 — GAP026 public callable closure review
+
+`tests/publicCallableAssertions.test.ts` adds direct behavioral assertions for the fourteen callables that were executed by the suite but had no direct static test reference in the previous inventory. The tests check collision diagnostics, bounded semantic terms, Google Suggestions provenance, monitoring policy normalization helpers, PageSpeed comparison output, and all four monitoring facades. The GSC facade is exercised end-to-end through alert evaluation, notification delivery and persisted history; the other facades are verified through the same delivery and persistence boundary.
+
+The ten unreferenced UI batches (`unreferencedComponentsBatch1Direct` through `Batch7Direct`, plus crawl batches 8–10) were reviewed. Their expectations assert observed labels, URLs, measured values, filtering, callback arguments, selection state, expanded state and empty/error behavior. No new source-text, no-op or no-throw-only assertion is used as evidence. A rendered component assertion remains scoped to the observable UI contract and does not claim native WebView or live-provider behavior.
+
+Fresh inventory generated on the current source reports 1,486 public TypeScript callables, 1,453 executed under the available suite, 32 factory-returned callables and 1 callable not executed by that coverage artifact. Static direct-reference gaps are now 0/1,486. This closes the static-reference gap for GAP026 but does not close the audit: direct assertion quality, the remaining not-executed callable, native/API boundaries and fresh full-suite coverage still require final verification.
+
+| Callable group | Direct test | Evidence |
+| --- | --- | --- |
+| `findCrawlDiffCollisions`, `semanticPageTermInventory` | `tests/publicCallableAssertions.test.ts` | invalid and duplicate URL diagnostics; language-aware de-duplicated term map |
+| `parseGoogleSuggestionsResponse` | `tests/publicCallableAssertions.test.ts` | normalized suggestion result and requested-geo provenance |
+| `comparePageSpeedForMonitoring` | `tests/publicCallableAssertions.test.ts` | category regression produces a typed PageSpeed alert |
+| `monitorGscSnapshots`, `monitorPageSpeedSnapshots`, `monitorCrawlComparison`, `monitorSemanticComparison` | `tests/publicCallableAssertions.test.ts` | alert type, delivery, persistence and notification count |
+| `readMonitoringSettings`, `monitoringSettingsKey`, `validMonitoringProject` | `tests/publicCallableAssertions.test.ts` | project key, valid/invalid identifiers and persisted opt-in |
+| `alertFingerprint`, `frequencyWindowMs`, `validAlert` | `tests/publicCallableAssertions.test.ts` | canonical evidence ordering, weekly bound and accepted/rejected alert shape |

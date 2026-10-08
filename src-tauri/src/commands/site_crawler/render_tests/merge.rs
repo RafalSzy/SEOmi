@@ -65,3 +65,23 @@ fn browser_content_type_is_kept_when_the_response_declared_none() {
     let merged = merge_rendered_with_http(rendered, http);
     assert_eq!(merged.content_type.as_deref(), Some("text/html"));
 }
+
+#[test]
+fn browser_charset_is_kept_when_the_response_declared_none() {
+    let mut rendered = page_data(0, true, false);
+    rendered.charset = Some("ISO-8859-2".into());
+    rendered.response_url_mismatch = true;
+    let mut http = page_data(200, true, true);
+    http.charset = None;
+    http.http_response_url = Some("https://example.com/redirected".into());
+    http.content_disposition = Some("inline".into());
+
+    let merged = merge_rendered_with_http(rendered, http);
+    assert_eq!(merged.charset.as_deref(), Some("ISO-8859-2"));
+    assert_eq!(
+        merged.http_response_url.as_deref(),
+        Some("https://example.com/redirected")
+    );
+    assert!(!merged.response_url_mismatch);
+    assert_eq!(merged.content_disposition.as_deref(), Some("inline"));
+}

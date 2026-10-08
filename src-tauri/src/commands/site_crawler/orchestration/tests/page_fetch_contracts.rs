@@ -140,4 +140,6 @@ async fn browser_rendered_capture_marks_expired_budget_as_timeout() {
     };
     assert_eq!(failure.kind, "timeout");
     assert!(state.timed_out);
+    assert_eq!(state.rendered_sessions.len(), 1);
+    assert!(state.rendered_sessions[0].initial_load_pending);
 }

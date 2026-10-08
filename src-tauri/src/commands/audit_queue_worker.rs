@@ -46,6 +46,9 @@ mod state_tests;
 #[cfg(test)]
 mod launch_tests;
 
+#[cfg(test)]
+mod cancellation_tests;
+
 use item_processor::process_queue_item;
 use lock::*;
 use models::*;

@@ -89,3 +89,14 @@ pub(crate) fn parse_capture_chunk(url: &Url, nonce: &str) -> Option<CaptureChunk
         data,
     })
 }
+
+pub(crate) fn parse_transfer_failed(url: &Url, nonce: &str) -> Option<u64> {
+    if url.scheme() != CAPTURE_SCHEME || url.host_str() != Some(nonce) {
+        return None;
+    }
+
+    url.path()
+        .strip_suffix("/error")
+        .and_then(|path| path.strip_prefix('/'))
+        .and_then(|sequence| sequence.parse().ok())
+}

@@ -69,9 +69,42 @@ fn missing_server_version_is_reported_as_unknown() {
 
 #[test]
 fn real_node_exit_without_a_response_returns_immediately() {
-    let fixture = NodeFixture::new("process.stdin.destroy(); process.exit(0);");
+    let fixture = NodeFixture::new("process.stdin.on('data', () => process.exit(0));");
     assert_eq!(
         discover_from_process_blocking(fixture.path()).unwrap_err(),
         "MCP server did not answer within the discovery timeout."
     );
+}
+
+#[test]
+fn long_server_name_and_version_are_bounded() {
+    let long_name = "n".repeat(200);
+    let long_ver = "v".repeat(100);
+    let fixture = responding_fixture(&format!("{{name:'{long_name}',version:'{long_ver}'}}"));
+    let result = discover_from_process_blocking(fixture.path()).unwrap();
+    assert_eq!(result.server_name.len(), 128);
+    assert_eq!(result.server_version.len(), 64);
+}
+
+#[tokio::test]
+async fn async_discover_from_process_succeeds_and_truncates() {
+    let fixture = responding_fixture("{name:'async-fixture',version:'1.2.3'}");
+    let result = super::process::discover_from_process(fixture.path())
+        .await
+        .unwrap();
+    assert_eq!(result.server_name, "async-fixture");
+    assert_eq!(result.server_version, "1.2.3");
+}
+
+#[test]
+fn tools_list_error_returns_failure() {
+    let script = r#"
+process.stdin.resume();
+console.log(JSON.stringify({id:1,result:{serverInfo:{name:'fixture',version:'1'}}}));
+console.log(JSON.stringify({id:2,error:{code:-32601,message:'Method not found'}}));
+setInterval(()=>{},1000);
+"#;
+    let fixture = NodeFixture::new(script);
+    let err = discover_from_process_blocking(fixture.path()).unwrap_err();
+    assert!(!err.is_empty());
 }

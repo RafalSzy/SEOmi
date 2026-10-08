@@ -3,6 +3,7 @@ use crate::utils::test_app::StorageApp;
 use serde_json::Value;
 use tauri::test::mock_builder;
 
+mod cancellation_and_corrupt_tests;
 mod dispatcher;
 mod identity;
 mod production_dispatch;

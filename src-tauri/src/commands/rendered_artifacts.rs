@@ -51,3 +51,6 @@ pub(crate) fn renderer_platform() -> &'static str {
 pub(crate) fn native_webview_runtime<R: Runtime>() -> bool {
     std::any::TypeId::of::<R>() == std::any::TypeId::of::<tauri::Wry>()
 }
+
+#[cfg(test)]
+mod tests;

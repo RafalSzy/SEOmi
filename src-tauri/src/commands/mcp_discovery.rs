@@ -28,6 +28,8 @@ mod paths_tests;
 #[cfg(test)]
 mod process_tests;
 #[cfg(test)]
+mod process_tests_error_paths;
+#[cfg(test)]
 mod process_tests_next;
 #[cfg(test)]
 mod protocol_tests;

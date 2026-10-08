@@ -39,6 +39,8 @@ mod command_tests;
 #[cfg(test)]
 mod contracts_tests;
 #[cfg(test)]
+mod forwarding_edge_tests;
+#[cfg(test)]
 mod launch_tests;
 #[cfg(test)]
 #[cfg(target_os = "macos")]
