@@ -82,3 +82,21 @@ async fn content_type_matches_media_type_not_parameter_or_substring() {
         assert!(result.http_refresh.is_none() && result.x_robots_tag.is_none());
     }
 }
+
+#[tokio::test]
+async fn non_html_body_size_is_not_reported_as_html_limit() {
+    let result = read_fetched_page_data(
+        FetchedPageBody::Http(
+            response(
+                "Content-Type: image/png\r\nContent-Length: 100\r\n",
+                b"binary",
+            )
+            .await,
+        ),
+        4,
+    )
+    .await;
+    assert!(!result.declared_html);
+    assert!(!result.body_truncated && !result.body_read_failed);
+    assert!(result.body.is_empty());
+}

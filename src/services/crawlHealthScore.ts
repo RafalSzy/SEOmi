@@ -10,7 +10,7 @@ const findingType = (message: string): string => {
 const affectedShares = (pages: CrawledPageSummary[], severity: string): number => {
   const counts = new Map<string, number>();
   for (const page of pages) {
-    const types = new Set(page.issues.filter((issue) => issue.severity === severity).map((issue) => findingType(issue.message)));
+    const types = new Set((page.issues ?? []).filter((issue) => issue.severity === severity).map((issue) => findingType(issue.message)));
     for (const type of types) counts.set(type, (counts.get(type) ?? 0) + 1);
   }
   return [...counts.values()].sort((left, right) => right - left).slice(0, MAX_FINDING_TYPES)

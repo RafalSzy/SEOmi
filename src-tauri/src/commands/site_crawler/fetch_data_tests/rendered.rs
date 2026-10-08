@@ -68,3 +68,14 @@ async fn prefetched_payload_retains_read_time_limit_and_measurements() {
     assert_eq!(result.rendered_lcp_ms, Some(125));
     assert!(!result.body_truncated);
 }
+
+#[tokio::test]
+async fn rendered_non_html_snapshot_does_not_trigger_html_limit() {
+    let mut snapshot = snapshot();
+    snapshot.content_type = "image/png".into();
+    snapshot.html_truncated = true;
+    let expected = snapshot.html.as_bytes().to_vec();
+    let result = read_fetched_page_data(FetchedPageBody::Rendered(snapshot), 0).await;
+    assert!(!result.declared_html && !result.body_truncated);
+    assert_eq!(result.body, expected);
+}

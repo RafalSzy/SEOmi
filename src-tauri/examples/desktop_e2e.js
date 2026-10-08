@@ -32,6 +32,7 @@
   };
   const report = async payload => invoke('plugin:event|emit', { event: 'seomi-desktop-e2e-result', payload });
   let renderer = null;
+  let validation = null;
   try {
     check('real native IPC environment', !!window.__TAURI_INTERNALS__ && !!window.__TAURI__);
     if (!sessionStorage.getItem('seomi-e2e-stage')) {
@@ -92,17 +93,20 @@
     select(secondSwitcher, projectId);
     await waitFor(() => document.querySelector('#workspace-project-switcher')?.value === projectId, 'return to first project');
     check('switch back preserves first native data', (await invoke('load_project_crawl_checkpoint', { projectId })).fixture === 'desktop-e2e-persistence');
+    validation = await window.__seomiDesktopValidation.run({ invoke, projectId });
+    check('reject-first IPC validation executed', validation.status === 'executed' && validation.passed === true);
     await invoke('delete_project_crawl_checkpoint', { projectId });
     check('native checkpoint deletion verified', await invoke('load_project_crawl_checkpoint', { projectId }) === null);
     renderer = rendererEnabled
       ? await window.__seomiRendererE2e.run({ invoke })
       : window.__seomiRendererE2e.skipped();
-    await report({ passed: renderer.passed === true, checks, renderer, runtime: navigator.userAgent });
+    await report({ passed: renderer.passed === true, checks, validation, renderer, runtime: navigator.userAgent });
   } catch (error) {
     await report({
       passed: false,
       checks,
       failure: String(error),
+      validation,
       renderer: renderer || {
         status: rendererEnabled ? 'executed' : 'skipped',
         passed: false,

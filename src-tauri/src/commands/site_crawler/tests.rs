@@ -77,18 +77,32 @@ mod duplicates;
 mod hreflang_1;
 #[path = "tests/hreflang_2.rs"]
 mod hreflang_2;
+#[path = "tests/hreflang_validation_contracts.rs"]
+mod hreflang_validation_contracts;
 #[path = "tests/html_1.rs"]
 mod html_1;
 #[path = "tests/html_2.rs"]
 mod html_2;
+#[path = "tests/html_attribute_locator_contracts.rs"]
+mod html_attribute_locator_contracts;
+#[path = "tests/html_attribute_validation_contracts.rs"]
+mod html_attribute_validation_contracts;
+#[path = "tests/inline_images_contracts.rs"]
+mod inline_images_contracts;
 #[path = "tests/ipc.rs"]
 mod ipc;
+#[path = "tests/js_redirects_contracts.rs"]
+mod js_redirects_contracts;
+#[path = "tests/js_redirects_edges.rs"]
+mod js_redirects_edges;
 #[path = "tests/navigation_1.rs"]
 mod navigation_1;
 #[path = "tests/navigation_2.rs"]
 mod navigation_2;
 #[path = "tests/relations.rs"]
 mod relations;
+#[path = "tests/resource_apply_contracts.rs"]
+mod resource_apply_contracts;
 #[path = "tests/resource_contracts.rs"]
 mod resource_contracts;
 #[path = "tests/resources_1.rs"]
@@ -109,6 +123,8 @@ mod runtime_2;
 mod runtime_3;
 #[path = "tests/schema.rs"]
 mod schema;
+#[path = "tests/schema_references_contracts.rs"]
+mod schema_references_contracts;
 #[path = "tests/scope.rs"]
 mod scope;
 #[path = "tests/scope_contracts.rs"]
@@ -121,6 +137,8 @@ mod social_1;
 mod social_2;
 #[path = "tests/social_bounds.rs"]
 mod social_bounds;
+#[path = "tests/svg_inline_contracts.rs"]
+mod svg_inline_contracts;
 #[path = "tests/url_normalization_contracts.rs"]
 mod url_normalization_contracts;
 #[path = "tests/url_normalization_edges.rs"]

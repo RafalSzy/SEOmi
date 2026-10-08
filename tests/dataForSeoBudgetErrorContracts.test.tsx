@@ -53,4 +53,13 @@ describe('budget provider and persistence error contracts', () => {
     expect(write).toHaveBeenCalledWith('budget-errors', { monthlyLimitUsd: null, warnAtPercent: 80 });
     expect(screen.getByRole('status').textContent).toBe('Budget storage rejected');
   });
+
+  it('updates warn percentage input when limit is enabled', () => {
+    render(<DataForSeoBudgetSettings />);
+    const noLimitCheckbox = screen.getByRole('checkbox');
+    fireEvent.click(noLimitCheckbox);
+    const warnInput = screen.getByDisplayValue('80');
+    fireEvent.change(warnInput, { target: { value: '85' } });
+    expect((warnInput as HTMLInputElement).value).toBe('85');
+  });
 });

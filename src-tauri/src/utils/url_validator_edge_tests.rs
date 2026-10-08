@@ -72,4 +72,7 @@ fn ipv6_policy_covers_mapped_and_global_boundaries() {
     ] {
         assert!(is_public_ip(&address.parse().unwrap()), "{address}");
     }
+    for address in ["::", "::ffff:0.0.0.0", "2001:0::1"] {
+        assert!(!is_public_ip(&address.parse().unwrap()), "{address}");
+    }
 }

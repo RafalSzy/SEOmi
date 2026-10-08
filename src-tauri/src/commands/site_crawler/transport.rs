@@ -42,6 +42,7 @@ pub(crate) async fn request_with_safe_redirects(
                 final_url: requested_url,
                 redirect_chain: chain,
                 redirect_stopped_reason: None,
+                request_duration_ms: Some(response_time_ms),
             });
         }
         let Some(location) = response
@@ -56,6 +57,7 @@ pub(crate) async fn request_with_safe_redirects(
                 redirect_stopped_reason: Some(
                     "Redirect response has no valid Location header".into(),
                 ),
+                request_duration_ms: Some(response_time_ms),
             });
         };
         let next = match url::Url::parse(&requested_url)
@@ -69,6 +71,7 @@ pub(crate) async fn request_with_safe_redirects(
                     final_url: requested_url,
                     redirect_chain: chain,
                     redirect_stopped_reason: Some("Redirect Location cannot be resolved".into()),
+                    request_duration_ms: Some(response_time_ms),
                 })
             }
         };
@@ -86,6 +89,7 @@ pub(crate) async fn request_with_safe_redirects(
                     redirect_stopped_reason: Some(
                         "Redirect target is outside the configured crawl scope".into(),
                     ),
+                    request_duration_ms: Some(response_time_ms),
                 })
             }
             Err(error) => {
@@ -94,6 +98,7 @@ pub(crate) async fn request_with_safe_redirects(
                     final_url: requested_url,
                     redirect_chain: chain,
                     redirect_stopped_reason: Some(format!("Redirect target was rejected: {error}")),
+                    request_duration_ms: Some(response_time_ms),
                 })
             }
         };
@@ -112,6 +117,7 @@ pub(crate) async fn request_with_safe_redirects(
                 redirect_stopped_reason: Some(
                     "Redirect loop detected; the repeated target was not requested again".into(),
                 ),
+                request_duration_ms: Some(response_time_ms),
             });
         }
         if chain.len() > max_redirects {
@@ -122,6 +128,7 @@ pub(crate) async fn request_with_safe_redirects(
                 redirect_stopped_reason: Some(format!(
                     "Redirect limit of {max_redirects} exceeded"
                 )),
+                request_duration_ms: Some(response_time_ms),
             });
         }
         requested_url = normalized.to_string();

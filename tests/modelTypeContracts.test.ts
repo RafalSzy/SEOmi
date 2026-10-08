@@ -3,10 +3,10 @@ import { expect, it, vi } from 'vitest';
 import ts from 'typescript';
 import { exportedTypeContract } from './fixtures/typeContracts';
 
-it('preserves every crawler export, property type, optional flag and declaration order', () => {
+it('preserves the reviewed crawler contract including optional run project ownership', () => {
   expect(exportedTypeContract('src/types/crawl.ts')).toEqual({
     exports: 37,
-    sha256: '1a8cacd51a9b8216b11bcd6022e916a4b84be1d9100af0686e509fdcb2eab177',
+    sha256: '5de08a8a81869d9f9350e6a172b627fefc490e02d68965de5d6fa4fe07fe6b80',
   });
 });
 

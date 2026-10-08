@@ -1,5 +1,7 @@
 use super::upstream::connect_to_public_host_with;
-use super::upstream::{authority_for, connect_to_public_host, reason_phrase, request_target};
+use super::upstream::{
+    authority_for, connect_to_public_host, is_local_hostname, reason_phrase, request_target,
+};
 use std::io::{self, ErrorKind};
 use std::net::SocketAddr;
 use std::time::Duration;
@@ -25,6 +27,16 @@ fn proxy_url_helpers_cover_default_paths_and_authorities() {
         authority_for(&Url::parse("http://example.test:8080").unwrap()),
         "example.test:8080"
     );
+    for host in [
+        "localhost",
+        "api.LOCALHOST.",
+        "printer.local",
+        "svc.internal",
+        "router.lan",
+        "metadata.google.internal",
+    ] {
+        assert!(is_local_hostname(host), "{host}");
+    }
 }
 
 #[test]

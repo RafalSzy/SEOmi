@@ -18,6 +18,8 @@ const filteredCrawlResult = (run: CrawlRunRecord, template?: CrawlReportTemplate
     duration_ms: run.result.duration_ms,
     cancelled: run.result.cancelled,
     timed_out: run.result.timed_out,
+    storage_pages_truncated: run.result.storage_pages_truncated,
+    storage_pages_total: run.result.storage_pages_total,
     discovery_provenance_truncated: run.result.discovery_provenance_truncated,
     limit_reasons: run.result.limit_reasons || [],
     resource_limit_reached: run.result.resource_limit_reached,
@@ -69,6 +71,7 @@ export const crawlReportPayload = (run: CrawlRunRecord, template?: CrawlReportTe
     completed_at: run.completedAt,
     scope_start_url: run.startUrl,
     environment: run.environment,
+    storage_compacted: run.storage_compacted,
     configuration: run.config,
   },
   result: filteredCrawlResult(run, template),
@@ -80,6 +83,7 @@ export const downloadCrawlPdf = (run: CrawlRunRecord, template?: CrawlReportTemp
     completed_at: run.completedAt,
     scope_start_url: run.startUrl,
     environment: run.environment,
+    storage_compacted: run.storage_compacted,
     configuration: run.config,
     // The PDF renderer receives the immutable snapshot and applies the
     // section allow-list itself so a report can include issues/links without

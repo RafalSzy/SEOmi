@@ -3,6 +3,7 @@ pub(crate) struct FetchedResponse {
     pub(crate) final_url: String,
     pub(crate) redirect_chain: Vec<super::CrawledRedirectHop>,
     pub(crate) redirect_stopped_reason: Option<String>,
+    pub(crate) request_duration_ms: Option<u64>,
 }
 
 pub(crate) enum FetchedPageBody {
@@ -14,6 +15,7 @@ pub(crate) enum FetchedPageBody {
     Prefetched(Box<FetchedPageData>),
 }
 
+#[derive(Debug)]
 pub(crate) struct CrawlFetchFailure {
     pub(crate) kind: String,
     pub(crate) message: String,

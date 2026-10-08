@@ -27,6 +27,7 @@ pub async fn assemble_page_summary<R: Runtime>(
         final_url,
         redirect_chain,
         redirect_stopped_reason,
+        request_duration_ms,
     } = fetched;
     let final_base =
         Url::parse(&final_url).map_err(|e| format!("Failed to parse final URL: {e}"))?;
@@ -35,6 +36,7 @@ pub async fn assemble_page_summary<R: Runtime>(
     let page_data = read_fetched_page_data(response, setup.max_response_bytes).await;
     let page_duration = page_data
         .browser_navigation_time_ms
+        .or(request_duration_ms)
         .unwrap_or(page_duration);
     let is_html =
         page_data.declared_html && !page_data.body_truncated && !page_data.body_read_failed;

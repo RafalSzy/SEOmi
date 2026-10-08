@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buildSemanticAudit, type SemanticAuditFinding } from '@/services/semanticAudit';
 import type { TopicalMapDocument } from '@/services/topicalMap';
 import type { CrawlRunRecord, CrawledPageSummary } from '@/types';
 import { compareSemanticRuns, type SemanticRunChange } from '@/services/semanticRunComparison';
 import { appLocale } from '@/services/localeFormat';
+import { monitorSemanticComparison } from '@/services/monitoringAlerts';
+import { useProjectStore } from '@/stores/projectStore';
 
 interface Props { document: TopicalMapDocument; pages: CrawledPageSummary[]; runs?: CrawlRunRecord[]; currentRunId?: string; }
 type Filter = 'all' | 'risk' | 'review' | 'notice';
@@ -22,6 +24,7 @@ const provenanceStyles = {
 
 export const SemanticAuditPanel = ({ document, pages, runs = [], currentRunId }: Props) => {
   const { t } = useTranslation();
+  const projectId = useProjectStore((state) => state.activeProjectId);
   const report = useMemo(() => buildSemanticAudit(document, pages), [document, pages]);
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
@@ -29,6 +32,8 @@ export const SemanticAuditPanel = ({ document, pages, runs = [], currentRunId }:
   const [selectedBaselineRunId, setSelectedBaselineRunId] = useState('');
   const baselineRun = baselineRuns.find((run) => run.id === selectedBaselineRunId) ?? baselineRuns[0] ?? null;
   const comparison = baselineRun ? compareSemanticRuns(document, baselineRun, { id: currentRunId || 'current-snapshot', pages }) : null;
+  const comparisonKey = comparison ? `${comparison.baselineRunId}:${comparison.currentRunId}:${comparison.truncated}:${Object.values(comparison.counts).join(',')}` : '';
+  useEffect(() => { if (projectId && comparison && comparisonKey) void monitorSemanticComparison(projectId, comparison); }, [projectId, comparisonKey]);
   const comparisonLabels: Record<(typeof comparisonCounts)[number]['code'], string> = {
     'url-added': t('semanticAudit.comparison.urlAdded'),
     'url-not-observed': t('semanticAudit.comparison.urlNotObserved'),

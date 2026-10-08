@@ -123,7 +123,10 @@ pub(super) fn extract_javascript_redirects(
     }
     for element in document.select(&event_selector) {
         for (name, value) in element.value().attrs() {
-            if name.starts_with("on") {
+            if matches!(
+                name,
+                "onclick" | "onload" | "onbeforeunload" | "onunload" | "onpageshow" | "onpopstate"
+            ) {
                 scan(value, "javascript-inline");
             }
         }

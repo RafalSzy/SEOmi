@@ -19,7 +19,7 @@ it('keeps the type barrel declaration-free and exports all domain contracts as t
   }
 });
 
-it('preserves all 114 pre-refactor public type names and exact contract shapes', () => {
+it('preserves the reviewed 117 contracts including suggestion provenance and unknown metrics', () => {
   const printer = ts.createPrinter({ removeComments: true, newLine: ts.NewLineKind.LineFeed });
   const signatures = modules.flatMap((name) => {
     const source = parse(name);
@@ -31,10 +31,10 @@ it('preserves all 114 pre-refactor public type names and exact contract shapes',
               || !['query_pages', 'query_pages_may_be_truncated'].includes(member.name.getText(source))))
           : node, source)]] : []);
   }).sort((a, b) => a[0].localeCompare(b[0]));
-  expect(signatures).toHaveLength(114);
-  expect(new Set(signatures.map(([name]) => name)).size).toBe(114);
+  expect(signatures).toHaveLength(117);
+  expect(new Set(signatures.map(([name]) => name)).size).toBe(117);
   expect(createHash('sha256').update(JSON.stringify(signatures)).digest('hex'))
-    .toBe('0dc108e2285391361ce07959b92ab87331255cd1bf176ff58adaa25ba46f035b');
+    .toBe('163a51f14549fe83ce6243f63f477ee99547b5854c084e1040a95730b0773fd2');
 });
 
 it('adds only optional observed query/page fields to the legacy GSC contract', () => {

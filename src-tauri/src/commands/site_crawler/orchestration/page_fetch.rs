@@ -94,6 +94,7 @@ pub async fn fetch_page_step<R: Runtime>(
                             final_url,
                             redirect_chain: Vec::new(),
                             redirect_stopped_reason: None,
+                            request_duration_ms: None,
                         }
                     })
                     .map_err(|message| CrawlFetchFailure { kind: "browser_render".into(), message }),
@@ -127,6 +128,10 @@ pub async fn fetch_page_step<R: Runtime>(
             message: error.to_string(),
         })
     };
-    let page_duration = page_start.elapsed().as_millis() as u64;
+    let page_duration = resp
+        .as_ref()
+        .ok()
+        .and_then(|fetched| fetched.request_duration_ms)
+        .unwrap_or_else(|| page_start.elapsed().as_millis() as u64);
     (resp, page_duration)
 }

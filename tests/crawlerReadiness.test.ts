@@ -79,4 +79,17 @@ describe('buildCrawlerReadiness', () => {
     expect(rendered?.status).toBe('pass');
     expect(rendered?.evidence).toContain('browser-rendered');
   });
+
+  it('detects schema error findings even when syntax errors count is zero', () => {
+    const report = buildCrawlerReadiness(baseResult({
+      pages: [
+        {
+          ...baseResult().pages[0],
+          schema_syntax_errors: 0,
+          schema_validation_findings: [{ finding: { severity: 'error' } } as any],
+        },
+      ],
+    }));
+    expect(report.checks.find((check) => check.id === 'structured-data')?.status).toBe('error');
+  });
 });

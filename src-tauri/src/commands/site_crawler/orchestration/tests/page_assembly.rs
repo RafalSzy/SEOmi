@@ -9,6 +9,7 @@ fn fetched(page_data: super::super::super::fetch_types::FetchedPageData) -> Fetc
         final_url: FINAL_URL.into(),
         redirect_chain: vec![hop()],
         redirect_stopped_reason: None,
+        request_duration_ms: None,
     }
 }
 

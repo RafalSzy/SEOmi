@@ -15,6 +15,8 @@ mod tests_commands;
 mod tests_navigation;
 #[cfg(test)]
 mod tests_scripts;
+#[cfg(test)]
+mod tests_session_lifecycle;
 
 pub use commands::*;
 pub use models::*;

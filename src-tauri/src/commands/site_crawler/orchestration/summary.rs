@@ -6,6 +6,7 @@ use tauri::{Emitter, Runtime};
 
 use super::super::{
     control::{CrawlControl, CrawlProgress},
+    fetch_data::is_html_media_type,
     models::{CrawledResource, SiteCrawlResult},
     resource_apply::{
         apply_checked_frame_resources, apply_checked_image_resources,
@@ -75,7 +76,9 @@ pub fn build_crawl_result<R: Runtime>(input: BuildCrawlResultInput<'_, R>) -> Si
         if state.depth_limit_reached {
             reasons.push("max_depth".into());
         }
-        if state.pages.iter().any(|page| page.body_truncated) {
+        if state.pages.iter().any(|page| {
+            page.body_truncated && page.content_type.as_deref().is_none_or(is_html_media_type)
+        }) {
             reasons.push("max_response_bytes".into());
         }
         if state.timed_out {

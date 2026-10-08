@@ -105,3 +105,7 @@ pub async fn check_one(input: String) -> ExternalLinkCheck {
     )
     .await
 }
+
+#[cfg(test)]
+#[path = "network_edge_tests.rs"]
+mod edge_tests;

@@ -5,12 +5,17 @@ use tauri::{Listener, Manager};
 use uuid::Uuid;
 
 const REQUIRED_RENDERER_CHECKS: usize = 26;
+const REQUIRED_VALIDATION_CHECKS: usize = 39;
 
 fn main() {
     let report = PathBuf::from(std::env::args_os().nth(1).expect("report path argument"));
     let renderer_enabled = std::env::var("SEOMI_E2E_RENDERER").ok().as_deref() == Some("1");
     let session = Uuid::new_v4();
     let mut context = tauri::generate_context!();
+    context.config_mut().plugins.0.insert(
+        "updater".into(),
+        serde_json::json!({ "pubkey": "", "endpoints": [] }),
+    );
     context.config_mut().identifier = format!("com.seomi.desktop.e2e.{}", session.simple());
     context.config_mut().product_name = Some("SEOmi Desktop E2E".into());
     let profile = std::env::temp_dir().join(format!("seomi-e2e-webview-{session}"));
@@ -24,8 +29,9 @@ fn main() {
     let roots_for_setup = roots.clone();
     let script = include_str!("desktop_e2e.js");
     let renderer_script = include_str!("desktop_e2e_renderer.js");
+    let validation_script = include_str!("desktop_e2e_validation.js");
     let main_script = format!(
-        "window.__seomiE2eRendererEnabled = {renderer_enabled};\n{renderer_script}\n{script}"
+        "window.__seomiE2eRendererEnabled = {renderer_enabled};\n{validation_script}\n{renderer_script}\n{script}"
     );
     let plugin = tauri::plugin::Builder::<tauri::Wry, ()>::new("desktop-e2e")
         .setup(move |app, _| {
@@ -61,10 +67,24 @@ fn main() {
                         && renderer_passed
                         && renderer.and_then(|value| value.get("reason")).is_some()
                 };
+                let validation = data.get("validation");
+                let validation_valid = validation
+                    .and_then(|value| value.get("status"))
+                    .and_then(serde_json::Value::as_str)
+                    == Some("executed")
+                    && validation
+                        .and_then(|value| value.get("passed"))
+                        .and_then(serde_json::Value::as_bool)
+                        .unwrap_or(false)
+                    && validation
+                        .and_then(|value| value.get("checks"))
+                        .and_then(serde_json::Value::as_array)
+                        .is_some_and(|checks| checks.len() >= REQUIRED_VALIDATION_CHECKS);
                 let passed = data["passed"] == true
                     && data["checks"]
                         .as_array()
                         .is_some_and(|checks| checks.len() >= 24)
+                    && validation_valid
                     && renderer_valid;
                 fs::write(&report_path, serde_json::to_vec_pretty(&data).unwrap()).unwrap();
                 handle.exit(if passed { 0 } else { 1 });

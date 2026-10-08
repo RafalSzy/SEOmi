@@ -4,7 +4,7 @@ use super::*;
 #[path = "fetch_data_tests/mod.rs"]
 mod tests;
 
-fn is_html_media_type(value: &str) -> bool {
+pub(crate) fn is_html_media_type(value: &str) -> bool {
     matches!(
         value
             .split(';')
@@ -67,11 +67,11 @@ pub(super) async fn read_fetched_page_data(
                 .as_deref()
                 .map(is_html_media_type)
                 .unwrap_or(true);
-            let mut body_truncated =
-                content_length.is_some_and(|size| size > max_response_bytes as u64);
+            let mut body_truncated = declared_html
+                && content_length.is_some_and(|size| size > max_response_bytes as u64);
             let mut body_read_failed = false;
             let mut body = Vec::new();
-            if !body_truncated {
+            if declared_html && !body_truncated {
                 loop {
                     match response.chunk().await {
                         Ok(Some(chunk)) => {
@@ -111,10 +111,13 @@ pub(super) async fn read_fetched_page_data(
         }
         FetchedPageBody::Rendered(snapshot) => {
             let mut body = snapshot.html.into_bytes();
-            let body_truncated = snapshot.html_truncated || body.len() > max_response_bytes;
-            body.truncate(max_response_bytes);
             let content_type = Some(snapshot.content_type);
             let declared_html = content_type.as_deref().is_some_and(is_html_media_type);
+            let body_truncated =
+                declared_html && (snapshot.html_truncated || body.len() > max_response_bytes);
+            if declared_html {
+                body.truncate(max_response_bytes);
+            }
             FetchedPageData {
                 status: snapshot.http_status.unwrap_or(0),
                 content_type,

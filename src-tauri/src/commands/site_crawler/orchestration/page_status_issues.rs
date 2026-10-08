@@ -63,13 +63,13 @@ pub fn check_page_status_issues(
             message: "Non-HTML resource: HTML SEO checks were skipped".into(),
         });
     }
-    if page_data.body_truncated {
+    if page_data.declared_html && page_data.body_truncated {
         issues.push(CrawledPageIssue {
             severity: "Warning".into(),
             message: "Response body exceeded the configured limit; HTML checks were skipped".into(),
         });
     }
-    if page_data.body_read_failed {
+    if page_data.declared_html && page_data.body_read_failed {
         issues.push(CrawledPageIssue {
             severity: "Warning".into(),
             message: "Response body could not be read completely; HTML checks were skipped".into(),

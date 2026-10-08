@@ -122,3 +122,17 @@ async fn lifecycle_methods_cover_absent_handles_and_join_errors() {
     .stop()
     .await;
 }
+
+#[tokio::test]
+async fn dropping_the_shutdown_sender_ends_the_listener_loop() {
+    let mut proxy = BrowserRequestProxy::start().await.unwrap();
+    let task = proxy.task.as_ref().unwrap().abort_handle();
+    proxy.shutdown.take();
+    timeout(Duration::from_secs(2), async {
+        while !task.is_finished() {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+}

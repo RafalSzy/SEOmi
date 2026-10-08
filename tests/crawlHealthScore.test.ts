@@ -16,7 +16,7 @@ it('keeps identical affected shares comparable at every crawl size', () => {
 });
 
 it('deduplicates per page, groups dynamic messages and caps distinct finding contributions', () => {
-  const warning = { severity: 'Warning', message: 'HTTP ERROR 404: /one' };
+  const warning = { severity: 'Warning' as const, message: 'HTTP ERROR 404: /one' };
   expect(crawlHealthScore([page({ issues: [warning, { ...warning, message: 'http error 500: /two' }, warning] })])).toBe(90);
   expect(crawlHealthScore([page({ issues: ['a', 'b', 'c', 'd'].map((message) => ({ severity: 'Warning', message })) })])).toBe(70);
   expect(crawlHealthScore([page({ issues: [{ severity: 'Warning', message: ' : /empty' }] })])).toBe(90);
@@ -24,10 +24,10 @@ it('deduplicates per page, groups dynamic messages and caps distinct finding con
 
 it('weights the three largest shares and remains stable when page order changes', () => {
   const pages = Array.from({ length: 10 }, (_, index) => page({ issues: [
-    ...(index < 5 ? [{ severity: 'Warning', message: 'a' }] : []),
-    ...(index < 3 ? [{ severity: 'Warning', message: 'b' }] : []),
-    ...(index < 2 ? [{ severity: 'Warning', message: 'c' }] : []),
-    ...(index < 1 ? [{ severity: 'Warning', message: 'd' }] : []),
+    ...(index < 5 ? [{ severity: 'Warning' as const, message: 'a' }] : []),
+    ...(index < 3 ? [{ severity: 'Warning' as const, message: 'b' }] : []),
+    ...(index < 2 ? [{ severity: 'Warning' as const, message: 'c' }] : []),
+    ...(index < 1 ? [{ severity: 'Warning' as const, message: 'd' }] : []),
     { severity: 'Info', message: 'notice' },
   ] }));
   expect(crawlHealthScore(pages)).toBe(90);
@@ -35,7 +35,7 @@ it('weights the three largest shares and remains stable when page order changes'
 });
 
 it('caps severe multi-type findings at twenty and leaves healthy observations at one hundred', () => {
-  const issues = ['Critical', 'Warning'].flatMap((severity) => ['a', 'b', 'c'].map((message) => ({ severity, message })));
+  const issues = (['Critical', 'Warning'] as const).flatMap((severity) => ['a', 'b', 'c'].map((message) => ({ severity, message })));
   expect(crawlHealthScore([page({ issues })])).toBe(20);
   expect(crawlHealthScore([page({ issues: [{ severity: 'Info', message: 'notice' }] })])).toBe(100);
 });
