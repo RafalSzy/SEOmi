@@ -61,3 +61,22 @@ async fn detection_reports_all_failures_without_rewriting_diagnostics() {
     }
     assert_eq!(diagnostics_iter.next(), None);
 }
+
+#[tokio::test]
+async fn public_detection_wrapper_returns_the_supported_provider_contract() {
+    let results = super::detect_ai_clis().await;
+
+    assert_eq!(results.len(), 3);
+    assert_eq!(
+        results
+            .iter()
+            .map(|status| (status.provider.as_str(), status.command.as_str()))
+            .collect::<Vec<_>>(),
+        vec![
+            ("openai", "codex"),
+            ("claude", "claude"),
+            ("gemini", "gemini")
+        ]
+    );
+    assert!(results.iter().all(|status| !status.detail.is_empty()));
+}

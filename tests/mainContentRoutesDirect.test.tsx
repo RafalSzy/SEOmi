@@ -1,4 +1,5 @@
-import { isValidElement } from 'react';
+import { Suspense } from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { mockAudit } from './fixtures/auditStoreContracts';
 import {
@@ -29,39 +30,34 @@ import {
   SeoToolsWorkspace,
 } from '@/components/Layout/mainContent/mainContentRoutes';
 
-describe('mainContentRoutes direct static references', () => {
-  it('instantiates all 25 lazy route JSX elements', () => {
+describe('mainContentRoutes lazy module rendering', () => {
+  it('resolves every lazy module and renders its real route component', async () => {
     const elements = [
-      <AuditTabs key="1" />,
-      <Overview key="2" audit={mockAudit} />,
-      <SocialPreview key="3" audit={mockAudit} />,
-      <HeadingsTree key="4" audit={mockAudit} />,
-      <MetadataTable key="5" audit={mockAudit} />,
-      <ImagesAudit key="6" audit={mockAudit} />,
-      <LinksAudit key="7" audit={mockAudit} />,
-      <SecurityHeaders key="8" audit={mockAudit} />,
-      <StructuredDataView key="9" audit={mockAudit} />,
-      <AmpAuditView key="10" audit={mockAudit} />,
-      <PerformanceMetrics key="11" audit={mockAudit} />,
-      <DataForSEOAudit key="12" />,
-      <KeywordResearch key="13" />,
-      <KeywordClustering key="14" />,
-      <PageSpeedWorkspace key="15" />,
-      <SavedKeywords key="16" />,
-      <RankTracking key="17" />,
-      <DomainOverview key="18" />,
-      <BacklinkChecker key="19" />,
-      <SiteAudit key="20" />,
-      <AiBrandVisibility key="21" />,
-      <AiSearchPrompts key="22" />,
-      <McpHub key="23" />,
-      <SearchConsoleHub key="24" />,
-      <SeoToolsWorkspace key="25" />,
-    ];
+      ['AuditTabs', <AuditTabs />], ['Overview', <Overview audit={mockAudit} />],
+      ['SocialPreview', <SocialPreview audit={mockAudit} />], ['HeadingsTree', <HeadingsTree audit={mockAudit} />],
+      ['MetadataTable', <MetadataTable audit={mockAudit} />], ['ImagesAudit', <ImagesAudit audit={mockAudit} />],
+      ['LinksAudit', <LinksAudit audit={mockAudit} />], ['SecurityHeaders', <SecurityHeaders audit={mockAudit} />],
+      ['StructuredDataView', <StructuredDataView audit={mockAudit} />], ['AmpAuditView', <AmpAuditView audit={mockAudit} />],
+      ['PerformanceMetrics', <PerformanceMetrics audit={mockAudit} />], ['DataForSEOAudit', <DataForSEOAudit />],
+      ['KeywordResearch', <KeywordResearch />], ['KeywordClustering', <KeywordClustering />],
+      ['PageSpeedWorkspace', <PageSpeedWorkspace />], ['SavedKeywords', <SavedKeywords />],
+      ['RankTracking', <RankTracking />], ['DomainOverview', <DomainOverview />],
+      ['BacklinkChecker', <BacklinkChecker />], ['SiteAudit', <SiteAudit />],
+      ['AiBrandVisibility', <AiBrandVisibility />], ['AiSearchPrompts', <AiSearchPrompts />],
+      ['McpHub', <McpHub />], ['SearchConsoleHub', <SearchConsoleHub />],
+      ['SeoToolsWorkspace', <SeoToolsWorkspace />],
+    ] as const;
 
     expect(elements).toHaveLength(25);
-    for (const el of elements) {
-      expect(isValidElement(el)).toBe(true);
+    for (const [name, element] of elements) {
+      const view = render(
+        <Suspense fallback={<span data-testid={`route-loading-${name}`}>loading</span>}>
+          {element}
+        </Suspense>,
+      );
+      await waitFor(() => expect(screen.queryByTestId(`route-loading-${name}`)).toBeNull(), { timeout: 10_000 });
+      expect(view.container.textContent?.trim(), name).toBeTruthy();
+      view.unmount();
     }
-  });
+  }, 60_000);
 });

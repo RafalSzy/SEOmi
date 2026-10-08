@@ -2,6 +2,10 @@
 
 This is an incremental evidence register for GAP-026, not a declaration that every public function has a direct assertion. The generated inventory in `test-results/public-function-inventory.json` records source hashes, execution counts and static test references. Neither execution nor a reference alone proves an assertion about a function's behavior.
 
+Takeover verification (2026-10-08): `mainContentRoutesDirect` now resolves all 25 lazy modules through Suspense and checks rendered output rather than only JSX validity. `allStoreHooksDirect` exercises observable state transitions through all seven store hooks and restores their state. These are route smoke and store action contracts; they do not establish complete native/public API assertion coverage. The focused batch, including native reporter regression tests, passes 8 tests.
+
+The public `detect_ai_clis` wrapper is now called directly to verify the complete supported-provider contract without assuming any CLI is installed. Legacy image/link/keyword/structured-data deserialization and explicit content readability defaults have direct assertions. Stable Rust library verification passes 1341 tests; this suite result does not substitute for the production coverage gate.
+
 ## Public-callable coverage batch after 053c6b1d
 
 The preceding source-matched inventory had 1245 callables: 1202 executed, 11 not executed and 32 factory-returned. The eleven unexecuted entries are covered below by new tests calling the public helper or rendering the public component itself, followed by assertions on its result or observable behavior.
