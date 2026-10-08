@@ -18,7 +18,7 @@ it('keeps strict static analysis, full coverage reporting and both macOS archite
   expect(rust).toContain('cargo +nightly llvm-cov report --manifest-path src-tauri/Cargo.toml --branch --lcov');
   expect(rust).toContain('cargo +nightly llvm-cov report --manifest-path src-tauri/Cargo.toml --branch --json');
   expect(rust).toContain('test-results/desktop-e2e-coverage.json');
-  expect(rust).toMatch(/- name: Upload native coverage\n\s+if: always\(\)/);
+  expect(rust).toMatch(/- name: Upload native coverage\r?\n\s+if: always\(\)/);
   expect(tests).toContain('node scripts/native-coverage-threshold.mjs coverage-rust-production.lcov.summary.json');
   expect(rust.indexOf('npm run build')).toBeLessThan(rust.indexOf('coverage_sources'));
   expect(rust.indexOf('npm run build --prefix mcp-server')).toBeLessThan(rust.indexOf('coverage_sources'));
