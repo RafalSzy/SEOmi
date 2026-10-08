@@ -13,7 +13,7 @@ pub(super) async fn refused_endpoint() -> (String, tokio::net::TcpSocket) {
     (format!("http://{}", socket.local_addr().unwrap()), socket)
 }
 
-pub(super) fn dependencies<'a>(
+pub fn dependencies<'a>(
     store: &'a Store,
     token: &'a str,
     sites: &'a str,

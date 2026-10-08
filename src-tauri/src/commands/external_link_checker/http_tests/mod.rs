@@ -1,6 +1,7 @@
 mod dns;
 mod failures;
 mod responses;
+mod tls;
 
 use super::models::ExternalLinkCheck;
 use super::network::client_for_url;

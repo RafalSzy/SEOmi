@@ -7,7 +7,7 @@ use tokio::{
 };
 
 #[derive(Default)]
-pub(super) struct Store {
+pub struct Store {
     pub values: Mutex<BTreeMap<String, String>>,
     pub reads: Mutex<Vec<String>>,
     pub writes: Mutex<Vec<(String, String)>>,
@@ -60,7 +60,7 @@ impl CredentialStore for Store {
     }
 }
 
-pub(super) struct Server {
+pub struct Server {
     pub endpoint: String,
     task: Option<tokio::task::JoinHandle<Vec<String>>>,
 }
@@ -138,5 +138,5 @@ async fn read_request(stream: &mut TcpStream) -> String {
     String::from_utf8(bytes).unwrap()
 }
 
-pub(super) use super::session_request_helpers::dependencies;
+pub use super::session_request_helpers::dependencies;
 pub(super) use super::session_request_helpers::{form, refused_endpoint};

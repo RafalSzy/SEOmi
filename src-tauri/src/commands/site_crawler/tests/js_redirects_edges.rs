@@ -66,3 +66,28 @@ fn javascript_redirects_skip_dynamic_templates_unsupported_script_types_and_bad_
         .iter()
         .all(|item| !item.declaration.contains("ignored")));
 }
+
+#[test]
+fn javascript_redirects_stop_scanning_template_candidates_at_the_page_limit() {
+    let scripts = (0..40)
+        .map(|index| format!("<script>location.assign(`/template-{index}`)</script>"))
+        .collect::<String>();
+    let result = redirects(&scripts);
+
+    assert_eq!(result.len(), 32);
+    assert_eq!(
+        result.last().and_then(|item| item.target_url.as_deref()),
+        Some("https://example.test/template-31")
+    );
+}
+
+#[test]
+fn javascript_redirects_accept_an_explicitly_empty_script_type() {
+    let result = redirects(r#"<script type="">location='/empty-type'</script>"#);
+
+    assert_eq!(result.len(), 1);
+    assert_eq!(
+        result[0].target_url.as_deref(),
+        Some("https://example.test/empty-type")
+    );
+}

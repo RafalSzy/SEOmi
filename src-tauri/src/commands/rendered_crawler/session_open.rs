@@ -7,6 +7,7 @@ use tauri::{
     AppHandle, Runtime,
 };
 use tokio::sync::mpsc;
+use url::Url;
 
 use super::models::{CaptureEvent, RenderOptions, CAPTURE_SCHEME, MAX_CAPTURE_CHANNEL_EVENTS};
 use super::navigation::{is_allowed_crawl_navigation, parse_capture_chunk, parse_transfer_failed};
@@ -65,10 +66,8 @@ impl<R: Runtime> RenderedCrawlerSession<R> {
             .on_new_window(|_, _| NewWindowResponse::Deny)
             .on_navigation(move |url| {
                 if url.scheme() == CAPTURE_SCHEME {
-                    if let Some(chunk) = parse_capture_chunk(url, &navigation_nonce) {
-                        let _ = navigation_sender.blocking_send(CaptureEvent::Chunk(chunk));
-                    } else if let Some(sequence) = parse_transfer_failed(url, &navigation_nonce) {
-                        let _ = navigation_sender.blocking_send(CaptureEvent::TransferFailed(sequence));
+                    if let Some(event) = capture_event_for_navigation(url, &navigation_nonce) {
+                        let _ = navigation_sender.blocking_send(event);
                     }
                     return false;
                 }
@@ -142,4 +141,10 @@ impl<R: Runtime> RenderedCrawlerSession<R> {
             allowed_hosts,
         })
     }
+}
+
+pub(crate) fn capture_event_for_navigation(url: &Url, nonce: &str) -> Option<CaptureEvent> {
+    parse_capture_chunk(url, nonce)
+        .map(CaptureEvent::Chunk)
+        .or_else(|| parse_transfer_failed(url, nonce).map(CaptureEvent::TransferFailed))
 }

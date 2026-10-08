@@ -65,6 +65,7 @@ async fn loop_skips_resumed_invalid_and_expired_frontier_entries() {
     .await;
     assert!(expired_state.timed_out);
     assert!(expired_state.pages.is_empty());
+    assert_eq!(expired_state.queue.len(), 1);
 }
 
 #[tokio::test]
@@ -125,5 +126,6 @@ async fn loop_waits_for_resume_and_stops_cancelled_runs() {
     )
     .await;
     assert!(cancelled_state.pages.is_empty());
+    assert_eq!(cancelled_state.queue.len(), 1);
     assert!(cancelled.requests.lock().unwrap().is_empty());
 }

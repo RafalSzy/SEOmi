@@ -18,9 +18,10 @@ pub async fn render_crawl_page<R: Runtime>(
     lazy_scroll_cycles: Option<usize>,
 ) -> Result<RenderedPageSnapshot, String> {
     let target = validate_and_normalize_url(&url).map_err(|error| error.to_string())?;
+    // `validate_and_normalize_url` only returns web URLs with a hostname.
     let base_host = target
         .host_str()
-        .ok_or_else(|| "Rendered URL has no hostname.".to_string())?
+        .expect("validated rendered URL must have a hostname")
         .to_ascii_lowercase();
     let options = RenderOptions {
         user_agent: None,
@@ -61,9 +62,10 @@ pub async fn capture_rendered_artifact<R: Runtime>(
 ) -> Result<RenderedPageArtifact, String> {
     let target = validate_and_normalize_url(&url).map_err(|error| error.to_string())?;
     let artifact_kind = RenderedArtifactKind::parse(&kind)?;
+    // `validate_and_normalize_url` only returns web URLs with a hostname.
     let base_host = target
         .host_str()
-        .ok_or_else(|| "Rendered URL has no hostname.".to_string())?
+        .expect("validated rendered URL must have a hostname")
         .to_ascii_lowercase();
     let options = RenderOptions {
         user_agent: None,

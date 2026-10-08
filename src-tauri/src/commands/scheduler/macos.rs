@@ -136,5 +136,8 @@ mod contract_tests;
 #[path = "macos_edge_tests.rs"]
 mod edge_tests;
 #[cfg(test)]
+#[path = "macos_failure_tests.rs"]
+mod failure_tests;
+#[cfg(test)]
 #[path = "macos_test_support.rs"]
 mod test_support;

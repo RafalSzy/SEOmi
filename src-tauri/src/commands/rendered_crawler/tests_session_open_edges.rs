@@ -1,10 +1,33 @@
 use super::{
-    models::RenderOptions,
+    models::{CaptureEvent, RenderOptions},
     preview::{normalize_preview_value, open_rendered_element_preview},
     session::RenderedCrawlerSession,
+    session_open::capture_event_for_navigation,
 };
 use crate::utils::test_app::StorageApp;
 use tauri::test::mock_builder;
+use url::Url;
+
+#[test]
+fn navigation_callback_maps_only_nonce_bound_capture_events() {
+    let nonce = "open-edge-nonce";
+    let chunk_url = Url::parse(&format!("seomi-capture://{nonce}/4/0/1?data=payload")).unwrap();
+    assert!(matches!(
+        capture_event_for_navigation(&chunk_url, nonce),
+        Some(CaptureEvent::Chunk(chunk)) if chunk.sequence == 4 && chunk.index == 0
+    ));
+
+    let error_url = Url::parse(&format!("seomi-capture://{nonce}/4/error")).unwrap();
+    assert!(matches!(
+        capture_event_for_navigation(&error_url, nonce),
+        Some(CaptureEvent::TransferFailed(4))
+    ));
+    assert!(capture_event_for_navigation(&error_url, "other-nonce").is_none());
+    assert!(
+        capture_event_for_navigation(&Url::parse("https://example.test/").unwrap(), nonce)
+            .is_none()
+    );
+}
 
 #[tokio::test]
 async fn session_open_with_user_agent_cookie_and_options() {

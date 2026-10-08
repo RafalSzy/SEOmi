@@ -1,8 +1,3 @@
-use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
-use std::time::Duration;
-use tauri::Runtime;
-use tokio::time::timeout;
-
 use super::models::{
     CaptureEvent, CapturedPayload, RenderedArtifactKind, RenderedPageSnapshot, MAX_CAPTURE_CHUNKS,
     MAX_CAPTURE_CHUNK_BYTES, PAGE_RENDER_TIMEOUT,
@@ -10,7 +5,10 @@ use super::models::{
 use super::navigation::is_allowed_crawl_navigation;
 use super::session::RenderedCrawlerSession;
 use crate::utils::url_validator::validate_and_normalize_url;
-
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
+use std::time::Duration;
+use tauri::Runtime;
+use tokio::time::timeout;
 impl<R: Runtime> RenderedCrawlerSession<R> {
     pub async fn capture(&mut self, url: &str) -> Result<RenderedPageSnapshot, String> {
         let normalized = validate_and_normalize_url(url).map_err(|error| error.to_string())?;
@@ -116,9 +114,12 @@ impl<R: Runtime> RenderedCrawlerSession<R> {
                         total_chunks = Some(chunk.total);
                         chunks.resize(chunk.total, None);
                     }
+                    // A nonce String is always JSON serializable; retain its escaping.
+                    let nonce_json =
+                        serde_json::to_string(&self.nonce).expect("nonce is JSON serializable");
                     let acknowledgement = format!(
                         "window.dispatchEvent(new CustomEvent('seomi-capture-ack', {{detail: {{nonce: {}, sequence: {}, index: {}}}}}));",
-                        serde_json::to_string(&self.nonce).map_err(|error| error.to_string())?, sequence, chunk.index
+                        nonce_json, sequence, chunk.index
                     );
                     if chunks[chunk.index].is_none() {
                         chunks[chunk.index] = Some(chunk.data);
@@ -133,10 +134,13 @@ impl<R: Runtime> RenderedCrawlerSession<R> {
             }
         }
 
+        // `received == total_chunks` can only become true after every slot is
+        // filled, so a missing slot here would indicate an internal invariant
+        // violation rather than a renderer response that can be recovered.
         let encoded = chunks
             .into_iter()
-            .map(|chunk| chunk.ok_or_else(|| "Renderer snapshot is missing a chunk.".to_string()))
-            .collect::<Result<String, _>>()?;
+            .map(|chunk| chunk.expect("completed renderer capture has every chunk"))
+            .collect::<String>();
         let bytes = URL_SAFE_NO_PAD
             .decode(encoded)
             .map_err(|_| "Renderer snapshot is not valid base64url.".to_string())?;

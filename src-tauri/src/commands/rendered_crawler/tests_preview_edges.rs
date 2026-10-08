@@ -1,4 +1,6 @@
-use super::preview::{normalize_preview_value, open_rendered_element_preview};
+use super::preview::{
+    build_preview_script, normalize_preview_value, open_rendered_element_preview,
+};
 use crate::utils::test_app::StorageApp;
 use tauri::test::mock_builder;
 
@@ -25,6 +27,21 @@ fn normalize_preview_value_strictly_checks_boundaries() {
     // Empty and whitespace only strings fail
     assert!(normalize_preview_value("", "field", 10).is_err());
     assert!(normalize_preview_value("   ", "field", 10).is_err());
+}
+
+#[test]
+fn preview_script_preserves_json_escaping_and_arguments() {
+    let script = build_preview_script(
+        r##"div[data-label="a\b"]"##,
+        Some("A \"quoted\"\nresult"),
+        Some(2),
+        "Missing <item>",
+    );
+    assert!(script.contains(r##"const selector = "div[data-label=\"a\\b\"]";"##));
+    assert!(script.contains(r##"const needle = "A \"quoted\"\nresult";"##));
+    assert!(script.contains("const domIndex = 2;"));
+    assert!(script.contains(r##"const notFoundMessage = "Missing <item>";"##));
+    assert!(script.contains("querySelectorAll(selector)"));
 }
 
 #[tokio::test]

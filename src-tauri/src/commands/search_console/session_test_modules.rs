@@ -46,3 +46,5 @@ mod session_request_helpers;
 #[cfg(test)]
 #[path = "session_secret_persistence_tests.rs"]
 mod session_secret_persistence_tests;
+
+pub(super) use session_edge_fixture::{dependencies, Server, Store};

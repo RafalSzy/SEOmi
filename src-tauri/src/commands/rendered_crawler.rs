@@ -18,6 +18,8 @@ mod tests_commands;
 #[cfg(test)]
 mod tests_navigation;
 #[cfg(test)]
+mod tests_navigation_boundaries;
+#[cfg(test)]
 mod tests_open_edges;
 #[cfg(test)]
 mod tests_preview_edges;

@@ -127,6 +127,12 @@ pub fn html_route(path: &str, body: &str) -> Route {
     route
 }
 
+pub fn media_route(path: &str, body: &str) -> Route {
+    let mut route = route(path, 200, body);
+    route.headers.push("Content-Type: image/png".into());
+    route
+}
+
 pub fn refused_setup() -> (CrawlSetup, tokio::net::TcpSocket) {
     let socket = tokio::net::TcpSocket::new_v4().unwrap();
     socket.bind("127.0.0.1:0".parse().unwrap()).unwrap();

@@ -60,6 +60,13 @@ pub async fn prefetch_rendered_pages<R: Runtime>(
     if slots < 2 || state.queue.is_empty() {
         return;
     }
+    if control.is_cancelled(&setup.run_id) {
+        return;
+    }
+    if remaining_run_time(setup.start_time, setup.max_run_seconds).is_zero() {
+        state.timed_out = true;
+        return;
+    }
     let candidates = take_prefetch_window(
         &mut state.queue,
         &mut state.prefetched_order,

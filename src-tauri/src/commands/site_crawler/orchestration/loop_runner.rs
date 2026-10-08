@@ -27,11 +27,10 @@ pub async fn run_crawl_loop<R: Runtime>(
 ) {
     let parallelism = prefetch_parallelism(&setup.config, robots_crawl_delay);
 
-    while let Some((current_url, depth)) = state
-        .prefetched_order
-        .pop_front()
-        .or_else(|| state.queue.pop_front())
-    {
+    loop {
+        if state.prefetched_order.is_empty() && state.queue.is_empty() {
+            break;
+        }
         if crawl_deadline_reached(setup.start_time, setup.max_run_seconds) {
             state.timed_out = true;
             break;
@@ -42,6 +41,13 @@ pub async fn run_crawl_loop<R: Runtime>(
         if state.pages.len() >= setup.limit {
             break;
         }
+        let Some((current_url, depth)) = state
+            .prefetched_order
+            .pop_front()
+            .or_else(|| state.queue.pop_front())
+        else {
+            break;
+        };
         if setup.resume_completed_urls.contains(&current_url) {
             continue;
         }
