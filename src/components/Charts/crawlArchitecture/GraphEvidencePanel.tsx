@@ -59,12 +59,16 @@ export const GraphEvidencePanel = ({ graph }: Props) => {
         <ol className="mt-2 space-y-1.5">{rankedNodes.map(({ score, node }, index) => <li key={node!.id} className="flex items-center gap-2 text-[11px]"><span className="w-5 text-slate-500">{index + 1}.</span><span className="min-w-0 flex-1 truncate text-slate-200" title={node!.page.url}>{shortUrl(node!.page.url)}</span><span className="font-mono text-emerald-200">{(score.score * 100).toFixed(2)}%</span></li>)}</ol>
         {!rankedNodes.length && <p className="mt-2 text-[10px] text-slate-500">{t('mapUi.graphEvidence.noNodes')}</p>}
         <p className="mt-2 text-[10px] text-slate-500">{t('mapUi.graphEvidence.structureNote')}</p>
+        {graph.truncated && <p role="note" className="mt-2 text-[10px] text-amber-200">{t('mapUi.graphEvidence.structurePartial')}</p>}
       </article>
       <article aria-label={t('mapUi.graphEvidence.trafficAria')} className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-3">
         <h4 className="text-xs font-semibold text-sky-200">{t('mapUi.graphEvidence.trafficTitle')}</h4>
         <p className="mt-1 text-[10px] text-slate-400">{t(`mapUi.graphEvidence.status.${traffic?.status ?? 'unavailable'}`)}</p>
         {traffic ? <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-slate-400"><dt>{t('mapUi.graphEvidence.project')}</dt><dd className="truncate text-slate-200">{traffic.projectId}</dd><dt>{t('mapUi.graphEvidence.property')}</dt><dd className="truncate text-slate-200">{traffic.property?.key ?? '—'}</dd><dt>{t('mapUi.graphEvidence.period')}</dt><dd className="text-slate-200">{traffic.dateRange?.startDate} → {traffic.dateRange?.endDate}</dd><dt>{t('mapUi.graphEvidence.filters')}</dt><dd className="truncate text-slate-200">{filterLabel(traffic.filters, t('mapUi.graphEvidence.allFilters'))}</dd></dl> : <p className="mt-2 text-[10px] text-amber-200">{t('mapUi.graphEvidence.noSelection')}</p>}
         <p className="mt-2 text-[10px] text-slate-400">{t('mapUi.graphEvidence.counts', { observed, uncertain, missing })}</p>
+        {traffic?.status === 'partial' && <p role="note" className="mt-2 text-[10px] text-amber-200">{t('mapUi.graphEvidence.partialNotice')}</p>}
+        {traffic?.status === 'invalid' && <p role="note" className="mt-2 text-[10px] text-rose-200">{t('mapUi.graphEvidence.invalidNotice')}</p>}
+        {traffic && (traffic.invalidRows > 0 || traffic.ignoredRows > 0) && <p role="note" className="mt-2 text-[10px] text-slate-400">{t('mapUi.graphEvidence.rowQuality', { invalid: traffic.invalidRows, ignored: traffic.ignoredRows })}</p>}
         <ul className="mt-2 space-y-1.5">{rankedNodes.map(({ node }) => { const row = traffic?.nodes.find((item) => item.nodeId === node!.id); return <li key={`traffic-${node!.id}`} className="flex items-center gap-2 text-[10px]"><span className="min-w-0 flex-1 truncate text-slate-300" title={node!.page.url}>{shortUrl(node!.page.url)}</span><span className="text-slate-500">{evidenceLabel(traffic, node!.id, t)}</span><span className="font-mono text-sky-200">{row?.observed ? `${metric(row.metrics.clicks)} / ${percent(row.metrics.ctr)}` : '—'}</span></li>; })}</ul>
         <p className="mt-2 text-[10px] text-slate-500">{t('mapUi.graphEvidence.trafficNote')}</p>
       </article>

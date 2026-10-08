@@ -49,6 +49,12 @@ describe('extracted crawler layout components', () => {
     expect(screen.getByTitle(i18n.t('crawl.navigation.deleteRunDuringCrawl'))).toBeTruthy();
   });
 
+  it('does not throw when a saved crawl has an invalid completion timestamp', () => {
+    const malformed = { ...run, completedAt: 'not-a-date' };
+    render(<CrawlResultsHeader session={{ result, runs: [malformed], currentRun: malformed, isCrawling: false, onSelectRun: vi.fn(), onDeleteRun: undefined, deleteCurrentRun: vi.fn(), openMapSection: vi.fn(), t: (key: string) => key } as any} />);
+    expect(screen.getByRole('option', { name: /—/ })).toBeTruthy();
+  });
+
 
   it('switches the active group without hiding navigation actions', () => {
     render(<Harness component={CrawlResultsGroups} />);

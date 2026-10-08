@@ -1,4 +1,5 @@
 mod execution;
+mod execution_filename;
 mod launch;
 mod lock;
 mod models;
@@ -101,16 +102,12 @@ pub fn list_scheduled_executions<R: tauri::Runtime>(
         let path = entry
             .map_err(|error| format!("Unable to read scheduled execution entry: {error}"))?
             .path();
-        let Some(name) = path.file_name().and_then(|value| value.to_str()) else {
+        let Some(file_schedule_id) = execution_filename::schedule_id(&path) else {
             continue;
         };
-        if !name.starts_with("scheduled_execution_") || !name.ends_with(".json") {
-            continue;
-        }
         if let Some(mut handoff) =
             read_json::<ScheduledExecutionHandoff>(&path, MAX_EXECUTION_BYTES)?
         {
-            let file_schedule_id = &name["scheduled_execution_".len()..name.len() - ".json".len()];
             validate_handoff_identity(&project_id, file_schedule_id, &handoff)?;
             let result_file = result_path(&app, &project_id, &handoff.schedule_id)?;
             if handoff.succeeded {

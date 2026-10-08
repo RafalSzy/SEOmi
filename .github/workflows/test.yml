@@ -21,6 +21,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
+      - name: Install frontend dependencies for the desktop coverage harness
+        run: npm ci
+      - name: Build frontend assets for the desktop coverage harness
+        run: npm run build
+      - name: Install MCP server dependencies for native coverage
+        run: npm ci --prefix mcp-server --ignore-scripts
+      - name: Build MCP server for native coverage
+        run: npm run build --prefix mcp-server
       - name: Cache Cargo dependencies
         uses: actions/cache@v4
         with:
@@ -39,11 +48,16 @@ jobs:
         run: |
           rustup toolchain install nightly --profile minimal --component llvm-tools-preview
           cargo run --quiet --manifest-path src-tauri/Cargo.toml --example coverage_sources > native-coverage-sources.json
-          cargo +nightly llvm-cov --manifest-path src-tauri/Cargo.toml --branch --lcov --output-path coverage-rust.lcov
-          cargo +nightly llvm-cov report --manifest-path src-tauri/Cargo.toml --json --output-path coverage-rust.json
+          cargo +nightly llvm-cov --manifest-path src-tauri/Cargo.toml --branch --no-report
+          mkdir -p test-results
+          SEOMI_E2E_RENDERER=1 cargo +nightly llvm-cov run --manifest-path src-tauri/Cargo.toml --example desktop_e2e --features custom-protocol --branch --no-clean --lcov --output-path coverage-rust.lcov -- test-results/desktop-e2e-coverage.json
+          node scripts/validate-desktop-e2e-report.mjs test-results/desktop-e2e-coverage.json
+          cargo +nightly llvm-cov report --manifest-path src-tauri/Cargo.toml --branch --lcov --output-path coverage-rust.lcov
+          cargo +nightly llvm-cov report --manifest-path src-tauri/Cargo.toml --branch --json --output-path coverage-rust.json
           node scripts/native-production-coverage.mjs coverage-rust.lcov native-coverage-sources.json coverage-rust-production.lcov coverage-rust.json
           node scripts/native-coverage-threshold.mjs coverage-rust-production.lcov.summary.json
       - name: Upload native coverage
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: native-coverage
@@ -53,6 +67,7 @@ jobs:
             coverage-rust-production.lcov
             coverage-rust-production.lcov.summary.json
             native-coverage-sources.json
+            test-results/desktop-e2e-coverage.json
           retention-days: 14
       - name: Inventory declared native functions using Rust AST
         run: cargo run --quiet --manifest-path src-tauri/Cargo.toml --example function_inventory > native-function-inventory.json

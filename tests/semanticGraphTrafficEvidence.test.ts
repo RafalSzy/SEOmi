@@ -28,7 +28,7 @@ describe('semantic graph traffic evidence', () => {
 
   it('marks truncation as partial and never infers zeros for missing pages', () => {
     const result = buildTrafficEvidence(request({ gscData: baseData({ pages_may_be_truncated: true }) }));
-    expect(result).toMatchObject({ status: 'partial', truncated: true, uncertainNodeIds: ['page-a', 'page-b'] });
+    expect(result).toMatchObject({ status: 'partial', truncated: true, uncertainNodeIds: ['page-a', 'page-b'], missingNodeIds: [] });
     expect(result.nodes.every((node) => node.metrics.clicks === null && node.observation === 'truncated')).toBe(true);
   });
 
@@ -61,7 +61,15 @@ describe('semantic graph traffic evidence', () => {
     ] }) }));
     expect(result.ignoredRows).toBe(1);
     expect(result.invalidRows).toBe(3);
+    expect(result.status).toBe('partial');
     expect(result.nodes.find((node) => node.nodeId === 'page-b')?.metrics.clicks).toBe(null);
+  });
+
+  it('does not call unavailable observations missing and exposes rejected source rows as partial', () => {
+    const unavailable = buildTrafficEvidence(request({ gscData: null }));
+    expect(unavailable.missingNodeIds).toEqual([]);
+    const partial = buildTrafficEvidence(request({ gscData: baseData({ pages: [{ page: null as never, clicks: 0, impressions: 0, ctr: 0, position: 0 }] }) }));
+    expect(partial).toMatchObject({ status: 'partial', invalidRows: 1, missingNodeIds: ['page-a', 'page-b'] });
   });
 
   it('rejects null requests, non-array nodes, empty property, and non-array pages', () => {

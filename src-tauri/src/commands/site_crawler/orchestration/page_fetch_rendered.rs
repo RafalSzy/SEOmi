@@ -4,7 +4,7 @@ use tauri::{AppHandle, Runtime};
 use super::super::{
     control::{wait_for_crawl_cancellation, CrawlControl},
     fetch_types::{CrawlFetchFailure, FetchedResponse},
-    render_fetch::{fetch_rendered_page, WebviewRenderer},
+    render_fetch::{fetch_rendered_page, RenderRequestScope, WebviewRenderer},
     render_health::remaining_run_time,
 };
 use super::setup::CrawlSetup;
@@ -51,8 +51,7 @@ pub async fn fetch_rendered_step<R: Runtime>(
         let render = fetch_rendered_page(
             &setup.client,
             current_url,
-            &setup.base_host,
-            setup.max_redirects,
+            RenderRequestScope::new(&setup.base_host, setup.max_redirects),
             &setup.config,
             state.render_health.rendering_enabled(),
             &mut renderer,

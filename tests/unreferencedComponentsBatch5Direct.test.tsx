@@ -47,6 +47,9 @@ describe('unreferenced components batch 5 direct assertions', () => {
     fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'pass' } });
     expect(setStatus).toHaveBeenCalledWith('pass');
     expect(resetPage).toHaveBeenCalled();
+    fireEvent.change(screen.getAllByRole('combobox')[1], { target: { value: 'Performance' } });
+    expect(setQuery).toHaveBeenCalledTimes(1);
+    expect(resetPage).toHaveBeenCalledTimes(3);
   });
 
   it('OverviewCoveragePagination renders pagination buttons', () => {

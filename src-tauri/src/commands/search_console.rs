@@ -123,3 +123,11 @@ mod session_test_modules;
 mod token_transport_tests;
 #[cfg(test)]
 mod transport_fixture;
+
+#[cfg(test)]
+#[path = "search_console/performance_transport_direct_tests.rs"]
+mod performance_transport_direct_tests;
+
+#[cfg(test)]
+#[path = "search_console/session_disconnect_coverage_tests.rs"]
+mod session_disconnect_coverage_tests;

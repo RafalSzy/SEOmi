@@ -4,8 +4,11 @@ use std::{fs, path::PathBuf, sync::Mutex, time::Duration};
 use tauri::{Listener, Manager};
 use uuid::Uuid;
 
-const REQUIRED_RENDERER_CHECKS: usize = 26;
-const REQUIRED_VALIDATION_CHECKS: usize = 39;
+// 26 renderer checks plus 11 live-page checks for each of HTTP and browser-rendered modes.
+const REQUIRED_RENDERER_CHECKS: usize = 26 + (11 * 2);
+// The validation scripts contain 39 base checks and 20 additional checks.
+// Keep this explicit so adding a script without extending the gate fails.
+const REQUIRED_VALIDATION_CHECKS: usize = 39 + 20;
 
 fn main() {
     let report = PathBuf::from(std::env::args_os().nth(1).expect("report path argument"));
@@ -30,8 +33,10 @@ fn main() {
     let script = include_str!("desktop_e2e.js");
     let renderer_script = include_str!("desktop_e2e_renderer.js");
     let validation_script = include_str!("desktop_e2e_validation.js");
+    let additional_validation_script = include_str!("desktop_e2e_additional.js");
+    let crawl_validation_script = include_str!("desktop_e2e_crawl.js");
     let main_script = format!(
-        "window.__seomiE2eRendererEnabled = {renderer_enabled};\n{validation_script}\n{renderer_script}\n{script}"
+        "window.__seomiE2eRendererEnabled = {renderer_enabled};\n{additional_validation_script}\n{validation_script}\n{crawl_validation_script}\n{renderer_script}\n{script}"
     );
     let plugin = tauri::plugin::Builder::<tauri::Wry, ()>::new("desktop-e2e")
         .setup(move |app, _| {
@@ -43,7 +48,7 @@ fn main() {
             let handle = app.clone();
             let report_path = report.clone();
             app.listen("seomi-desktop-e2e-result", move |event| {
-                let data: serde_json::Value = serde_json::from_str(event.payload()).unwrap();
+                let mut data: serde_json::Value = serde_json::from_str(event.payload()).unwrap();
                 let renderer = data.get("renderer");
                 let renderer_status = renderer.and_then(|value| value.get("status"));
                 let renderer_checks = renderer
@@ -79,13 +84,14 @@ fn main() {
                     && validation
                         .and_then(|value| value.get("checks"))
                         .and_then(serde_json::Value::as_array)
-                        .is_some_and(|checks| checks.len() >= REQUIRED_VALIDATION_CHECKS);
+                        .is_some_and(|checks| checks.len() == REQUIRED_VALIDATION_CHECKS);
                 let passed = data["passed"] == true
                     && data["checks"]
                         .as_array()
                         .is_some_and(|checks| checks.len() >= 24)
                     && validation_valid
                     && renderer_valid;
+                data["passed"] = passed.into();
                 fs::write(&report_path, serde_json::to_vec_pretty(&data).unwrap()).unwrap();
                 handle.exit(if passed { 0 } else { 1 });
             });
@@ -130,3 +136,7 @@ fn main() {
     let _ = fs::remove_dir_all(&profile);
     std::process::exit(code);
 }
+
+#[cfg(test)]
+#[path = "desktop_e2e_contract_tests.rs"]
+mod contract_tests;

@@ -8,7 +8,9 @@ export type CrawlComparisonReason =
   | 'different-scope'
   | 'invalid-completion-time'
   | 'baseline-incomplete'
-  | 'current-incomplete';
+  | 'current-incomplete'
+  | 'path-key-collision'
+  | 'url-key-collision';
 export interface CrawlRunEvidence {
   runId: string;
   completedAt: string;
@@ -37,16 +39,18 @@ export interface CrawlComparisonContractOptions {
   matchByPath?: boolean;
 }
 const executionOnly = new Set(['resumeCompletedUrls', 'resumeFrontierUrls']);
-const normalizeUrl = (value: string, pathOnly: boolean): string => {
+const normalizeUrl = (value: unknown, pathOnly: boolean): string => {
+  const raw = typeof value === 'string' ? value.trim() : '';
+  if (!raw) return '';
   try {
-    const url = new URL(value.trim());
+    const url = new URL(raw);
     url.hash = '';
     url.searchParams.sort();
     if (pathOnly) return `${url.pathname.replace(/\/$/u, '') || '/'}${url.search}`;
     url.hostname = url.hostname.toLowerCase();
     return url.toString().replace(/\/$/u, '');
   } catch {
-    return value.trim().split('#', 1)[0];
+    return raw.split('#', 1)[0];
   }
 };
 const stableValue = (value: unknown, ignoredKeys: ReadonlySet<string> = new Set()): unknown => {
@@ -71,7 +75,6 @@ const hash = (value: string): string => {
  * nested objects remain fully significant configuration data.
  */
 export const crawlConfigSignature = (config: CrawlConfig): string => JSON.stringify(stableValue(config, executionOnly));
-
 export const crawlConfigFingerprint = (config: CrawlConfig): string => hash(crawlConfigSignature(config));
 export const crawlScopeSignature = (
   run: Pick<CrawlRunRecord, 'startUrl' | 'config'>,
@@ -104,7 +107,7 @@ export const assessCrawlRun = (run: CrawlComparisonRun): CrawlRunEvidence => {
     provenance: 'stored-crawl-run',
   };
 };
-const validTime = (value: string): boolean => Boolean(value.trim() && Number.isFinite(Date.parse(value)));
+const validTime = (value: unknown): boolean => typeof value === 'string' && Boolean(value.trim() && Number.isFinite(Date.parse(value)));
 export const guardCrawlComparison = (
   current: CrawlComparisonRun,
   baseline: CrawlComparisonRun,
@@ -128,7 +131,8 @@ export const guardCrawlComparison = (
   if (expected && [currentProject, baselineProject].some((id) => id !== undefined && id !== expected)) reasons.push('different-project');
   if (!expected && (!currentProject || !baselineProject)) reasons.push('project-unverified');
   if (currentScopeSignature !== baselineScopeSignature) reasons.push('different-scope');
-  if (normalizeUrl(current.startUrl, options.matchByPath === true) !== normalizeUrl(current.result.start_url, options.matchByPath === true)
+  if ([current.startUrl, current.result.start_url, baseline.startUrl, baseline.result.start_url].some((value) => normalizeUrl(value, options.matchByPath === true) === '')
+    || normalizeUrl(current.startUrl, options.matchByPath === true) !== normalizeUrl(current.result.start_url, options.matchByPath === true)
     || normalizeUrl(baseline.startUrl, options.matchByPath === true) !== normalizeUrl(baseline.result.start_url, options.matchByPath === true)) reasons.push('different-scope');
   if (!validTime(current.completedAt) || !validTime(baseline.completedAt)) reasons.push('invalid-completion-time');
   if (baselineEvidence.completeness === 'incomplete') reasons.push('baseline-incomplete');
@@ -137,7 +141,7 @@ export const guardCrawlComparison = (
     ...(expected ? { projectId: expected } : currentProject ? { projectId: currentProject } : {}),
     baseline: baselineEvidence,
     current: currentEvidence,
-    scopeMatched: currentScopeSignature === baselineScopeSignature,
+    scopeMatched: currentScopeSignature === baselineScopeSignature && [current.startUrl, current.result.start_url, baseline.startUrl, baseline.result.start_url].every((value) => normalizeUrl(value, options.matchByPath === true) !== ''),
     source: 'stored-crawl-runs',
   };
   const blocked = reasons.length > 0;

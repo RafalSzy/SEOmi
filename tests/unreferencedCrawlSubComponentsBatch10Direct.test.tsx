@@ -16,9 +16,11 @@ const mockPage = result.pages[0] as unknown as CrawledPageSummary;
 
 describe('unreferenced crawl subcomponents batch 10 direct assertions', () => {
   it('renders CrawlHreflangList directly', () => {
-    const hreflangs = [{ language: 'en', target_url: 'https://example.com/en' }] as any;
+    const hreflangs = [{ language: 'en', target_url: 'https://example.com/en', target_checked_in_run: true, target_http_status: 200, reciprocal_in_run: true, target_canonical_alignment: 'aligned' }] as any;
     render(<CrawlHreflangList hreflangs={hreflangs} t={t} />);
     expect(screen.getByText(/example\.com\/en/i)).toBeDefined();
+    expect(screen.getByText(/crawl\.ui\.httpStatus/)).toBeDefined();
+    expect(screen.getByText(/crawlDeepUi\.yes/)).toBeDefined();
   });
 
   it('renders CrawlSocialMetaTagsCell directly', () => {
@@ -36,6 +38,7 @@ describe('unreferenced crawl subcomponents batch 10 direct assertions', () => {
       </table>,
     );
     expect(screen.getByText('Test Title')).toBeTruthy();
+    expect(screen.queryByText('twitter:title')).toBeNull();
   });
 
   it('renders CrawlSocialTable directly', () => {
@@ -64,6 +67,7 @@ describe('unreferenced crawl subcomponents batch 10 direct assertions', () => {
     );
     expect(container.textContent).toContain('https://example.com/');
     expect(container.textContent).toContain('80 / 100');
+    expect(container.textContent).toContain('250');
   });
 
   it('renders SummarySitemapAndLinkRows directly', () => {
@@ -96,11 +100,11 @@ describe('unreferenced crawl subcomponents batch 10 direct assertions', () => {
   });
 
   it('renders CrawlPageIssuesList directly', () => {
-    const issues = [{ severity: 'Critical' as const, message: '404 not found' }];
+    const issues = [{ severity: 'Critical' as const, message: 'Missing <title> tag' }];
     const { container } = render(
       <CrawlPageIssuesList redirectChain={[]} issues={issues} t={t} />,
     );
-    expect(container.textContent).toContain('crawlIssues.technicalDetail');
     expect(container.textContent).toContain('siteAudit.severityValues.Critical');
+    expect(container.textContent).toContain('auditIssues.messages.meta_title_missing');
   });
 });

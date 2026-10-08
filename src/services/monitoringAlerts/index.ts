@@ -13,17 +13,18 @@ export * from './persistence';
 export * from './evaluators';
 
 export interface MonitoringDelivery { email?: (alert: MonitoringAlert) => Promise<boolean>; }
-export interface MonitoringDeliveryResult { alert: MonitoringAlert | null; delivered: boolean; duplicate: boolean; emailConfigured: boolean; }
+export interface MonitoringDeliveryResult { alert: MonitoringAlert | null; delivered: boolean; persisted: boolean; duplicate: boolean; emailConfigured: boolean; }
 
 export const deliverMonitoringAlert = async (projectId: string, alert: MonitoringAlert | null, delivery: MonitoringDelivery = {}): Promise<MonitoringDeliveryResult> => {
-  if (!alert) return { alert, delivered: false, duplicate: false, emailConfigured: Boolean(delivery.email) };
+  if (!alert) return { alert, delivered: false, persisted: false, duplicate: false, emailConfigured: Boolean(delivery.email) };
   const reservation = reserveMonitoringAlert(projectId, alert, readMonitoringSettings(projectId));
-  if (!reservation) return { alert, delivered: false, duplicate: false, emailConfigured: Boolean(delivery.email) };
-  if (reservation.duplicate) return { alert, delivered: false, duplicate: true, emailConfigured: Boolean(delivery.email) };
-  const desktop = await sendProjectNotification(projectId, () => ({ title: alert.title, body: alert.body }));
+  if (!reservation) return { alert, delivered: false, persisted: false, duplicate: false, emailConfigured: Boolean(delivery.email) };
+  if (reservation.duplicate) return { alert, delivered: false, persisted: false, duplicate: true, emailConfigured: Boolean(delivery.email) };
+  const desktop = await sendProjectNotification(projectId, () => ({ title: alert.title, body: alert.body })).catch(() => false);
   const email = delivery.email ? await delivery.email(alert).catch(() => false) : false;
-  reservation.finish(desktop || email);
-  return { alert, delivered: desktop || email, duplicate: false, emailConfigured: Boolean(delivery.email) };
+  const sent = desktop || email;
+  const persisted = reservation.finish(sent);
+  return { alert, delivered: sent, persisted, duplicate: false, emailConfigured: Boolean(delivery.email) };
 };
 
 export const monitorGscSnapshots = (projectId: string, baseline: GscPerformanceSnapshot, current: GscPerformanceSnapshot, delivery?: MonitoringDelivery) => deliverMonitoringAlert(projectId, compareGscForMonitoring(baseline, current, readMonitoringSettings(projectId)), delivery);

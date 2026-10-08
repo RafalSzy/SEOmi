@@ -11,7 +11,7 @@ describe('MonitoringAlertsPanel', () => {
   afterEach(async () => { useProjectStore.setState(originalProject); await i18n.changeLanguage(originalLanguage); localStorage.clear(); });
   it('renders the project scoped opt-in, frequency, types and thresholds', () => {
     render(<MonitoringAlertsPanel />);
-    expect((screen.getByRole('checkbox', { name: 'Enable change monitoring alerts' }) as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByRole('checkbox', { name: 'Enable change monitoring alerts' }) as HTMLInputElement).checked).toBe(false);
     expect((screen.getByRole('combobox', { name: 'Monitoring alert frequency' }) as HTMLSelectElement).value).toBe('daily');
     expect((screen.getByRole('spinbutton', { name: 'GSC decline percent' }) as HTMLInputElement).value).toBe('20');
     expect((screen.getByRole('spinbutton', { name: 'PageSpeed category drop' }) as HTMLInputElement).value).toBe('0.1');

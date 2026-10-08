@@ -98,7 +98,7 @@ const finish = (nodes: TrafficNodeEvidence[], meta: Pick<TrafficEvidence, 'statu
   const outOfScopeNodeIds = nodes.filter((node) => node.observation === 'out-of-scope').map((node) => node.nodeId).sort();
   const ambiguousNodeIds = nodes.filter((node) => node.observation === 'ambiguous').map((node) => node.nodeId).sort();
   const uncertainNodeIds = nodes.filter((node) => node.observation === 'truncated').map((node) => node.nodeId).sort();
-  const missingNodeIds = nodes.filter((node) => !node.observed && !outOfScopeNodeIds.includes(node.nodeId) && !ambiguousNodeIds.includes(node.nodeId)).map((node) => node.nodeId).sort();
+  const missingNodeIds = nodes.filter((node) => node.observation === 'missing').map((node) => node.nodeId).sort();
   return { ...meta, nodes: [...nodes].sort((left, right) => left.nodeId < right.nodeId ? -1 : left.nodeId > right.nodeId ? 1 : 0), matchedNodeIds, missingNodeIds, uncertainNodeIds, outOfScopeNodeIds, ambiguousNodeIds, ignoredRows: 0, invalidRows: 0, truncated: false };
 };
 
@@ -128,7 +128,7 @@ const joinRows = (initial: TrafficNodeEvidence[], data: GscPerformanceData, meta
     if (!rowUrl) return { ...node, observation: data.pages_may_be_truncated ? 'truncated' as TrafficObservation : 'missing' as TrafficObservation };
     return { ...node, metrics: rows.get(rowUrl)!, observed: true, observation: 'gsc' as TrafficObservation };
   });
-  const status: TrafficEvidenceStatus = data.pages_may_be_truncated ? 'partial' : 'complete';
+  const status: TrafficEvidenceStatus = data.pages_may_be_truncated || invalidRows > 0 || ignoredRows > 0 ? 'partial' : 'complete';
   return { ...finish(nodes, { ...meta, status, errors: [] }), ignoredRows, invalidRows, truncated: data.pages_may_be_truncated === true };
 };
 

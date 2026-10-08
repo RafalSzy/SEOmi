@@ -6,7 +6,7 @@ use super::super::{
     control::{wait_for_crawl_cancellation, CrawlControl},
     fetch_types::CrawlFetchFailure,
     models::CrawlConfig,
-    render_fetch::{fetch_rendered_page, WebviewRenderer},
+    render_fetch::{fetch_rendered_page, RenderRequestScope, WebviewRenderer},
     render_health::remaining_run_time,
     robots::RobotsRule,
     robots_matching::robots_allows,
@@ -86,8 +86,7 @@ pub async fn prefetch_rendered_pages<R: Runtime>(
             let result = fetch_rendered_page(
                 &client,
                 &url,
-                &base_host,
-                max_redirects,
+                RenderRequestScope::new(&base_host, max_redirects),
                 &config,
                 rendering_enabled,
                 &mut renderer,

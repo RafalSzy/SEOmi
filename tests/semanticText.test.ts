@@ -12,6 +12,7 @@ describe('normalizeSemanticText', () => {
     expect(normalizeSemanticText('Zolc  świat')).toBe('zolc  swiat');
     expect(normalizeSemanticText('straße øvelse encyclopædia œuf')).toBe('strasse ovelse encyclopaedia oeuf');
     expect(normalizeSemanticText('Ħ Ĵ Ķ Ŧ Ŵ')).toBe('h j k t w');
+    expect(normalizeSemanticText(' ẞ café ')).toBe('ss cafe');
   });
 });
 
@@ -28,6 +29,13 @@ describe('semanticTermKey', () => {
     expect(semanticTermKey('rola', 'pl')).toBe('rola');
     expect(semanticTermKey('media', 'pl')).toBe(semanticTermKey('media', 'pl'));
     expect(semanticTermKey('seo', 'pl')).toBe('seo');
+  });
+
+  it('respects the minimum stem and short English plural boundaries', () => {
+    expect(semanticTermKey('testa', 'pl')).toBe('test');
+    expect(semanticTermKey('rola', 'pl')).toBe('rola');
+    expect(semanticTermKey('ties', 'en')).toBe('ties');
+    expect(semanticTermKey('plans', 'en')).toBe('plan');
   });
 
   it('merges regular English plurals without touching words ending in a vowel plus s', () => {

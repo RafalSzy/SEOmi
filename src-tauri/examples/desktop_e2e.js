@@ -98,7 +98,7 @@
     await invoke('delete_project_crawl_checkpoint', { projectId });
     check('native checkpoint deletion verified', await invoke('load_project_crawl_checkpoint', { projectId }) === null);
     renderer = rendererEnabled
-      ? await window.__seomiRendererE2e.run({ invoke })
+      ? await window.__seomiRendererE2e.run({ invoke, projectId })
       : window.__seomiRendererE2e.skipped();
     await report({ passed: renderer.passed === true, checks, validation, renderer, runtime: navigator.userAgent });
   } catch (error) {

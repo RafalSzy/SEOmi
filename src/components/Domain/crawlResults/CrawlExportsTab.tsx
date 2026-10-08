@@ -9,6 +9,10 @@ import { Empty } from './CrawlViewPrimitives';
 
 import type { useCrawlResultsSession } from './useCrawlResultsSession';
 type Session = ReturnType<typeof useCrawlResultsSession>;
+const completionLabel = (value: string): string => {
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? format(date, "yyyy-MM-dd HH:mm") : "—";
+};
 
 export const CrawlExportsTab = ({ session }: { session: Session }) => {
 const { currentRun, exportPdf, pdfError, t } = session;
@@ -21,10 +25,7 @@ return currentRun ? (
               <p className="mt-1 text-xs leading-5 text-slate-500">
                 {t("crawlDeepUi.exportRunDescription", {
                   id: currentRun.id,
-                  date: format(
-                    new Date(currentRun.completedAt),
-                    "yyyy-MM-dd HH:mm",
-                  ),
+                  date: completionLabel(currentRun.completedAt),
                   url: currentRun.startUrl,
                 })}
               </p>

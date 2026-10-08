@@ -1,40 +1,19 @@
 use super::*;
+use unicode_normalization::UnicodeNormalization;
 
 /// Lowercases and folds Polish diacritics so "wiecej" and "więcej" compare equal.
 pub(super) fn fold_semantic_text(value: &str) -> String {
     let mut folded = String::with_capacity(value.len());
-    for character in value.to_lowercase().chars() {
-        if ('\u{300}'..='\u{36f}').contains(&character) {
-            continue;
-        }
-        if ('\u{ff01}'..='\u{ff5e}').contains(&character) {
-            if let Some(ascii) = char::from_u32(character as u32 - 0xfee0) {
-                folded.push(ascii);
-                continue;
-            }
-        }
+    for character in value
+        .nfkd()
+        .filter(|character| !('\u{300}'..='\u{36f}').contains(character))
+        .flat_map(|character| character.to_lowercase())
+    {
         folded.push(match character {
-            'à' | 'á' | 'â' | 'ã' | 'ä' | 'å' | 'ā' | 'ă' | 'ą' | 'ǎ' | 'ǻ' => 'a',
-            'ç' | 'ć' | 'ĉ' | 'ċ' | 'č' => 'c',
-            'ď' | 'đ' => 'd',
-            'è' | 'é' | 'ê' | 'ë' | 'ē' | 'ĕ' | 'ė' | 'ę' | 'ě' => 'e',
-            'ĝ' | 'ğ' | 'ġ' | 'ģ' => 'g',
-            'ĥ' | 'ħ' => 'h',
-            'ì' | 'í' | 'î' | 'ï' | 'ĩ' | 'ī' | 'ĭ' | 'į' | 'ǐ' => 'i',
-            'ĵ' => 'j',
-            'ķ' => 'k',
-            'ĺ' | 'ļ' | 'ľ' | 'ŀ' | 'ł' => 'l',
-            'ñ' | 'ń' | 'ņ' | 'ň' => 'n',
-            'ò' | 'ó' | 'ô' | 'õ' | 'ö' | 'ō' | 'ŏ' | 'ő' | 'ơ' | 'ǒ' => 'o',
-            'ŕ' | 'ŗ' | 'ř' => 'r',
-            'ś' | 'ŝ' | 'ş' | 'š' => 's',
-            'ţ' | 'ť' | 'ŧ' => 't',
-            'ù' | 'ú' | 'û' | 'ü' | 'ũ' | 'ū' | 'ŭ' | 'ů' | 'ű' | 'ų' | 'ư' | 'ǔ' => {
-                'u'
-            }
-            'ŵ' => 'w',
-            'ý' | 'ÿ' | 'ŷ' => 'y',
-            'ź' | 'ż' | 'ž' => 'z',
+            'đ' => 'd',
+            'ħ' => 'h',
+            'ł' => 'l',
+            'ŧ' => 't',
             'ß' => {
                 folded.push_str("ss");
                 continue;
@@ -54,7 +33,7 @@ pub(super) fn fold_semantic_text(value: &str) -> String {
             other => other,
         });
     }
-    folded
+    folded.trim().to_string()
 }
 
 /// Function words, navigation chrome and date fragments. The list is shared

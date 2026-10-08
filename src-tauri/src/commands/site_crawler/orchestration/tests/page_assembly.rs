@@ -51,6 +51,7 @@ async fn assembler_uses_prefetched_body_and_moves_only_matching_discovery() {
 async fn assembler_prefers_observed_browser_navigation_time_including_zero() {
     for navigation_time in [0, 127] {
         let mut page_data = data(HTML);
+        page_data.rendered_diagnostics = Some((Vec::new(), Vec::new()));
         page_data.browser_navigation_time_ms = Some(navigation_time);
         page_data.rendered_lcp_ms = Some(321);
         let mut config = default_crawl_config(None);

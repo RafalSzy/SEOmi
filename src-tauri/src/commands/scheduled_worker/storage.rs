@@ -9,6 +9,9 @@ use std::path::{Path, PathBuf};
 use tauri::AppHandle;
 
 #[cfg(test)]
+#[path = "storage_edge_tests.rs"]
+mod edge_tests;
+#[cfg(test)]
 #[path = "storage_tests.rs"]
 mod tests;
 

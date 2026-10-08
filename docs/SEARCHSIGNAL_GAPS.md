@@ -16,11 +16,11 @@
 | EXT-010 | Audyt frazy docelowej | LOCAL IMPLEMENTED: konkretny URL/fraza, title/H1/body/anchors i znana intencja, evidence/time/status; izolacja projektów i request ownership, testy UI/usług; bez obietnic pozycji |
 | EXT-011 | Luki treści TOP10 | LOCAL IMPLEMENTED/PARTIAL: luki na faktycznie pobranych URL z importowanego SERP, tematy/udział/daty/status i unknown dla brakujących stron; Bing partial nie dowodzi kompletnego Google TOP10; testy usług/UI |
 | EXT-012 | Ollama | LOCAL IMPLEMENTED/PARTIAL: loopback Ollama embeddings/generate/chat/discovery i panel asystenta, model/instrukcje/limity/persistencja projektowa, race/error/direct tests; live model i desktop LAN nadal niezweryfikowane |
-| EXT-013 | Crawl w czasie | OPEN: porównanie dwóch ukończonych crawlów jednego projektu/zakresu; dodane/usunięte/zmienione strony i dowody |
-| EXT-014 | Graf ważony GSC | OPEN: wewnętrzny PageRank + osobne rzeczywiste metryki GSC, rozróżnienie struktury od ruchu |
-| EXT-015 | Darmowe odkrywanie fraz/intencja | OPEN: autocomplete/import, pochodzenie sugestii, dopasowanie fraz do stron i sygnały intencji z niepewnością |
-| EXT-016 | Monitoring i powiadomienia | OPEN: lokalne alerty zmian, preferencje, deduplikacja, porównywalne okresy; email tylko po konfiguracji użytkownika |
-| EXT-017 | Raport HTML i pomoc kontekstowa | PARTIAL: działają HTML eksport audytu/crawla i ContextHelp z direct tests; trwa korekta provenance brakujących flag/kompaktowania/szablonów; szeroka pomoc kontekstowa nadal wymaga przeglądu |
+| EXT-013 | Crawl w czasie | LOCAL IMPLEMENTED: guardy projektu/zakresu/konfiguracji/dat i kompletności we wszystkich widokach; added/removed/changed z dowodami, blokada kolizji kluczy URL/ścieżek; bezpośrednie testy usług i UI, pełny pomiar po integracji pozostaje wymagany |
+| EXT-014 | Graf ważony GSC | LOCAL IMPLEMENTED: strukturalny PageRank oddzielony od rzeczywistych danych GSC; guardy zakresu, unknown dla braków, odrębne missing/uncertain i jawne limity grafu/wierszy; direct service/UI tests, bez liveGoogle |
+| EXT-015 | Darmowe odkrywanie fraz/intencja | LOCAL IMPLEMENTED: autocomplete/import z provenance i nieznanymi metrykami; dopasowanie do obserwowanych stron własnego projektu/języka; heurystyczne sygnały intencji oznaczone uncertain, zapis nadal Unknown; direct service/UI tests, bez potwierdzenia intencji przez SERP |
+| EXT-016 | Monitoring i powiadomienia | LOCAL IMPLEMENTED: jawny opt-in, porównywalne zakresy/okresy, progi i trwała historia; projektowa deduplikacja/frequency guard z cache na awarię zapisu; wynik transportu oddzielony od persystencji; email wyłącznie przez skonfigurowany adapter, bez live dostarczenia |
+| EXT-017 | Raport HTML i pomoc kontekstowa | LOCAL IMPLEMENTED/PARTIAL: zlokalizowany HTML audytu/crawla, jawne ograniczenia/provenance/szablony, ContextHelp i dostępna stale relacja opisu fieldsetu; direct export/help tests; szeroka pomoc kontekstowa nadal wymaga przeglądu |
 
 Wielu użytkowników, reset hasła i serwerowa kolejka działająca przy wyłączonym komputerze nie są częścią obecnej aplikacji desktopowej; wymagają osobnego produktu/backendu. Nie dodawać pozornych formularzy bez takiego zaplecza.
 

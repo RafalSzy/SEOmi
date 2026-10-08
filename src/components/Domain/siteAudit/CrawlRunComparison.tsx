@@ -6,6 +6,7 @@ type Session = ReturnType<typeof useSiteAuditSession>;
 export const CrawlRunComparison = ({ session }: { session: Session }) => {
 const { comparison, comparisonByPath, t } = session;
 const guarded = comparison && 'status' in comparison ? comparison as CrawlDiffReport : null;
+const guardReasons = guarded?.reasons.map((reason) => t(`siteAudit.comparisonReasons.${reason}`)).join(', ') || 'none';
 
 return (<section className="rounded-xl border border-slate-800 bg-slate-900/45 p-4">
                 <CrawlComparisonSelector session={session} />
@@ -27,8 +28,8 @@ return (<section className="rounded-xl border border-slate-800 bg-slate-900/45 p
                       >
                         {t('siteAudit.comparisonGuard', {
                           status: guarded.status,
-                          reasons: guarded.reasons.join(', ') || 'none',
-                        })} <span className="font-mono text-slate-400">({guarded.status}; {guarded.reasons.join(', ') || 'none'})</span>{' '}
+                          reasons: `${guardReasons} [${guarded.reasons.join(', ')}]`,
+                        })}
                         <span className="font-mono text-slate-500">
                           {guarded.provenance.source} · {guarded.provenance.current.runId} ↔ {guarded.provenance.baseline.runId}
                         </span>

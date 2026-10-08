@@ -68,7 +68,7 @@
     };
   };
 
-  const run = async ({ invoke }) => {
+  const run = async ({ invoke, projectId }) => {
     const checks = [];
     let snapshot = null;
     let previewEvidence = 'not-attempted';
@@ -103,6 +103,7 @@
       });
       previewEvidence = 'ipc-success';
       check('renderer preview IPC returned', previewEvidence === 'ipc-success');
+      const crawlEvidence = await window.__seomiDesktopCrawlValidation.run({ invoke, projectId, check });
       return {
         status: 'executed',
         passed: true,
@@ -110,6 +111,7 @@
         target,
         finalUrl: snapshot.finalUrl,
         previewEvidence,
+        crawlEvidence,
         ...status,
       };
     } catch (error) {

@@ -37,6 +37,7 @@ describe('unreferenced components batch 2 direct assertions', () => {
 
   it('SidebarNavSectionComponent renders section with items', () => {
     const setActiveTab = vi.fn();
+    const onToggle = vi.fn();
     const section: any = {
       key: 'general',
       titleKey: 'sidebar.general',
@@ -51,7 +52,7 @@ describe('unreferenced components batch 2 direct assertions', () => {
         sidebarCollapsed={false}
         activeTab="overview"
         setActiveTab={setActiveTab}
-        onToggle={vi.fn()}
+        onToggle={onToggle}
       />,
     );
 
@@ -60,6 +61,10 @@ describe('unreferenced components batch 2 direct assertions', () => {
     expect(itemButton).not.toBeNull();
     fireEvent.click(itemButton!);
     expect(setActiveTab).toHaveBeenCalledWith('overview');
+    const sectionButton = screen.getByRole('button', { name: /sidebar\.general/i });
+    expect(sectionButton.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(sectionButton);
+    expect(onToggle).toHaveBeenCalledOnce();
   });
 
   it('DomainOverviewHeader renders title, input, and handles interactions', () => {

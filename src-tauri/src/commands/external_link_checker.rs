@@ -107,3 +107,7 @@ mod network_tests;
 #[cfg(test)]
 #[path = "external_link_checker/http_tests/mod.rs"]
 mod http_tests;
+
+#[cfg(test)]
+#[path = "external_link_checker/network_error_path_tests.rs"]
+mod network_error_path_tests;

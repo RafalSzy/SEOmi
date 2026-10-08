@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BookmarkPlus, Loader2, Search, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useProjectStore } from '@/stores/projectStore';
 import { useToolsStore } from '@/stores/toolsStore';
-import { GOOGLE_SUGGESTIONS_TAG, importSuggestions, type ImportedSuggestionsResult, type SuggestionsImportFormat } from '@/services/freeSuggestions';
+import { buildSuggestionEvidence, GOOGLE_SUGGESTIONS_TAG, importSuggestions, type ImportedSuggestionsResult, type SuggestionsImportFormat } from '@/services/freeSuggestions';
 import { useFreeSuggestionsSession } from './useFreeSuggestionsSession';
+import { SuggestionEvidenceSummary } from './SuggestionEvidenceSummary';
 
 interface Props { query: string; geo: string; language: string }
 const text = (t: (key: string, options?: Record<string, unknown>) => string, key: string, fallback: string, extra: Record<string, unknown> = {}) => t(key, { defaultValue: fallback, ...extra });
@@ -13,6 +14,7 @@ export const FreeSuggestionsPanel: React.FC<Props> = ({ query, geo, language }) 
   const { t } = useTranslation();
   const projectId = useProjectStore((state) => state.activeProjectId);
   const savedKeywords = useToolsStore((state) => state.savedKeywords);
+  const crawlRuns = useToolsStore((state) => state.crawlRuns);
   const addSavedKeyword = useToolsStore((state) => state.addSavedKeyword);
   const [importFormat, setImportFormat] = useState<SuggestionsImportFormat>('json');
   const [importPayload, setImportPayload] = useState('');
@@ -28,6 +30,8 @@ export const FreeSuggestionsPanel: React.FC<Props> = ({ query, geo, language }) 
   });
   const importOwner = JSON.stringify([projectId, session.inputQuery, geo, language]);
   const imported = importState?.owner === importOwner ? importState.result : null;
+  const fetchedEvidence = useMemo(() => session.result ? buildSuggestionEvidence({ suggestions: session.result.suggestions, activeProjectId: projectId, runs: crawlRuns, language }) : null, [crawlRuns, language, projectId, session.result]);
+  const importedEvidence = useMemo(() => imported ? buildSuggestionEvidence({ suggestions: imported.suggestions, activeProjectId: projectId, runs: crawlRuns, language }) : null, [crawlRuns, imported, language, projectId]);
   useEffect(() => {
     setImportState(null); setImportError(null); setImportPayload(''); setImportSourceUrl('');
   }, [importOwner]);
@@ -69,6 +73,7 @@ export const FreeSuggestionsPanel: React.FC<Props> = ({ query, geo, language }) 
         <a href={session.result.sourceUrl} target="_blank" rel="noreferrer" className="break-all text-sky-300 hover:text-sky-200">{session.result.sourceUrl}</a></div>
       {session.result.suggestions.length === 0 && <p className="text-sm text-slate-400">{label('googleSuggestionsUi.empty', 'No suggestions returned.')}</p>}
       <ul className="grid gap-2 sm:grid-cols-2">{session.result.suggestions.map((suggestion) => <li key={suggestion} className="flex items-center justify-between gap-3 rounded-lg border border-slate-800 px-3 py-2 text-sm text-slate-200"><span>{suggestion}</span><button type="button" onClick={() => session.saveSuggestion(suggestion)} disabled={session.isSaved(suggestion)} className="shrink-0 rounded border border-sky-700/70 px-2 py-1 text-xs text-sky-200 disabled:opacity-50"><BookmarkPlus className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />{session.isSaved(suggestion) ? label('googleSuggestionsUi.saved', 'Saved') : label('googleSuggestionsUi.save', 'Save')}</button></li>)}</ul>
+      {fetchedEvidence && <SuggestionEvidenceSummary report={fetchedEvidence} />}
     </div>}
     <div className="space-y-3 rounded-lg border border-slate-800 bg-slate-950/35 p-3">
       <div><h3 className="text-sm font-semibold text-slate-200">{label('googleSuggestionsUi.importTitle', 'Import suggestions')}</h3><p className="text-xs text-slate-500">{label('googleSuggestionsUi.importDescription', 'Import a local JSON or CSV list. Metrics and intent remain unknown.')}</p></div>
@@ -79,7 +84,7 @@ export const FreeSuggestionsPanel: React.FC<Props> = ({ query, geo, language }) 
       <textarea aria-label={label('googleSuggestionsUi.importPayload', 'Suggestions payload')} value={importPayload} onChange={(event) => setImportPayload(event.target.value)} className="min-h-20 w-full rounded bg-slate-950 p-2 font-mono text-xs text-slate-200" />
       <button type="button" disabled={!projectId || !importPayload.trim()} onClick={handleImport} className="rounded bg-emerald-700 px-3 py-2 text-xs text-white disabled:opacity-50">{label('googleSuggestionsUi.import', 'Import')}</button>
       {importError && <p role="alert" className="text-xs text-rose-300">{importError}</p>}
-      {imported && <div aria-live="polite" className="space-y-2"><p className="text-xs text-slate-400">{label('googleSuggestionsUi.importedAt', 'Imported at: {{timestamp}} · {{count}} suggestions.', { timestamp: imported.importedAt, count: imported.suggestions.length })}</p><ul className="grid gap-2 sm:grid-cols-2">{imported.suggestions.map((suggestion) => <li key={suggestion} className="flex items-center justify-between gap-2 rounded border border-slate-800 px-2 py-1 text-xs text-slate-300"><span>{suggestion}</span><button type="button" onClick={() => saveImported(suggestion)} disabled={!projectId || savedKeywords.some((item) => item.keyword.trim().toLowerCase() === suggestion.toLowerCase())} className="rounded border border-sky-700/70 px-2 py-1 text-[11px] text-sky-200 disabled:opacity-50">{label('googleSuggestionsUi.save', 'Save')}</button></li>)}</ul></div>}
+      {imported && <div aria-live="polite" className="space-y-2"><p className="text-xs text-slate-400">{label('googleSuggestionsUi.importedAt', 'Imported at: {{timestamp}} · {{count}} suggestions.', { timestamp: imported.importedAt, count: imported.suggestions.length })}</p><ul className="grid gap-2 sm:grid-cols-2">{imported.suggestions.map((suggestion) => <li key={suggestion} className="flex items-center justify-between gap-2 rounded border border-slate-800 px-2 py-1 text-xs text-slate-300"><span>{suggestion}</span><button type="button" onClick={() => saveImported(suggestion)} disabled={!projectId || savedKeywords.some((item) => item.keyword.trim().toLowerCase() === suggestion.toLowerCase())} className="rounded border border-sky-700/70 px-2 py-1 text-[11px] text-sky-200 disabled:opacity-50">{label('googleSuggestionsUi.save', 'Save')}</button></li>)}</ul>{importedEvidence && <SuggestionEvidenceSummary report={importedEvidence} />}</div>}
     </div>
   </section>;
 };

@@ -6,3 +6,6 @@ export { fetchFreeSuggestions } from './transport';
 export type { FreeSuggestionsFetchOutcome } from './transport';
 export { importSuggestions, MAX_SUGGESTIONS_IMPORT_RECORDS } from './import';
 export type { ImportedSuggestionsResult, SuggestionsImportFormat } from './import';
+export { buildSuggestionEvidence } from './suggestionEvidence';
+export { MAX_SUGGESTION_EVIDENCE_ITEMS, MAX_SUGGESTION_EVIDENCE_PAGES, MAX_SUGGESTION_PAGE_MATCHES } from './suggestionEvidence';
+export type { SuggestionEvidenceItem, SuggestionEvidenceOptions, SuggestionEvidenceReport, SuggestionEvidenceStatus, SuggestionEvidenceScope, SuggestionIntentSignal, SuggestionPageEvidence } from './suggestionEvidence';

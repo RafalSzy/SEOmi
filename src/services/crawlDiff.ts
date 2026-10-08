@@ -2,6 +2,8 @@ import { CrawledPageSummary, SiteCrawlResult } from '@/types';
 import i18n from '@/i18n';
 import type { CrawlComparisonContractOptions, CrawlComparisonProvenance, CrawlComparisonRun, CrawlComparisonStatus } from './crawlComparisonContract';
 import { guardCrawlComparison } from './crawlComparisonContract';
+import { findCrawlDiffCollisions, type CrawlDiffCollision } from './crawlDiff/collisions';
+export type { CrawlDiffCollision } from './crawlDiff/collisions';
 
 export type CrawlChangeKind = 'added' | 'removed' | 'changed';
 
@@ -19,6 +21,7 @@ export interface CrawlDiff {
   added: CrawlPageChange[];
   removed: CrawlPageChange[];
   changed: CrawlPageChange[];
+  collisions?: CrawlDiffCollision[];
 }
 
 export interface CrawlDiffReport extends CrawlDiff {
@@ -52,6 +55,7 @@ export type CrawlRunDiffOptions = CrawlDiffOptions & CrawlComparisonContractOpti
 const trackingQueryParameters = /^(utm_[^=]+|gclid|fbclid|msclkid)$/i;
 
 export const crawlComparisonKey = (url: string, matchByPath = false): string => {
+  if (typeof url !== 'string' || !url.trim()) return '';
   if (!matchByPath) return url;
   try {
     const parsed = new URL(url);
@@ -73,6 +77,8 @@ export function compareCrawlResults(
   options: CrawlDiffOptions = {},
 ): CrawlDiff {
   const key = (url: string) => crawlComparisonKey(url, options.matchByPath === true);
+  const collisions = [...findCrawlDiffCollisions(current.pages, key, 'current'), ...findCrawlDiffCollisions(baseline.pages, key, 'baseline')];
+  if (collisions.length) return { added: [], removed: [], changed: [], collisions };
   const currentPages = new Map(current.pages.map((page) => [key(page.url), page]));
   const baselinePages = new Map(baseline.pages.map((page) => [key(page.url), page]));
   const added: CrawlPageChange[] = [];
@@ -119,6 +125,10 @@ export function compareCrawlRuns(
   const guard = guardCrawlComparison(current, baseline, options);
   if (guard.status === 'blocked') return { added: [], removed: [], changed: [], ...guard };
   const diff = compareCrawlResults(current.result, baseline.result, options);
+  if (diff.collisions?.length) {
+    const reason = diff.collisions.some((collision) => collision.invalid) ? 'invalid-page-url' : options.matchByPath ? 'path-key-collision' : 'url-key-collision';
+    return { ...diff, ...guard, status: 'blocked', reasons: [...guard.reasons, reason] };
+  }
   const baselinePartial = guard.provenance.baseline.partial;
   const currentPartial = guard.provenance.current.partial;
   return {

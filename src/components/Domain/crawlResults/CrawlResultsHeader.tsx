@@ -2,6 +2,10 @@ import { Map } from "lucide-react";
 import { format } from "date-fns";
 import type { useCrawlResultsSession } from './useCrawlResultsSession';
 type Session = ReturnType<typeof useCrawlResultsSession>;
+const completionLabel = (value: string): string => {
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? format(date, "yyyy-MM-dd HH:mm") : "—";
+};
 export const CrawlResultsHeader = ({ session }: { session: Session }) => {
 const { currentRun, deleteCurrentRun, isCrawling, onDeleteRun, onSelectRun, openMapSection, result, runs, t } = session;
 // Warn when any rendered page lacks headers applicable to its final DOM.
@@ -59,7 +63,7 @@ return (
               >
                 {runs.map((run) => (
                   <option key={run.id} value={run.id}>
-                    {format(new Date(run.completedAt), "yyyy-MM-dd HH:mm")} ·{" "}
+                    {completionLabel(run.completedAt)} ·{" "}
                     {t("crawl.ui.urlsCount", { count: run.result.pages_crawled })} · {run.startUrl}
                   </option>
                 ))}

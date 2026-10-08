@@ -33,9 +33,9 @@ export const auditHtml = (audit: PageAuditData): string => {
     message: issue.message, recommendation: issue.recommendation,
   }));
   const summary = table(exportText('html.summary'), [
-    ['Input URL', audit.url], [exportText('labels.auditedUrl'), audit.final_url], [exportText('labels.auditedAt'), audit.timestamp],
-    ['HTTP status', audit.http_status], ['Response time (ms)', audit.response_time_ms],
-    ['Health score', audit.health_score], [exportText('html.exportedAt'), new Date().toISOString()],
+    [exportText('html.inputUrl'), audit.url], [exportText('labels.auditedUrl'), audit.final_url], [exportText('labels.auditedAt'), audit.timestamp],
+    [exportText('html.httpStatus'), audit.http_status], [exportText('html.responseTimeMs'), audit.response_time_ms],
+    [exportText('html.healthScore'), audit.health_score], [exportText('html.exportedAt'), new Date().toISOString()],
   ]);
   return documentHtml(exportText('html.auditTitle'), exportText('html.sourceLocal'), `${summary}${jsonBlock(exportText('html.auditEvidence'), {
     title: audit.meta_tags?.title, description: audit.meta_tags?.description, canonical: audit.meta_tags?.canonical,
@@ -61,15 +61,15 @@ export const crawlReportHtml = (run: CrawlRunRecord, template?: CrawlReportTempl
   const result = payload.result as Record<string, unknown>;
   const runMeta = payload.run as Record<string, unknown>;
   const metadata = table(exportText('html.summary'), [
-    ['Export format', payload.export_format], ['Run ID', runMeta.id], ['Scope', runMeta.scope_start_url],
-    ['Environment', runMeta.environment], ['Completed at', runMeta.completed_at], [exportText('html.exportedAt'), payload.exported_at],
+    [exportText('html.exportFormat'), payload.export_format], [exportText('html.runId'), runMeta.id], [exportText('html.scope'), runMeta.scope_start_url],
+    [exportText('html.environment'), runMeta.environment], [exportText('html.completedAt'), runMeta.completed_at], [exportText('html.exportedAt'), payload.exported_at],
     [exportText('html.reportTemplate'), template?.name || exportText('html.fullSnapshot')],
-    ['Template ID', template?.id || exportText('html.fullSnapshot')],
-    ['Template sections', template?.sections?.join(', ') || exportText('html.fullSnapshot')],
+    [exportText('html.templateId'), template?.id || exportText('html.fullSnapshot')],
+    [exportText('html.templateSections'), template?.sections?.join(', ') || exportText('html.fullSnapshot')],
   ]);
   const summary = table(exportText('html.evidence'), [
-    ['Pages crawled', result.pages_crawled], ['Health score', result.health_score],
-    ['Critical issues', result.critical_count], ['Warnings', result.warning_count], ['Duration (ms)', result.duration_ms],
+    [exportText('html.pagesCrawled'), result.pages_crawled], [exportText('html.healthScore'), result.health_score],
+    [exportText('html.criticalIssues'), result.critical_count], [exportText('html.warnings'), result.warning_count], [exportText('html.durationMs'), result.duration_ms],
   ]);
   const selected = Object.entries(result).filter(([key]) => !['pages_crawled', 'health_score', 'critical_count', 'warning_count', 'notice_count', 'duration_ms', 'cancelled', 'timed_out', 'resource_limit_reached', 'storage_pages_truncated', 'discovery_provenance_truncated', 'limit_reasons'].includes(key));
   const sections = selected.map(([key, value]) => jsonBlock(key, value)).join('');

@@ -27,8 +27,11 @@ export const CrawlReportTemplateSection = ({ session }: { session: Session }) =>
         <ContextHelp id="crawl-report-template-help" label={t("siteAudit.reportTemplateHelp")}>
           {t("siteAudit.reportTemplateHelp")}
         </ContextHelp>
+        <p id="crawl-report-template-description" className="sr-only">
+          {t("siteAudit.reportTemplateHelp")}
+        </p>
         <CrawlReportTemplateSelector session={session} />
-        <fieldset aria-describedby="crawl-report-template-help-description" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <fieldset aria-describedby="crawl-report-template-description" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           <legend className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             {t("siteAudit.reportSectionsLegend")}
           </legend>

@@ -1,7 +1,7 @@
 use super::*;
 use crate::commands::site_crawler::control::CrawlControl;
 use crate::commands::site_crawler::models::CrawlConfig;
-use crate::commands::site_crawler::render_fetch::fetch_rendered_page;
+use crate::commands::site_crawler::render_fetch::{fetch_rendered_page, RenderRequestScope};
 use std::time::{Duration, Instant};
 
 #[tokio::test]
@@ -25,8 +25,7 @@ async fn rendered_transport_waits_between_http_and_browser_requests() {
     let fetched = fetch_rendered_page(
         &origin.client,
         &url,
-        "example.test",
-        5,
+        RenderRequestScope::new("example.test", 5),
         &config,
         true,
         &mut renderer,

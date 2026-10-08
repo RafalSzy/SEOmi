@@ -27,6 +27,12 @@ describe('GraphEvidencePanel', () => {
     expect(screen.getByText('mapUi.graphEvidence.structureTitle')).toBeTruthy();
   });
 
+  it('announces that structural PageRank is partial when the graph is bounded', () => {
+    tools.gscData = null;
+    render(<GraphEvidencePanel graph={{ ...graph(), truncated: true } as never} />);
+    expect(screen.getByText('mapUi.graphEvidence.structurePartial')).toBeTruthy();
+  });
+
   it('shows matched property metadata and observed zero values as evidence', () => {
     tools.gscData = data({ pages: [{ page: 'https://example.com/1', clicks: 0, impressions: 0, ctr: 0, position: 0 }] });
     render(<GraphEvidencePanel graph={graph() as never} />);
@@ -49,6 +55,14 @@ describe('GraphEvidencePanel', () => {
     tools.gscData = data({ filters: { device: 'DESKTOP' } });
     render(<GraphEvidencePanel graph={graph() as never} />);
     expect(screen.getByText('mapUi.graphEvidence.status.invalid')).toBeTruthy();
+    expect(screen.getByText('mapUi.graphEvidence.invalidNotice')).toBeTruthy();
     tools.gscFilters = {};
+  });
+
+  it('explains partial source rows and their quality counts', () => {
+    tools.gscData = data({ pages: [{ page: null as never, clicks: 0, impressions: 0, ctr: 0, position: 0 }] });
+    render(<GraphEvidencePanel graph={graph() as never} />);
+    expect(screen.getByText('mapUi.graphEvidence.partialNotice')).toBeTruthy();
+    expect(screen.getByText(/mapUi\.graphEvidence\.rowQuality/)).toBeTruthy();
   });
 });

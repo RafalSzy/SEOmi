@@ -13,6 +13,7 @@ describe('unreferenced components batch 3 direct assertions', () => {
       severity: 'warning',
       code: 'MANDATORY_TAG_MISSING',
       message: 'The mandatory tag is missing.',
+      evidence: '<amp-img> without width',
       spec_url: 'https://amp.dev',
     } as any;
     const t = ((k: string) => k) as any;
@@ -20,6 +21,7 @@ describe('unreferenced components batch 3 direct assertions', () => {
     render(<AmpFindingItem finding={finding} t={t} />);
     expect(screen.getByText('ampUi.severity.warning')).toBeTruthy();
     expect(screen.getByText('The mandatory tag is missing.')).toBeTruthy();
+    expect(screen.getByText('<amp-img> without width')).toBeTruthy();
   });
 
   it('ProjectGateList renders project choose screen or empty fallback', () => {
@@ -54,11 +56,16 @@ describe('unreferenced components batch 3 direct assertions', () => {
     expect(screen.getByText('92')).toBeDefined();
   });
 
-  it('PageSpeedHistoryCharts renders category cards for history', () => {
+  it('PageSpeedHistoryCharts renders category cards and endpoint values', () => {
     const { container } = render(
-      <PageSpeedHistoryCharts chronologicalHistory={[]} latestSnapshot={null} />,
+      <PageSpeedHistoryCharts
+        chronologicalHistory={[{ pageSpeed: { categories: { performance: 70, accessibility: 80, bestPractices: 90, seo: 60 } } } as any]}
+        latestSnapshot={{ pageSpeed: { categories: { performance: 95, accessibility: 88, bestPractices: 100, seo: 92 } } } as any}
+      />,
     );
     expect(container.querySelectorAll('article')).toHaveLength(4);
-    expect(container.textContent).toContain('0 points');
+    expect(container.textContent).toContain('1 points');
+    expect(container.textContent).toContain('70');
+    expect(container.textContent).toContain('95');
   });
 });

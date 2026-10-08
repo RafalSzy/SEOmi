@@ -1,5 +1,8 @@
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Runtime};
+#[path = "render_fetch_scope.rs"]
+mod scope;
+pub(crate) use scope::RenderRequestScope;
 
 use super::control::CrawlControl;
 use super::crawl_delay::wait_for_crawl_delay;
@@ -75,8 +78,7 @@ impl<R: Runtime> PageRenderer for WebviewRenderer<R> {
 pub(crate) async fn fetch_rendered_page<R: PageRenderer>(
     client: &reqwest::Client,
     url: &str,
-    base_host: &str,
-    max_redirects: usize,
+    scope: RenderRequestScope<'_>,
     config: &CrawlConfig,
     rendering_enabled: bool,
     renderer: &mut R,
@@ -95,11 +97,11 @@ pub(crate) async fn fetch_rendered_page<R: PageRenderer>(
     } = request_with_safe_redirects(
         client,
         url,
-        base_host,
+        scope.base_host,
         config.allow_subdomains,
         config.scope_path.as_deref(),
         &config.allowed_hosts,
-        max_redirects,
+        scope.max_redirects,
         config,
     )
     .await

@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { CrawlCrawlerReadinessTab } from '@/components/Domain/crawlResults/CrawlCrawlerReadinessTab';
 import { CrawlIssuesTab } from '@/components/Domain/crawlResults/CrawlIssuesTab';
 import { CrawlLinksTab } from '@/components/Domain/crawlResults/CrawlLinksTab';
@@ -44,6 +44,9 @@ describe('unreferenced crawl tabs batch 8 direct assertions', () => {
       <Harness renderChild={(session) => <CrawlLinksTab session={session} />} />,
     );
     expect(screen.getByText('https://example.com/missing')).toBeTruthy();
+    const search = screen.getByRole('textbox');
+    fireEvent.change(search, { target: { value: 'does-not-exist' } });
+    expect(screen.queryByText('https://example.com/missing')).toBeNull();
   });
 
   it('renders CrawlMediaTab directly', () => {
@@ -72,5 +75,6 @@ describe('unreferenced crawl tabs batch 8 direct assertions', () => {
       <Harness renderChild={(session) => <CrawlVisualisationsTab session={session} />} />,
     );
     expect(container.querySelector('#crawl-map-section')?.getAttribute('aria-label')).toBeTruthy();
+    expect(screen.getByText(/History chart appears after another crawl run/)).toBeTruthy();
   });
 });

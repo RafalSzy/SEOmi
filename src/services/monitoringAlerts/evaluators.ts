@@ -57,7 +57,7 @@ export const evaluateCrawlAlert = (report: CrawlDiffReport, settings = defaultMo
 };
 
 export const evaluateSemanticAlert = (report: SemanticRunComparisonReport, settings = defaultMonitoringAlertSettings()): MonitoringAlert | null => {
-  if (report.truncated) return null;
+  if (report.truncated || report.guard?.status !== 'comparable') return null;
   const changed = report.changes.length;
   if (changed < settings.thresholds.semantic.changes) return null;
   return make('semantic', report.currentRunId, `Semantic comparison observed ${changed} bounded change(s) between saved crawl runs.`, { changed });

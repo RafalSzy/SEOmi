@@ -105,3 +105,6 @@ pub fn delete_project_crawl_checkpoint<R: tauri::Runtime>(
 #[cfg(test)]
 #[path = "crawl_storage/command_tests/mod.rs"]
 mod command_tests;
+#[cfg(test)]
+#[path = "crawl_storage/history_edge_tests.rs"]
+mod history_edge_tests;

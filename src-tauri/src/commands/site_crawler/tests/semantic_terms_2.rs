@@ -41,6 +41,14 @@ fn semantic_term_key_matches_the_semantic_map_rules() {
 }
 
 #[test]
+fn semantic_term_key_respects_inflection_boundaries() {
+    assert_eq!(semantic_term_key("testa", Some("pl")), "test");
+    assert_eq!(semantic_term_key("rola", Some("pl")), "rola");
+    assert_eq!(semantic_term_key("ties", Some("en")), "ties");
+    assert_eq!(semantic_term_key("plans", Some("en")), "plan");
+}
+
+#[test]
 fn semantic_folding_matches_the_frontend_for_common_latin_characters() {
     assert_eq!(
         fold_semantic_text("café Straße øvelse encyclopædia œuf Żółć"),

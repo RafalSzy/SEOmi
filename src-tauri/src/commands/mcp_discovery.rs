@@ -32,6 +32,9 @@ mod process_tests_next;
 #[cfg(test)]
 mod protocol_tests;
 #[cfg(test)]
+#[path = "mcp_discovery/public_api_tests.rs"]
+mod public_api_tests;
+#[cfg(test)]
 mod response_tests;
 #[cfg(test)]
 mod tests;

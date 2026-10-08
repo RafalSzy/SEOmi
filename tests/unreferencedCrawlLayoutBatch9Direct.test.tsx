@@ -57,8 +57,9 @@ describe('unreferenced crawl layout batch 9 direct assertions', () => {
     );
     const groups = container.querySelectorAll('button[aria-pressed]');
     expect(groups.length).toBeGreaterThan(0);
-    fireEvent.click(groups[0]);
-    expect(groups[0].getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(groups[1]);
+    expect(groups[1].getAttribute('aria-pressed')).toBe('true');
+    expect(groups[0].getAttribute('aria-pressed')).toBe('false');
   });
 
   it('renders CrawlResultsHeader directly', () => {
@@ -83,8 +84,18 @@ describe('unreferenced crawl layout batch 9 direct assertions', () => {
   });
 
   it('renders CrawlReportTemplateSection directly', () => {
-    const { container } = render(<CrawlReportTemplateSection session={mockAuditSession} />);
+    const toggleReportTemplateSection = vi.fn();
+    const { container } = render(<CrawlReportTemplateSection session={{ ...mockAuditSession, toggleReportTemplateSection } as AuditSession} />);
     expect(container.querySelector('summary')?.textContent).toContain('siteAudit.reportTemplate');
     expect(container.querySelector('input[type="checkbox"]')).not.toBeNull();
+    expect(container.querySelector('fieldset')?.getAttribute('aria-describedby')).toBe('crawl-report-template-description');
+    expect(container.querySelector('#crawl-report-template-description')?.textContent).toContain('siteAudit.reportTemplateHelp');
+    const help = container.querySelector('#crawl-report-template-help > summary')!;
+    expect(container.querySelector('#crawl-report-template-help')?.hasAttribute('open')).toBe(false);
+    fireEvent.click(help);
+    expect(container.querySelector('#crawl-report-template-help')?.hasAttribute('open')).toBe(true);
+    expect(container.querySelector('#crawl-report-template-help-description')?.textContent).toContain('siteAudit.reportTemplateHelp');
+    fireEvent.click(container.querySelector('input[type="checkbox"]')!);
+    expect(toggleReportTemplateSection).toHaveBeenCalledWith('configuration');
   });
 });

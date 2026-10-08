@@ -37,6 +37,14 @@ describe('unreferenced services and errors direct assertions', () => {
     expect(result?.domain).toBe('example.com');
     expect(result?.organic_traffic).toBe(1250);
     expect(result?.organic_keywords).toBe(42);
+    expect(mockClient.post).toHaveBeenCalledWith(
+      '/v3/dataforseo_labs/google/domain_rank_overview/live',
+      [{ target: 'example.com', location_code: 2840, language_code: 'en' }],
+    );
+    expect(mockClient.post).toHaveBeenCalledWith(
+      '/v3/backlinks/summary/live',
+      [{ target: 'example.com', internal_list_limit: 1000 }],
+    );
   });
 
   it('getKeywordIdeas maps keyword rows into KeywordIdea array', async () => {
@@ -60,6 +68,10 @@ describe('unreferenced services and errors direct assertions', () => {
     const ideas = await getKeywordIdeas(mockClient, 'seo', 2840, 'en');
     expect(ideas).toHaveLength(1);
     expect(ideas[0].keyword).toBe('seo audit');
+    expect(mockClient.post).toHaveBeenCalledWith(
+      '/v3/keywords_data/google_ads/keywords_for_keywords/live',
+      [{ keywords: ['seo'], location_code: 2840, language_code: 'en' }],
+    );
   });
 
   it('getSerpCompetitors parses organic SERP items', async () => {
@@ -85,5 +97,10 @@ describe('unreferenced services and errors direct assertions', () => {
     expect(serp).toHaveLength(1);
     expect(serp[0].domain).toBe('example.com');
     expect(serp[0].rank_absolute).toBe(1);
+    expect(mockClient.post).toHaveBeenCalledWith(
+      '/v3/serp/google/organic/live/regular',
+      [{ keyword: 'example', location_code: 2840, language_code: 'en', depth: 100 }],
+      [],
+    );
   });
 });

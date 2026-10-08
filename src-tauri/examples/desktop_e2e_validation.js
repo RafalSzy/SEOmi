@@ -31,7 +31,7 @@
       }, 'Public feed requires a two-letter country.');
       await reject('unsupported AI provider rejected', 'test_ai_cli_connection', { provider: 'unsupported' }, 'Unsupported AI provider.');
       await reject('relative MCP server path rejected', 'discover_mcp_tools', { serverPath: 'relative-server.js' }, 'Choose an absolute path to a trusted MCP server JavaScript file.');
-      await rejectMatch('invalid link URL rejected before network', 'check_link', { url: 'not-a-url', timeoutSecs: 1 }, /Invalid link URL/);
+      await rejectMatch('invalid link URL rejected before network', 'check_link', { url: 'https://[invalid', timeoutSecs: 1 }, /Invalid link URL/);
       await reject('unsupported DataForSEO endpoint rejected', 'dataforseo_request', {
         projectId, path: '/v3/unsupported', payload: {},
       }, 'Unsupported DataForSEO endpoint.');
@@ -96,7 +96,7 @@
         projectId, runId: 'run', itemId: '../invalid',
       }, 'Invalid audit queue result identifier.');
       await rejectMatch('invalid crawler URL rejected before network', 'crawl_site', {
-        startUrl: 'not-a-url', maxPages: 1, projectId,
+        startUrl: 'https://[invalid', maxPages: 1, projectId,
       }, /URL|url|valid/i);
       await rejectMatch('updater check rejects fixture configuration before network', 'check_for_updates', {}, /Updater initialization/);
       await rejectMatch('updater install rejects fixture configuration before install', 'install_update', {}, /Updater initialization/);
@@ -104,6 +104,7 @@
       const queueAfter = await invoke('load_project_audit_queue', { projectId });
       check('reject-first validation preserves crawl checkpoint', JSON.stringify(checkpointBefore) === JSON.stringify(checkpointAfter));
       check('reject-first validation preserves audit queue', JSON.stringify(queueBefore) === JSON.stringify(queueAfter));
+      await window.__seomiDesktopAdditionalValidation.run({ invoke, projectId, check, reject });
       const workerInitiallyActive = await invoke('render_worker_status');
       check('render worker starts inactive', workerInitiallyActive === false);
       const lease = await invoke('start_render_worker');

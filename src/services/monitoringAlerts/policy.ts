@@ -3,7 +3,7 @@ import type { MonitoringAlert, MonitoringAlertFrequency, MonitoringAlertSettings
 
 export const MONITORING_HISTORY_LIMIT = 128;
 export const defaultMonitoringAlertSettings = (): MonitoringAlertSettings => ({
-  enabled: true,
+  enabled: false,
   frequency: 'daily',
   types: { gsc: true, pagespeed: true, crawl: true, semantic: true },
   thresholds: {
@@ -29,7 +29,7 @@ export const normalizeMonitoringSettings = (value: unknown): MonitoringAlertSett
   const semantic = ((thresholds as Partial<MonitoringAlertSettings['thresholds']>).semantic || {}) as Partial<MonitoringAlertSettings['thresholds']['semantic']>;
   const frequency: MonitoringAlertFrequency = raw.frequency === 'run' || raw.frequency === 'weekly' ? raw.frequency : 'daily';
   return {
-    enabled: raw.enabled !== false,
+    enabled: raw.enabled === true,
     frequency,
     types: { gsc: read('gsc'), pagespeed: read('pagespeed'), crawl: read('crawl'), semantic: read('semantic') },
     thresholds: {

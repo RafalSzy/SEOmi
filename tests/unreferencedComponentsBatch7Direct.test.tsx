@@ -28,7 +28,8 @@ describe('unreferenced components batch 7 direct assertions', () => {
   });
 
   it('KeywordClusteringForm renders clustering controls', () => {
-    render(
+    const runClustering = vi.fn();
+    const { rerender } = render(
       <KeywordClusteringForm
         session={{ keywordInput: '', country: 'US', language: 'en', similarityThreshold: 0.8 } as any}
         keywords={[]}
@@ -41,12 +42,33 @@ describe('unreferenced components batch 7 direct assertions', () => {
         updateSession={vi.fn()}
         appendKeywords={vi.fn()}
         changeCountry={vi.fn()}
-        runClustering={vi.fn()}
+        runClustering={runClustering}
         t={t}
       />,
     );
     const runButton = screen.getByRole('button', { name: /keywordClusteringUi.run/i });
     expect((runButton as HTMLButtonElement).disabled).toBe(true);
+    rerender(
+      <KeywordClusteringForm
+        session={{ keywordInput: '', country: 'US', language: 'en', similarityThreshold: 0.8 } as any}
+        keywords={['seo', 'audit']}
+        credentials={{ login: 'user', password: 'secret' }}
+        currentResearch={[]}
+        savedKeywords={[]}
+        isRunning={false}
+        progress={0}
+        error={null}
+        updateSession={vi.fn()}
+        appendKeywords={vi.fn()}
+        changeCountry={vi.fn()}
+        runClustering={runClustering}
+        t={t}
+      />,
+    );
+    const enabledRunButton = screen.getByRole('button', { name: /keywordClusteringUi.run/i });
+    expect((enabledRunButton as HTMLButtonElement).disabled).toBe(false);
+    enabledRunButton.click();
+    expect(runClustering).toHaveBeenCalledOnce();
   });
 
   it('RankTrackingTable renders table columns', () => {

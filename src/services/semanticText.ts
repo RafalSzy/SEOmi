@@ -16,7 +16,7 @@ export const normalizeSemanticText = (value: string): string => value
   .replace(/[Ķķ]/g, 'k')
   .replace(/[Ŧŧ]/g, 't')
   .replace(/[Ŵŵ]/g, 'w')
-  .replace(/ß/g, 'ss')
+  .replace(/[ßẞ]/g, 'ss')
   .replace(/[øØ]/g, 'o')
   .replace(/[æÆ]/g, 'ae')
   .replace(/[œŒ]/g, 'oe')
